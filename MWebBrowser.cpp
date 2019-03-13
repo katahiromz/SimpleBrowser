@@ -277,7 +277,7 @@ void MWebBrowser::Zoom(LONG iZoomFactor)
     }
 }
 
-void MWebBrowser::Print(OLECMDEXECOPT option)
+void MWebBrowser::Print(BOOL bBang)
 {
     if (!m_web_browser2)
         return;
@@ -290,6 +290,11 @@ void MWebBrowser::Print(OLECMDEXECOPT option)
         pDisp->QueryInterface(&pCmdTarget);
         if (pCmdTarget)
         {
+            OLECMDEXECOPT option;
+            if (bBang)
+                option = OLECMDEXECOPT_DONTPROMPTUSER;
+            else
+                option = OLECMDEXECOPT_PROMPTUSER;
             pCmdTarget->Exec(NULL, OLECMDID_PRINT, option, NULL, NULL);
             pCmdTarget->Release();
         }

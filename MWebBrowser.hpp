@@ -3,7 +3,7 @@
 // This file is public domain software.
 
 #ifndef MWEB_BROWSER_HPP_
-#define MWEB_BROWSER_HPP_   6   // Version 6
+#define MWEB_BROWSER_HPP_   7   // Version 7
 
 #include <windows.h>
 #include <exdisp.h>
@@ -31,7 +31,7 @@ public:
     void Refresh();
     void Navigate(const WCHAR *url = L"about:blank");
     void Zoom(LONG iZoomFactor = 2);
-    void Print(OLECMDEXECOPT option = OLECMDEXECOPT_PROMPTUSER);
+    void Print(BOOL bBang = FALSE);
     void PrintPreview();
     void PageSetup();
     HRESULT Save(LPCWSTR file);

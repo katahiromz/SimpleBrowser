@@ -687,12 +687,12 @@ void OnHome(HWND hwnd)
 
 void OnPrint(HWND hwnd)
 {
-    s_pWebBrowser->Print(OLECMDEXECOPT_PROMPTUSER);
+    s_pWebBrowser->Print(FALSE);
 }
 
 void OnPrintBang(HWND hwnd)
 {
-    s_pWebBrowser->Print(OLECMDEXECOPT_DONTPROMPTUSER);
+    s_pWebBrowser->Print(TRUE);
 }
 
 void OnPrintPreview(HWND hwnd)
