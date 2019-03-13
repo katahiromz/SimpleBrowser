@@ -145,10 +145,20 @@ BOOL UrlInBlackList(const WCHAR *url)
 
 BOOL IsAccessible(const WCHAR *url)
 {
-    if (PathIsURL(url))
+    if (PathFileExists(url))
+        return FALSE;
+
+    if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
         return TRUE;
-    if (UrlIs(url, URLIS_APPLIABLE))
+    if (wcsstr(url, L"www.") == url || wcsstr(url, L"ftp.") == url)
         return TRUE;
+
+    int cch = lstrlenW(url);
+    if (cch >= 4 && wcsstr(&url[cch - 4], L".com") != NULL)
+        return TRUE;
+    if (cch >= 6 && wcsstr(&url[cch - 6], L".co.jp") != NULL)
+        return TRUE;
+
     return FALSE;
 }
 
