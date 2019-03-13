@@ -175,7 +175,11 @@ BOOL IsAccessibleURL(const WCHAR *url)
     int cch = lstrlenW(url);
     if (cch >= 4 && wcsstr(&url[cch - 4], L".com") != NULL)
         return TRUE;
+    if (cch >= 5 && wcsstr(&url[cch - 5], L".com/") != NULL)
+        return TRUE;
     if (cch >= 6 && wcsstr(&url[cch - 6], L".co.jp") != NULL)
+        return TRUE;
+    if (cch >= 7 && wcsstr(&url[cch - 7], L".co.jp/") != NULL)
         return TRUE;
 
     return FALSE;
