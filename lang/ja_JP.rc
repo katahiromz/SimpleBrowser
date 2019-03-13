@@ -26,6 +26,9 @@ STRINGTABLE
     IDS_IMGFILTER, "画像ファイル (*.jpg;*.png;*.gif;*.tif;*.bmp)|*.jpg;*.png;*.gif;*.tif;*.bmp|すべてのファイル (*.*)|*.*|"
     IDS_PDFFILTER, "PDFファイル (*.pdf)|*.pdf|すべてのファイル (*.*)|*.*|"
     IDS_ALLFILTER, "すべてのファイル (*.*)|*.*|HTML ファイル (*.html;*.htm)|*.html;*.htm|テキスト ファイル (*.txt)|*.txt|"
+    IDS_SOURCE, "ソース"
+    IDS_REGISTER_WND_FAIL, "RegisterClass が失敗しました。"
+    IDS_CREATE_WND_FAIL, "CreateWindow が失敗しました。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

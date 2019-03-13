@@ -24,6 +24,9 @@
 #define IDS_IMGFILTER                       113
 #define IDS_PDFFILTER                       114
 #define IDS_ALLFILTER                       115
+#define IDS_SOURCE                          116
+#define IDS_REGISTER_WND_FAIL               117
+#define IDS_CREATE_WND_FAIL                 118
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
@@ -40,12 +43,13 @@
 #define ID_PRINT_PREVIEW                    113
 #define ID_PAGE_SETUP                       114
 #define ID_SAVE                             115
+#define ID_VIEW_SOURCE_DONE                 116
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    100
-        #define _APS_NEXT_COMMAND_VALUE     116
+        #define _APS_NEXT_COMMAND_VALUE     117
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

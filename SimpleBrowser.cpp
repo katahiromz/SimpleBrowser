@@ -49,6 +49,21 @@ void DoUpdateURL(const WCHAR *url)
     ::SetWindowTextW(s_hAddressBar, url);
 }
 
+// load a resource string using rotated buffers
+LPTSTR LoadStringDx(INT nID)
+{
+    static UINT s_index = 0;
+    const UINT cchBuffMax = 1024;
+    static TCHAR s_sz[4][cchBuffMax];
+
+    TCHAR *pszBuff = s_sz[s_index];
+    s_index = (s_index + 1) % _countof(s_sz);
+    pszBuff[0] = 0;
+    if (!::LoadString(NULL, nID, pszBuff, cchBuffMax))
+        assert(0);
+    return pszBuff;
+}
+
 std::wstring text2html(const WCHAR *text)
 {
     std::wstring contents;
@@ -126,21 +141,6 @@ BOOL UrlInBlackList(const WCHAR *url)
         return TRUE;
     }
     return FALSE;
-}
-
-// load a resource string using rotated buffers
-LPTSTR LoadStringDx(INT nID)
-{
-    static UINT s_index = 0;
-    const UINT cchBuffMax = 1024;
-    static TCHAR s_sz[4][cchBuffMax];
-
-    TCHAR *pszBuff = s_sz[s_index];
-    s_index = (s_index + 1) % _countof(s_sz);
-    pszBuff[0] = 0;
-    if (!::LoadString(NULL, nID, pszBuff, cchBuffMax))
-        assert(0);
-    return pszBuff;
 }
 
 inline LPTSTR MakeFilterDx(LPTSTR psz)
@@ -280,9 +280,18 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
         if (WCHAR *file = DoGetTemporaryFile())
         {
             MBindStatusCallback *pCallback = MBindStatusCallback::Create();
-            std::wstring substr = strURL.substr(wcslen(L"view-source:"));
-            std::wstring new_url = L"https:" + substr;
-            HRESULT hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            std::wstring new_url, substr = strURL.substr(wcslen(L"view-source:"));
+            HRESULT hr = E_FAIL;
+            if (FAILED(hr))
+            {
+                new_url = substr;
+                hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            }
+            if (FAILED(hr))
+            {
+                new_url = L"https:" + substr;
+                hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            }
             if (FAILED(hr))
             {
                 new_url = L"https://" + substr;
@@ -326,7 +335,6 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
                         wide.resize(ret);
 
                         SetInternalPageContents(wide.c_str(), false);
-                        DoUpdateURL(strURL.c_str());
                     }
                     else
                     {
@@ -346,6 +354,8 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
 
             DeleteFile(file);
         }
+        DoUpdateURL(strURL.c_str());
+        SetTimer(s_hMainWnd, 999, 500, NULL);
     }
     else
     {
@@ -714,6 +724,11 @@ void OnSave(HWND hwnd)
     ::SysFreeString(bstrURL);
 }
 
+void OnViewSourceDone(HWND hwnd)
+{
+    SetWindowTextW(s_hMainWnd, LoadStringDx(IDS_SOURCE));
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -765,6 +780,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case ID_SAVE:
         OnSave(hwnd);
         break;
+    case ID_VIEW_SOURCE_DONE:
+        OnViewSourceDone(hwnd);
+        break;
     }
 
     --s_nLevel;
@@ -806,6 +824,12 @@ void OnDestroy(HWND hwnd)
     PostQuitMessage(0);
 }
 
+void OnTimer(HWND hwnd, UINT id)
+{
+    KillTimer(hwnd, id);
+    PostMessage(s_hMainWnd, WM_COMMAND, ID_VIEW_SOURCE_DONE, 0);
+}
+
 LRESULT CALLBACK
 WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -814,6 +838,7 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     HANDLE_MSG(hwnd, WM_CREATE, OnCreate);
     HANDLE_MSG(hwnd, WM_SIZE, OnSize);
     HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
+    HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
     HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -1012,7 +1037,7 @@ WinMain(HINSTANCE   hInstance,
     wc.lpszClassName = s_szName;
     if (!RegisterClass(&wc))
     {
-        MessageBoxA(NULL, "RegisterClass failed", NULL, MB_ICONERROR);
+        MessageBox(NULL, LoadStringDx(IDS_REGISTER_WND_FAIL), NULL, MB_ICONERROR);
         return 1;
     }
 
@@ -1023,7 +1048,7 @@ WinMain(HINSTANCE   hInstance,
         NULL, NULL, hInstance, NULL);
     if (!hwnd)
     {
-        MessageBoxA(NULL, "CreateWindow failed", NULL, MB_ICONERROR);
+        MessageBox(NULL, LoadStringDx(IDS_CREATE_WND_FAIL), NULL, MB_ICONERROR);
         return 2;
     }
 
