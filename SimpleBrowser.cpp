@@ -143,6 +143,15 @@ BOOL UrlInBlackList(const WCHAR *url)
     return FALSE;
 }
 
+BOOL UrlIsValid(const WCHAR *url)
+{
+    if (PathIsURL(url))
+        return TRUE;
+    if (UrlIs(url, URLIS_APPLIABLE))
+        return TRUE;
+    return FALSE;
+}
+
 inline LPTSTR MakeFilterDx(LPTSTR psz)
 {
     for (LPTSTR pch = psz; *pch; ++pch)
@@ -169,6 +178,12 @@ struct MEventHandler : MEventSinkListener
             if (UrlInBlackList(url->bstrVal))
             {
                 SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
+                *Cancel = VARIANT_TRUE;
+                return;
+            }
+            if (!UrlIsValid(url->bstrVal))
+            {
+                SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                 *Cancel = VARIANT_TRUE;
                 return;
             }
@@ -272,6 +287,11 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
     if (UrlInBlackList(strURL.c_str()))
     {
         SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
+        return;
+    }
+    if (!UrlIsValid(strURL.c_str()))
+    {
+        SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
         return;
     }
 
@@ -448,6 +468,7 @@ AddressBarWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         //    }
         //    ReleaseDC(hwnd, hDC);
         //}
+        break;
     }
     return result;
 }

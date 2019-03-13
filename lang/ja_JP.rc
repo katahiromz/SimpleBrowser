@@ -29,6 +29,7 @@ STRINGTABLE
     IDS_SOURCE, "ソース"
     IDS_REGISTER_WND_FAIL, "RegisterClass が失敗しました。"
     IDS_CREATE_WND_FAIL, "CreateWindow が失敗しました。"
+    IDS_ACCESS_FAIL, "アクセスに失敗しました。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

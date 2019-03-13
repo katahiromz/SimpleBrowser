@@ -27,6 +27,7 @@
 #define IDS_SOURCE                          116
 #define IDS_REGISTER_WND_FAIL               117
 #define IDS_CREATE_WND_FAIL                 118
+#define IDS_ACCESS_FAIL                     119
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
