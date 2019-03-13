@@ -143,7 +143,7 @@ BOOL UrlInBlackList(const WCHAR *url)
     return FALSE;
 }
 
-BOOL UrlIsValid(const WCHAR *url)
+BOOL IsAccessible(const WCHAR *url)
 {
     if (PathIsURL(url))
         return TRUE;
@@ -181,7 +181,7 @@ struct MEventHandler : MEventSinkListener
                 *Cancel = VARIANT_TRUE;
                 return;
             }
-            if (!UrlIsValid(url->bstrVal))
+            if (!IsAccessible(url->bstrVal))
             {
                 SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                 *Cancel = VARIANT_TRUE;
@@ -289,7 +289,7 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
         SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
         return;
     }
-    if (!UrlIsValid(strURL.c_str()))
+    if (!IsAccessible(strURL.c_str()))
     {
         SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
         return;
