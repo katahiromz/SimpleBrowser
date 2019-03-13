@@ -9,9 +9,11 @@
 #include <mshtml.h>
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
+#include "MBindStatusCallback.hpp"
 #include "mime_info.h"
 #include <string>
 #include <cassert>
+#include <comdef.h>
 #include "resource.h"
 
 static const UINT s_control_ids[] =
@@ -47,9 +49,42 @@ void DoUpdateURL(const WCHAR *url)
     ::SetWindowTextW(s_hAddressBar, url);
 }
 
-void SetDocumentContents(IHTMLDocument2 *pDocument, const WCHAR *html)
+std::wstring text2html(const WCHAR *text)
 {
-    if (BSTR bstr = SysAllocString(html))
+    std::wstring contents;
+    contents.reserve(wcslen(text));
+
+    for (; *text; ++text)
+    {
+        if (*text == L'<')
+            contents += L"&lt;";
+        else if (*text == L'>')
+            contents += L"&gt;";
+        else if (*text == L'&')
+            contents += L"&amp;";
+        else
+            contents += *text;
+    }
+
+    std::wstring ret = L"<html><body><pre>";
+    ret += contents;
+    ret += L"</pre></body></html>";
+    return ret;
+}
+
+void SetDocumentContents(IHTMLDocument2 *pDocument, const WCHAR *text,
+                         bool is_html = true)
+{
+    std::wstring str;
+    if (!is_html)
+    {
+        str = text2html(text);
+    }
+    else
+    {
+        str = text;
+    }
+    if (BSTR bstr = SysAllocString(str.c_str()))
     {
         if (SAFEARRAY *sa = SafeArrayCreateVector(VT_VARIANT, 0, 1))
         {
@@ -68,7 +103,7 @@ void SetDocumentContents(IHTMLDocument2 *pDocument, const WCHAR *html)
     }
 }
 
-void SetInternalPageContents(const WCHAR *html)
+void SetInternalPageContents(const WCHAR *html, bool is_html = true)
 {
     IDispatch *pDisp = NULL;
     s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
@@ -76,9 +111,8 @@ void SetInternalPageContents(const WCHAR *html)
     {
         if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
         {
-            SetDocumentContents(pDocument, L"");
             pDocument->close();
-            SetDocumentContents(pDocument, html);
+            SetDocumentContents(pDocument, html, is_html);
         }
         pDisp->Release();
     }
@@ -206,9 +240,117 @@ struct MEventHandler : MEventSinkListener
 };
 MEventHandler s_listener;
 
+LPTSTR DoGetTemporaryFile(void)
+{
+    static TCHAR s_szFile[MAX_PATH];
+    TCHAR szPath[MAX_PATH];
+    if (GetTempPath(ARRAYSIZE(szPath), szPath))
+    {
+        if (GetTempFileName(szPath, TEXT("sbt"), 0, s_szFile))
+        {
+            return s_szFile;
+        }
+    }
+    return NULL;
+}
+
 void DoNavigate(HWND hwnd, const WCHAR *url)
 {
-    s_pWebBrowser->Navigate(url);
+    std::wstring strURL;
+    WCHAR *pszURL = _wcsdup(url);
+    if (pszURL)
+    {
+        StrTrimW(pszURL, L" \t\n\r\f\v");
+        strURL = pszURL;
+        free(pszURL);
+    }
+    else
+    {
+        return;
+    }
+
+    if (UrlInBlackList(strURL.c_str()))
+    {
+        SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
+        return;
+    }
+
+    if (strURL.find(L"view-source:") == 0)
+    {
+        if (WCHAR *file = DoGetTemporaryFile())
+        {
+            MBindStatusCallback *pCallback = MBindStatusCallback::Create();
+            std::wstring substr = strURL.substr(wcslen(L"view-source:"));
+            std::wstring new_url = L"https:" + substr;
+            HRESULT hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            if (FAILED(hr))
+            {
+                new_url = L"https://" + substr;
+                hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            }
+            if (FAILED(hr))
+            {
+                new_url = L"http:" + substr;
+                hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            }
+            if (FAILED(hr))
+            {
+                new_url = L"http://" + substr;
+                hr = URLDownloadToFile(NULL, new_url.c_str(), file, 0, pCallback);
+            }
+
+            if (SUCCEEDED(hr))
+            {
+                while (!pCallback->IsCompleted() && !pCallback->IsCancelled() &&
+                       GetAsyncKeyState(VK_ESCAPE) >= 0)
+                {
+                    Sleep(100);
+                }
+
+                if (pCallback->IsCompleted())
+                {
+                    std::string contents;
+                    char buf[512];
+                    if (FILE *fp = _wfopen(file, L"rb"))
+                    {
+                        while (size_t count = fread(buf, 1, 512, fp))
+                        {
+                            contents.append(buf, count);
+                        }
+                        fclose(fp);
+
+                        int ret = MultiByteToWideChar(CP_UTF8, 0, contents.c_str(), -1, NULL, 0);
+                        std::wstring wide(ret + 1, 0);
+                        ret = MultiByteToWideChar(CP_UTF8, 0, contents.c_str(), -1, &wide[0], ret + 1);
+                        DWORD error = GetLastError();
+                        wide.resize(ret);
+
+                        SetInternalPageContents(wide.c_str(), false);
+                        DoUpdateURL(strURL.c_str());
+                    }
+                    else
+                    {
+                        assert(0);
+                    }
+                }
+                else
+                {
+                    assert(0);
+                }
+            }
+            else
+            {
+                assert(0);
+            }
+            pCallback->Release();
+
+            DeleteFile(file);
+        }
+    }
+    else
+    {
+        s_pWebBrowser->Navigate(url);
+    }
 }
 
 BOOL DoSetBrowserEmulation(DWORD dwValue)
@@ -251,6 +393,40 @@ BOOL DoSetBrowserEmulation(DWORD dwValue)
 
     return bOK;
 }
+
+LRESULT CALLBACK
+AddressBarWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    WNDPROC fn = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    LRESULT result = CallWindowProc(fn, hwnd, uMsg, wParam, lParam);
+    switch (uMsg)
+    {
+    case WM_PAINT:
+        if (HDC hDC = GetDC(hwnd))
+        {
+            if (HDC hdcMem = CreateCompatibleDC(NULL))
+            {
+                IDispatch *pDisp = NULL;
+                s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+                if (pDisp)
+                {
+                    if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+                    {
+                        BSTR bstr;
+                        pDocument->get_security(&bstr);
+                        //MessageBoxW(NULL, bstr, L"bstr", 0);
+                        SysFreeString(bstr);
+                    }
+                    pDisp->Release();
+                }
+                DeleteDC(hdcMem);
+            }
+            ReleaseDC(hwnd, hDC);
+        }
+    }
+    return result;
+}
+
 
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 {
@@ -347,6 +523,9 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     DoNavigate(hwnd, L"about:blank");
     DoNavigate(hwnd, LoadStringDx(IDS_HOMEPAGE));
+
+    WNDPROC fn = SubclassWindow(s_hAddressBar, AddressBarWindowProc);
+    SetWindowLongPtr(s_hAddressBar, GWLP_USERDATA, (LONG_PTR)fn);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
 

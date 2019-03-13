@@ -66,11 +66,12 @@ add_executable(SimpleBrowser WIN32
     SimpleBrowser.cpp
     MWebBrowser.cpp
     MEventSink.cpp
+    MBindStatusCallback.cpp
     SimpleBrowser_res.rc)
 target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)
 
 # link
 target_link_libraries(SimpleBrowser
-    comctl32 ole32 uuid oleaut32 shlwapi comdlg32)
+    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon)
 
 ##############################################################################
