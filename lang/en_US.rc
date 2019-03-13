@@ -25,7 +25,7 @@ STRINGTABLE
     IDS_TXTFILTER, "Text Files (*.txt;*.log)|*.txt;*.log|All Files (*.*)|*.*|"
     IDS_IMGFILTER, "Image Files (*.jpg;*.png;*.gif;*.tif;*.bmp)|*.jpg;*.png;*.gif;*.tif;*.bmp|All Files (*.*)|*.*|"
     IDS_PDFFILTER, "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*|"
-    IDS_ALLFILTER, "All Files (*.*)|*.*|"
+    IDS_ALLFILTER, "All Files (*.*)|*.*|HTML Files(*.html;*.htm)|*.html;*.htm|Text Files (*.txt)|*.txt|"
 }
 
 //////////////////////////////////////////////////////////////////////////////

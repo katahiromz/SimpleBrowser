@@ -59,6 +59,8 @@ endif()
 
 ##############################################################################
 
+include_directories(mime_info)
+
 # executable
 add_executable(SimpleBrowser WIN32
     SimpleBrowser.cpp
@@ -69,6 +71,6 @@ target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)
 
 # link
 target_link_libraries(SimpleBrowser
-    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon)
+    comctl32 ole32 uuid oleaut32 shlwapi comdlg32)
 
 ##############################################################################

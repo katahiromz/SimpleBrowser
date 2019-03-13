@@ -20,12 +20,12 @@ STRINGTABLE
     IDS_HOMEPAGE, "https://yahoo.co.jp"
     IDS_EXECUTING_CMD, "コマンド実行中..."
     IDS_HOME, "ホーム"
-    IDS_HTMLFILTER, "HTMLファイル (*.html;*.htm)|*.html;*.htm|すべてのファイル (*.*)|*.*|"
+    IDS_HTMLFILTER, "HTML ファイル (*.html;*.htm)|*.html;*.htm|すべてのファイル (*.*)|*.*|"
     IDS_HITBLACKLIST, "ブラックリストにヒットしました。このページは表示できません。"
-    IDS_TXTFILTER, "テキスト ファイル (*.txt;*.log)|*.txt;*.log|すべてのファイル (*.*)|*.*|"
+    IDS_TXTFILTER, "テキスト ファイル (*.txt)|*.txt|すべてのファイル (*.*)|*.*|"
     IDS_IMGFILTER, "画像ファイル (*.jpg;*.png;*.gif;*.tif;*.bmp)|*.jpg;*.png;*.gif;*.tif;*.bmp|すべてのファイル (*.*)|*.*|"
     IDS_PDFFILTER, "PDFファイル (*.pdf)|*.pdf|すべてのファイル (*.*)|*.*|"
-    IDS_ALLFILTER, "すべてのファイル (*.*)|*.*|"
+    IDS_ALLFILTER, "すべてのファイル (*.*)|*.*|HTML ファイル (*.html;*.htm)|*.html;*.htm|テキスト ファイル (*.txt)|*.txt|"
 }
 
 //////////////////////////////////////////////////////////////////////////////

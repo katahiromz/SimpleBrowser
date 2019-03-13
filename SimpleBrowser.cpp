@@ -7,9 +7,9 @@
 #include <commdlg.h>
 #include <shlwapi.h>
 #include <mshtml.h>
-#include <urlmon.h>
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
+#include "mime_info.h"
 #include <string>
 #include <cassert>
 #include "resource.h"
@@ -455,11 +455,20 @@ void OnSave(HWND hwnd)
         return;
     }
 
-    LPWSTR pszMime = NULL;
-    DWORD dwFlags = FMFD_URLASFILENAME;
-    FindMimeFromData(NULL, NULL, bstrURL, MAX_PATH, NULL,
-                     dwFlags, &pszMime, 0);
-    MessageBoxW(NULL, pszMime, NULL, 0);
+    LPWSTR pch = wcsrchr(bstrURL, L'/');
+    if (pch)
+        ++pch;
+    else
+        pch = bstrURL;
+
+    pch = PathFindExtension(pch);
+    char extension[64];
+    ::WideCharToMultiByte(CP_ACP, 0, pch, -1, extension, 64, NULL, NULL);
+    const char *pszMime = mime_info_mime_from_extension(extension);
+    if (pszMime == NULL)
+        pszMime = "application/octet-stream";
+
+    //MessageBoxA(NULL, pszMime, NULL, 0);
 
     TCHAR file[MAX_PATH] = L"*";
 
@@ -472,42 +481,42 @@ void OnSave(HWND hwnd)
     ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_PATHMUSTEXIST |
                 OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-    if (lstrcmpiW(pszMime, L"text/plain") == 0)
+    if (strcmp(pszMime, "text/plain") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_TXTFILTER));
         ofn.lpstrDefExt = L"txt";
     }
-    else if (lstrcmpiW(pszMime, L"text/html") == 0)
+    else if (strcmp(pszMime, "text/html") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_HTMLFILTER));
         ofn.lpstrDefExt = L"html";
     }
-    else if (lstrcmpiW(pszMime, L"image/jpeg") == 0)
+    else if (strcmp(pszMime, "image/jpeg") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"jpg";
     }
-    else if (lstrcmpiW(pszMime, L"image/png") == 0)
+    else if (strcmp(pszMime, "image/png") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"png";
     }
-    else if (lstrcmpiW(pszMime, L"image/gif") == 0)
+    else if (strcmp(pszMime, "image/gif") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"gif";
     }
-    else if (lstrcmpiW(pszMime, L"image/tiff") == 0)
+    else if (strcmp(pszMime, "image/tiff") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"tif";
     }
-    else if (lstrcmpiW(pszMime, L"image/bmp") == 0)
+    else if (strcmp(pszMime, "image/bmp") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"bmp";
     }
-    else if (lstrcmpiW(pszMime, L"application/pdf") == 0)
+    else if (strcmp(pszMime, "application/pdf") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_PDFFILTER));
         ofn.lpstrDefExt = L"pdf";
@@ -523,7 +532,6 @@ void OnSave(HWND hwnd)
         s_pWebBrowser->Save(file);
     }
 
-    ::CoTaskMemFree(pszMime);
     ::SysFreeString(bstrURL);
 }
 
