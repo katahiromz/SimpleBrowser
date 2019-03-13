@@ -328,9 +328,24 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
                         }
                         fclose(fp);
 
-                        int ret = MultiByteToWideChar(CP_UTF8, 0, contents.c_str(), -1, NULL, 0);
+                        // contents to wide
+                        UINT nCodePage = CP_UTF8;
+                        if (contents.find("Shift_JIS") != std::string::npos ||
+                            contents.find("shift_jis") != std::string::npos ||
+                            contents.find("x-sjis") != std::string::npos)
+                        {
+                            nCodePage = 932;
+                        }
+                        else if (contents.find("ISO-8859-1") != std::string::npos ||
+                                 contents.find("iso-8859-1") != std::string::npos)
+                        {
+                            nCodePage = 28591;
+                        }
+
+                        int ret;
+                        ret = MultiByteToWideChar(nCodePage, 0, contents.c_str(), -1, NULL, 0);
                         std::wstring wide(ret + 1, 0);
-                        ret = MultiByteToWideChar(CP_UTF8, 0, contents.c_str(), -1, &wide[0], ret + 1);
+                        ret = MultiByteToWideChar(nCodePage, 0, contents.c_str(), -1, &wide[0], ret + 1);
                         DWORD error = GetLastError();
                         wide.resize(ret);
 
