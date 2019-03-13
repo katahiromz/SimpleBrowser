@@ -148,6 +148,7 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     if (protocol == L"http" ||
         protocol == L"https" ||
         protocol == L"view-source" ||
+        protocol == L"about" ||
         protocol == L"ftp")
     {
         return TRUE;
