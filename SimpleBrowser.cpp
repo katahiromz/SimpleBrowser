@@ -427,27 +427,27 @@ AddressBarWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_PAINT:
-        if (HDC hDC = GetDC(hwnd))
-        {
-            if (HDC hdcMem = CreateCompatibleDC(NULL))
-            {
-                IDispatch *pDisp = NULL;
-                s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-                if (pDisp)
-                {
-                    if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
-                    {
-                        BSTR bstr;
-                        pDocument->get_security(&bstr);
-                        //MessageBoxW(NULL, bstr, L"bstr", 0);
-                        SysFreeString(bstr);
-                    }
-                    pDisp->Release();
-                }
-                DeleteDC(hdcMem);
-            }
-            ReleaseDC(hwnd, hDC);
-        }
+        //if (HDC hDC = GetDC(hwnd))
+        //{
+        //    if (HDC hdcMem = CreateCompatibleDC(NULL))
+        //    {
+        //        IDispatch *pDisp = NULL;
+        //        s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+        //        if (pDisp)
+        //        {
+        //            if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        //            {
+        //                BSTR bstr;
+        //                pDocument->get_security(&bstr);
+        //                //MessageBoxW(NULL, bstr, L"bstr", 0);
+        //                SysFreeString(bstr);
+        //            }
+        //            pDisp->Release();
+        //        }
+        //        DeleteDC(hdcMem);
+        //    }
+        //    ReleaseDC(hwnd, hDC);
+        //}
     }
     return result;
 }
