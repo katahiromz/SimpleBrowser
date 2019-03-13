@@ -143,10 +143,29 @@ BOOL UrlInBlackList(const WCHAR *url)
     return FALSE;
 }
 
-BOOL IsAccessible(const WCHAR *url)
+BOOL IsAccessibleProtocol(const std::wstring& protocol)
+{
+    if (protocol == L"http" ||
+        protocol == L"https" ||
+        protocol == L"view-source" ||
+        protocol == L"ftp")
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL IsAccessibleURL(const WCHAR *url)
 {
     if (PathFileExists(url))
         return FALSE;
+
+    if (LPWSTR pch = wcschr(url, L':'))
+    {
+        std::wstring protocol(url, pch - url);
+        if (!IsAccessibleProtocol(protocol))
+            return FALSE;
+    }
 
     if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
         return TRUE;
@@ -191,7 +210,7 @@ struct MEventHandler : MEventSinkListener
                 *Cancel = VARIANT_TRUE;
                 return;
             }
-            if (!IsAccessible(url->bstrVal))
+            if (!IsAccessibleURL(url->bstrVal))
             {
                 SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                 *Cancel = VARIANT_TRUE;
@@ -299,7 +318,7 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
         SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
         return;
     }
-    if (!IsAccessible(strURL.c_str()))
+    if (!IsAccessibleURL(strURL.c_str()))
     {
         SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
         return;
