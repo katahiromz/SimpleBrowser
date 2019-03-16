@@ -724,7 +724,8 @@ void OnSave(HWND hwnd)
     }
 
     LPWSTR pch = wcsrchr(bstrURL, L'?');
-    *pch = 0;
+    if (pch)
+        *pch = 0;
 
     pch = wcsrchr(bstrURL, L'/');
     if (pch)
