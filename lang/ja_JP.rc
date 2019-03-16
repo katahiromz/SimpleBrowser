@@ -47,6 +47,7 @@ STRINGTABLE
     IDS_CREATE_WND_FAIL, "CreateWindow が失敗しました。"
     IDS_ACCESS_FAIL, "アクセスに失敗しました。"
     IDS_DOTS, "..."
+    IDS_TITLE_TEXT, "%s - SimpleBrowser"
 }
 
 //////////////////////////////////////////////////////////////////////////////

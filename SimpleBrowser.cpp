@@ -277,7 +277,9 @@ struct MEventHandler : MEventSinkListener
 
     virtual void OnTitleTextChange(BSTR Text)
     {
-        SetWindowTextW(s_hMainWnd, Text);
+        WCHAR szText[256];
+        wsprintfW(szText, LoadStringDx(IDS_TITLE_TEXT), Text);
+        SetWindowTextW(s_hMainWnd, szText);
     }
 
     virtual void OnFileDownload(
@@ -809,7 +811,7 @@ void OnSave(HWND hwnd)
 
 void OnViewSourceDone(HWND hwnd)
 {
-    SetWindowTextW(s_hMainWnd, LoadStringDx(IDS_SOURCE));
+    s_listener.OnTitleTextChange(LoadStringDx(IDS_SOURCE));
 }
 
 void OnDots(HWND hwnd)

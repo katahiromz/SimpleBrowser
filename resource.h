@@ -31,6 +31,7 @@
 #define IDS_CREATE_WND_FAIL                 118
 #define IDS_ACCESS_FAIL                     119
 #define IDS_DOTS                            120
+#define IDS_TITLE_TEXT                      121
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
