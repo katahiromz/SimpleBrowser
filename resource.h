@@ -8,6 +8,8 @@
 #define IDB_SECURE                          100
 #define IDB_INSECURE                        101
 
+#define IDR_DOTSMENU                        100
+
 #define IDS_READY                           100
 #define IDS_STOP                            101
 #define IDS_REFRESH                         102
@@ -28,6 +30,7 @@
 #define IDS_REGISTER_WND_FAIL               117
 #define IDS_CREATE_WND_FAIL                 118
 #define IDS_ACCESS_FAIL                     119
+#define IDS_DOTS                            120
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
@@ -45,12 +48,13 @@
 #define ID_PAGE_SETUP                       114
 #define ID_SAVE                             115
 #define ID_VIEW_SOURCE_DONE                 116
+#define ID_DOTS                             117
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
-        #define _APS_NEXT_RESOURCE_VALUE    100
-        #define _APS_NEXT_COMMAND_VALUE     117
+        #define _APS_NEXT_RESOURCE_VALUE    101
+        #define _APS_NEXT_COMMAND_VALUE     118
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

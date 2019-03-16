@@ -586,6 +586,15 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     CreateWindowEx(0, s_szButton, LoadStringDx(IDS_GO),
                    style, x, y, cx, cy,
                    hwnd, (HMENU) ID_GO, s_hInst, NULL);
+    x += cx;
+
+    cx = BTN_WIDTH;
+    cy = BTN_HEIGHT;
+    style = WS_CHILD | WS_VISIBLE;
+    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_DOTS),
+                   style, x, y, cx, cy,
+                   hwnd, (HMENU) ID_DOTS, s_hInst, NULL);
+    x += cx;
 
     SendDlgItemMessage(hwnd, ID_BACK, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
     SendDlgItemMessage(hwnd, ID_NEXT, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
@@ -802,6 +811,36 @@ void OnViewSourceDone(HWND hwnd)
     SetWindowTextW(s_hMainWnd, LoadStringDx(IDS_SOURCE));
 }
 
+void OnDots(HWND hwnd)
+{
+    RECT rc;
+    GetWindowRect(GetDlgItem(hwnd, ID_DOTS), &rc);
+
+    POINT pt;
+    GetCursorPos(&pt);
+
+    HMENU hMenu = LoadMenu(s_hInst, MAKEINTRESOURCE(IDR_DOTSMENU));
+    if (!hMenu)
+        return;
+
+    HMENU hSubMenu = GetSubMenu(hMenu, 0);
+    TPMPARAMS params;
+    params.cbSize = sizeof(params);
+    params.rcExclude = rc;
+
+    SetForegroundWindow(hwnd);
+    UINT uFlags = TPM_LEFTBUTTON | TPM_LEFTALIGN | TPM_VERTICAL | TPM_RETURNCMD;
+    UINT nCmd = TrackPopupMenuEx(hSubMenu, uFlags, rc.left, pt.y, hwnd, &params);
+    DestroyMenu(hMenu);
+
+    PostMessage(hwnd, WM_NULL, 0, 0);
+
+    if (nCmd != 0)
+    {
+        PostMessage(hwnd, WM_COMMAND, nCmd, 0);
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -855,6 +894,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_VIEW_SOURCE_DONE:
         OnViewSourceDone(hwnd);
+        break;
+    case ID_DOTS:
+        OnDots(hwnd);
         break;
     }
 
