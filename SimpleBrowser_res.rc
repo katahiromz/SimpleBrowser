@@ -35,6 +35,7 @@ IDB_INSECURE BITMAP "res/Bitmap_101.bmp"
     "P", ID_PRINT, CONTROL, VIRTKEY
     "P", ID_PRINT_BANG, CONTROL, SHIFT, VIRTKEY
     "S", ID_SAVE, CONTROL, VIRTKEY
+    "U", ID_VIEW_SOURCE, CONTROL, VIRTKEY
 }
 
 //////////////////////////////////////////////////////////////////////////////

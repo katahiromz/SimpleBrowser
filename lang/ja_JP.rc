@@ -18,6 +18,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "印刷プレビュー(&V)", ID_PRINT_PREVIEW
         MENUITEM "印刷(&P)\tCtrl+P", ID_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "ソースの表示(&W)\tCtrl+U", ID_VIEW_SOURCE
     }
 }
 

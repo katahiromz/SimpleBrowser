@@ -317,6 +317,7 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
     }
     else
     {
+        assert(0);
         return;
     }
 
@@ -424,6 +425,10 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
             pCallback->Release();
 
             DeleteFile(file);
+        }
+        else
+        {
+            assert(0);
         }
         DoUpdateURL(strURL.c_str());
         SetTimer(s_hMainWnd, 999, 500, NULL);
@@ -844,6 +849,25 @@ void OnDots(HWND hwnd)
     }
 }
 
+void OnViewSource(HWND hwnd)
+{
+    WCHAR szURL[256];
+    GetWindowText(s_hAddressBar, szURL, ARRAYSIZE(szURL));
+
+    StrTrimW(szURL, L" \t\n\r\f\v");
+
+    std::wstring url = szURL;
+    if (url.find(L"view-source:") == 0)
+    {
+        assert(0);
+        return;
+    }
+
+    url = L"view-source:";
+    url += szURL;
+    DoNavigate(hwnd, url.c_str());
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -900,6 +924,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_DOTS:
         OnDots(hwnd);
+        break;
+    case ID_VIEW_SOURCE:
+        OnViewSource(hwnd);
         break;
     }
 

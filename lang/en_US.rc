@@ -18,6 +18,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "Print Pre&view", ID_PRINT_PREVIEW
         MENUITEM "&Print\tCtrl+P", ID_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "Vie&w Source\tCtrl+U", ID_VIEW_SOURCE
     }
 }
 
