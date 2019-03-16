@@ -12,10 +12,12 @@ IDR_DOTSMENU MENU
 {
     POPUP "Popup #0"
     {
-        MENUITEM "ページ設定", ID_PAGE_SETUP
+        MENUITEM "ページを名前を付けて保存(&A)...", ID_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "印刷プレビュー", ID_PRINT_PREVIEW
-        MENUITEM "印刷\tCtrl+P", ID_PRINT
+        MENUITEM "ページ設定(&S)", ID_PAGE_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "印刷プレビュー(&V)", ID_PRINT_PREVIEW
+        MENUITEM "印刷(&P)\tCtrl+P", ID_PRINT
     }
 }
 
