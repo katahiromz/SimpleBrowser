@@ -12,7 +12,7 @@ IDR_DOTSMENU MENU
 {
     POPUP "Popup #0"
     {
-        MENUITEM "ページを名前を付けて保存(&A)...", ID_SAVE
+        MENUITEM "ページを名前を付けて保存(&A)...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
         MENUITEM "ページ設定(&S)", ID_PAGE_SETUP
         MENUITEM SEPARATOR
