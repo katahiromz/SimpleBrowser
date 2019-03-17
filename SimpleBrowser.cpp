@@ -597,7 +597,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     cx = BTN_WIDTH;
     cy = BTN_HEIGHT;
-    style = WS_CHILD | WS_VISIBLE;
+    style = WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE;
     CreateWindowEx(0, s_szButton, LoadStringDx(IDS_DOTS),
                    style, x, y, cx, cy,
                    hwnd, (HMENU) ID_DOTS, s_hInst, NULL);
@@ -821,6 +821,9 @@ void OnViewSourceDone(HWND hwnd)
 
 void OnDots(HWND hwnd)
 {
+    if (SendDlgItemMessage(hwnd, ID_DOTS, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+        return;
+
     RECT rc;
     GetWindowRect(GetDlgItem(hwnd, ID_DOTS), &rc);
 
@@ -847,6 +850,8 @@ void OnDots(HWND hwnd)
     {
         PostMessage(hwnd, WM_COMMAND, nCmd, 0);
     }
+
+    SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, FALSE, 0);
 }
 
 void OnViewSource(HWND hwnd)
