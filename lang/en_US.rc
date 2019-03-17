@@ -14,10 +14,10 @@ IDR_DOTSMENU MENU
     {
         MENUITEM "Save Page &As...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "Page &Setup", ID_PAGE_SETUP
+        MENUITEM "Page &Setup...", ID_PAGE_SETUP
         MENUITEM SEPARATOR
         MENUITEM "Print Pre&view", ID_PRINT_PREVIEW
-        MENUITEM "&Print\tCtrl+P", ID_PRINT
+        MENUITEM "&Print...\tCtrl+P", ID_PRINT
         MENUITEM SEPARATOR
         MENUITEM "Vie&w Source\tCtrl+U", ID_VIEW_SOURCE
     }

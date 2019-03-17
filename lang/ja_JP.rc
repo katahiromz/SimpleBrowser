@@ -14,10 +14,10 @@ IDR_DOTSMENU MENU
     {
         MENUITEM "ページを名前を付けて保存(&A)...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "ページ設定(&S)", ID_PAGE_SETUP
+        MENUITEM "ページ設定(&S)...", ID_PAGE_SETUP
         MENUITEM SEPARATOR
         MENUITEM "印刷プレビュー(&V)", ID_PRINT_PREVIEW
-        MENUITEM "印刷(&P)\tCtrl+P", ID_PRINT
+        MENUITEM "印刷(&P)...\tCtrl+P", ID_PRINT
         MENUITEM SEPARATOR
         MENUITEM "ソースの表示(&W)\tCtrl+U", ID_VIEW_SOURCE
     }
