@@ -21,8 +21,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "Vie&w Source\tCtrl+U", ID_VIEW_SOURCE
         MENUITEM SEPARATOR
+        MENUITEM "Add a &link to ComboBox", ID_ADD_TO_COMBOBOX
         MENUITEM "Create Shortcut to &Desktop...", ID_CREATE_SHORTCUT
-        MENUITEM "Add a &link to ComboBox...", ID_ADD_TO_COMBOBOX
         MENUITEM SEPARATOR
         MENUITEM "Se&ttings...", ID_SETTINGS
         MENUITEM SEPARATOR
