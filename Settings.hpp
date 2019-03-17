@@ -11,6 +11,9 @@ struct SETTINGS
 {
     std::wstring m_homepage;
     std::vector<std::wstring> m_url_list;
+    BOOL m_secure;
+    BOOL m_dont_r_click;
+
     BOOL load();
     BOOL save();
     void reset();

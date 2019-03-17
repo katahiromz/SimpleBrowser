@@ -639,6 +639,11 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     g_settings.load();
 
+    if (g_settings.m_secure)
+        s_pWebBrowser->AllowInsecure(FALSE);
+    else
+        s_pWebBrowser->AllowInsecure(TRUE);
+
     for (size_t i = 0; i < g_settings.m_url_list.size(); ++i)
     {
         auto& url = g_settings.m_url_list[i];
@@ -1264,7 +1269,9 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
             case WM_RBUTTONDBLCLK:
             case WM_RBUTTONDOWN:
             case WM_RBUTTONUP:
-                return TRUE;
+                if (g_settings.m_dont_r_click)
+                    return TRUE;
+                break;
             case WM_KEYDOWN:
             case WM_KEYUP:
             case WM_CHAR:

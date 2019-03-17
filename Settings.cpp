@@ -11,6 +11,8 @@ void SETTINGS::reset()
 
     m_homepage = LoadStringDx(IDS_HOMEPAGE);
     m_url_list.clear();
+    m_secure = TRUE;
+    m_dont_r_click = FALSE;
 }
 
 BOOL SETTINGS::load()
@@ -31,6 +33,16 @@ BOOL SETTINGS::load()
         cb = sizeof(szText);
         RegQueryValueEx(hApp, L"Homepage", NULL, NULL, (LPBYTE)szText, &cb);
         m_homepage = szText;
+
+        DWORD secure = m_secure;
+        cb = sizeof(secure);
+        RegQueryValueEx(hApp, L"Secure", NULL, NULL, (LPBYTE)&secure, &cb);
+        m_secure = !!secure;
+
+        DWORD dont_r_click = m_dont_r_click;
+        cb = sizeof(secure);
+        RegQueryValueEx(hApp, L"DontRClick", NULL, NULL, (LPBYTE)&dont_r_click, &cb);
+        m_dont_r_click = !!dont_r_click;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -80,6 +92,14 @@ BOOL SETTINGS::save()
 
                 cb = DWORD((m_homepage.size() + 1) * sizeof(WCHAR));
                 RegSetValueEx(hApp, L"Homepage", 0, REG_SZ, (LPBYTE)m_homepage.c_str(), cb);
+
+                DWORD secure = DWORD(m_secure);
+                cb = DWORD(sizeof(secure));
+                RegSetValueEx(hApp, L"Secure", 0, REG_DWORD, (LPBYTE)&secure, cb);
+
+                DWORD dont_r_click = DWORD(m_dont_r_click);
+                cb = DWORD(sizeof(dont_r_click));
+                RegSetValueEx(hApp, L"DontRClick", 0, REG_DWORD, (LPBYTE)&dont_r_click, cb);
 
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));
