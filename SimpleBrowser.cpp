@@ -5,8 +5,10 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <commdlg.h>
+#include <shlobj.h>
 #include <shlwapi.h>
 #include <mshtml.h>
+#include <intshcut.h>
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
@@ -44,9 +46,12 @@ static MEventSink *s_pEventSink = MEventSink::Create();
 static BOOL s_bLoadingPage = FALSE;
 static HBITMAP s_hbmSecure = NULL;
 static HBITMAP s_hbmInsecure = NULL;
+static std::wstring s_strURL;
+static std::wstring s_strTitle;
 
 void DoUpdateURL(const WCHAR *url)
 {
+    s_strURL = url;
     ::SetWindowTextW(s_hAddressBar, url);
 }
 
@@ -235,6 +240,7 @@ struct MEventHandler : MEventSinkListener
         IDispatch *pDispatch,
         VARIANT *URL)
     {
+        s_strURL = URL->bstrVal;
         ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
         s_pWebBrowser->Zoom();
         s_bLoadingPage = FALSE;
@@ -281,6 +287,7 @@ struct MEventHandler : MEventSinkListener
         WCHAR szText[256];
         wsprintfW(szText, LoadStringDx(IDS_TITLE_TEXT), Text);
         SetWindowTextW(s_hMainWnd, szText);
+        s_strTitle = Text;
     }
 
     virtual void OnFileDownload(
@@ -857,26 +864,90 @@ void OnDots(HWND hwnd)
 
 void OnViewSource(HWND hwnd)
 {
-    WCHAR szURL[256];
-    GetWindowText(s_hAddressBar, szURL, ARRAYSIZE(szURL));
-
-    StrTrimW(szURL, L" \t\n\r\f\v");
-
-    std::wstring url = szURL;
-    if (url.find(L"view-source:") == 0)
+    if (s_strURL.find(L"view-source:") == 0)
     {
         assert(0);
         return;
     }
 
-    url = L"view-source:";
-    url += szURL;
+    std::wstring url = L"view-source:";
+    url += s_strURL;
     DoNavigate(hwnd, url.c_str());
 }
 
 void OnAbout(HWND hwnd)
 {
     ShowAboutBox(s_hInst, hwnd);
+}
+
+BOOL CreateInternetShortcut(
+    LPCTSTR pszUrlFileName, 
+    LPCTSTR pszURL)
+{
+    IPersistFile*   ppf;
+    IUniformResourceLocator *purl;
+    HRESULT hr;
+#ifndef UNICODE
+    WCHAR   wsz[MAX_PATH];
+#endif
+
+    hr = CoCreateInstance(CLSID_InternetShortcut, NULL, 
+        CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, 
+        (LPVOID*)&purl);
+    if (SUCCEEDED(hr))
+    {
+        purl->SetURL(pszURL, 0);
+
+        hr = purl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf);
+        if (SUCCEEDED(hr))
+        {
+#ifdef UNICODE
+            hr = ppf->Save(pszUrlFileName, TRUE);
+#else
+            MultiByteToWideChar(CP_ACP, 0, pszUrlFileName, -1, wsz, 
+                                MAX_PATH);
+            hr = ppf->Save(wsz, TRUE);
+#endif
+            ppf->Release();
+        }
+        purl->Release();
+    }
+
+    return SUCCEEDED(hr);
+}
+
+std::wstring ConvertStringToFilename(const std::wstring& str)
+{
+    std::wstring ret;
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (wcschr(L"\\/:*?\"<>|", str[i]) != NULL)
+        {
+            ret += L'_';
+        }
+        else
+        {
+            ret += str[i];
+        }
+    }
+    return ret;
+}
+
+void OnCreateShortcut(HWND hwnd)
+{
+    TCHAR szPath[MAX_PATH];
+    SHGetFolderPath(hwnd, CSIDL_DESKTOPDIRECTORY, NULL, SHGFP_TYPE_CURRENT, szPath);
+
+    std::wstring file_title;
+    if (s_strTitle.empty())
+        file_title = LoadStringDx(IDS_NONAME);
+    else
+        file_title = ConvertStringToFilename(s_strTitle);
+
+    PathAppend(szPath, file_title.c_str());
+    lstrcat(szPath, L".url");
+
+    CreateInternetShortcut(szPath, s_strURL.c_str());
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -941,6 +1012,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_ABOUT:
         OnAbout(hwnd);
+        break;
+    case ID_CREATE_SHORTCUT:
+        OnCreateShortcut(hwnd);
         break;
     }
 

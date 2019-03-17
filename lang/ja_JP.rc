@@ -21,6 +21,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "ソースの表示(&W)\tCtrl+U", ID_VIEW_SOURCE
         MENUITEM SEPARATOR
+        MENUITEM "ショートカットをデスクトップに作成(&D)", ID_CREATE_SHORTCUT
+        MENUITEM SEPARATOR
         MENUITEM "バージョン情報(&B)...", ID_ABOUT
     }
 }
@@ -65,6 +67,7 @@ STRINGTABLE
     IDS_ACCESS_FAIL, "アクセスに失敗しました。"
     IDS_DOTS, "..."
     IDS_TITLE_TEXT, "%s - SimpleBrowser"
+    IDS_NONAME, "(無題)"
 }
 
 //////////////////////////////////////////////////////////////////////////////

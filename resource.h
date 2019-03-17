@@ -34,6 +34,7 @@
 #define IDS_ACCESS_FAIL                     119
 #define IDS_DOTS                            120
 #define IDS_TITLE_TEXT                      121
+#define IDS_NONAME                          122
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
@@ -54,12 +55,13 @@
 #define ID_DOTS                             117
 #define ID_VIEW_SOURCE                      118
 #define ID_ABOUT                            119
+#define ID_CREATE_SHORTCUT                  120
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     120
+        #define _APS_NEXT_COMMAND_VALUE     121
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif
