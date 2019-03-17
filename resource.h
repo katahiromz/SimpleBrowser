@@ -10,6 +10,7 @@
 
 #define IDD_ABOUTBOX                        100
 #define IDD_SETTINGS                        101
+#define IDD_ADDLINK                         102
 
 #define IDR_DOTSMENU                        100
 
@@ -36,6 +37,8 @@
 #define IDS_DOTS                            120
 #define IDS_TITLE_TEXT                      121
 #define IDS_NONAME                          122
+#define IDS_ADD_LINK                        123
+#define IDS_ENTER_TEXT                      124
 
 #define ID_BACK                             101
 #define ID_NEXT                             102

@@ -12,6 +12,7 @@
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
+#include "AddLinkDlg.hpp"
 #include "AboutBox.hpp"
 #include "Settings.hpp"
 #include "mime_info.h"
@@ -986,6 +987,11 @@ void OnCreateShortcut(HWND hwnd)
         file_title = LoadStringDx(IDS_NONAME);
     else
         file_title = ConvertStringToFilename(s_strTitle);
+
+    if (!ShowAddLinkDlg(s_hInst, hwnd, file_title))
+        return;
+
+    file_title = ConvertStringToFilename(file_title);
 
     PathAppend(szPath, file_title.c_str());
 

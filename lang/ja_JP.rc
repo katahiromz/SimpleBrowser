@@ -21,8 +21,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "ソースの表示(&W)\tCtrl+U", ID_VIEW_SOURCE
         MENUITEM SEPARATOR
-        MENUITEM "ショートカットをデスクトップに作成(&D)", ID_CREATE_SHORTCUT
-        MENUITEM "コンボボックスにリンクを追加(&L)", ID_ADD_TO_COMBOBOX
+        MENUITEM "ショートカットをデスクトップに作成(&D)...", ID_CREATE_SHORTCUT
+        MENUITEM "コンボボックスにリンクを追加(&L)...", ID_ADD_TO_COMBOBOX
         MENUITEM SEPARATOR
         MENUITEM "設定(&T)...", ID_SETTINGS
         MENUITEM SEPARATOR
@@ -50,6 +50,17 @@ FONT 9, "MS UI Gothic"
 {
     DEFPUSHBUTTON "OK", IDOK, 85, 115, 60, 14
     PUSHBUTTON "キャンセル", IDCANCEL, 150, 115, 60, 14
+}
+
+IDD_ADDLINK DIALOG 0, 0, 170, 55
+CAPTION "デスクトップにショートカットを追加"
+STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
+FONT 9, "MS UI Gothic"
+{
+    LTEXT "名前(&N):", IDC_STATIC, 7, 12, 41, 12
+    EDITTEXT edt1, 55, 10, 110, 14, ES_AUTOHSCROLL
+    DEFPUSHBUTTON "OK", IDOK, 40, 36, 60, 14
+    PUSHBUTTON "キャンセル", IDCANCEL, 105, 36, 60, 14
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -80,6 +91,7 @@ STRINGTABLE
     IDS_DOTS, "..."
     IDS_TITLE_TEXT, "%s - SimpleBrowser"
     IDS_NONAME, "(無題)"
+    IDS_ENTER_TEXT, "テキストを入力して下さい。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

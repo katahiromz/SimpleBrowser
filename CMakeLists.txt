@@ -65,9 +65,10 @@ include_directories(mime_info)
 add_executable(SimpleBrowser WIN32
     SimpleBrowser.cpp
     AboutBox.cpp
-    MWebBrowser.cpp
-    MEventSink.cpp
+    AddLinkDlg.cpp
     MBindStatusCallback.cpp
+    MEventSink.cpp
+    MWebBrowser.cpp
     Settings.cpp
     SimpleBrowser_res.rc)
 target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)

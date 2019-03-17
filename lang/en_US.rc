@@ -21,7 +21,7 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "Vie&w Source\tCtrl+U", ID_VIEW_SOURCE
         MENUITEM SEPARATOR
-        MENUITEM "Create Shortcut On &Desktop", ID_CREATE_SHORTCUT
+        MENUITEM "Create Shortcut to &Desktop...", ID_CREATE_SHORTCUT
         MENUITEM "Add a &link to ComboBox...", ID_ADD_TO_COMBOBOX
         MENUITEM SEPARATOR
         MENUITEM "Se&ttings...", ID_SETTINGS
@@ -52,6 +52,17 @@ FONT 9, "MS UI Gothic"
     PUSHBUTTON "キャンセル", IDCANCEL, 150, 115, 60, 14
 }
 
+IDD_ADDLINK DIALOG 0, 0, 170, 55
+CAPTION "Add Shortcut To Desktop"
+STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
+FONT 9, "Tahoma"
+{
+    LTEXT "&Name:", IDC_STATIC, 7, 12, 41, 12
+    EDITTEXT edt1, 55, 10, 110, 14, ES_AUTOHSCROLL
+    DEFPUSHBUTTON "OK", IDOK, 40, 36, 60, 14
+    PUSHBUTTON "Cancel", IDCANCEL, 105, 36, 60, 14
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // RT_STRING
 
@@ -79,7 +90,8 @@ STRINGTABLE
     IDS_ACCESS_FAIL, "Your access failed."
     IDS_DOTS, "..."
     IDS_TITLE_TEXT, "%s - SimpleBrowser"
-    IDS_NONAME, "(No Name)"
+    IDS_NONAME, "(Untitled)"
+    IDS_ENTER_TEXT, "Enter the text."
 }
 
 //////////////////////////////////////////////////////////////////////////////
