@@ -146,9 +146,12 @@ void SetInternalPageContents(const WCHAR *html, bool is_html = true)
 BOOL UrlInBlackList(const WCHAR *url)
 {
     std::wstring strURL = url;
-    if (strURL.find(L"example.com") != std::wstring::npos)
+    for (auto& item : g_settings.m_black_list)
     {
-        return TRUE;
+        if (strURL.find(item) != std::wstring::npos)
+        {
+            return TRUE;
+        }
     }
     return FALSE;
 }
