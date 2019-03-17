@@ -918,7 +918,11 @@ void OnDots(HWND hwnd)
         PostMessage(hwnd, WM_COMMAND, nCmd, 0);
     }
 
-    SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, FALSE, 0);
+    GetCursorPos(&pt);
+    if (!PtInRect(&rc, pt) || GetAsyncKeyState(VK_LBUTTON) >= 0)
+    {
+        SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, FALSE, 0);
+    }
 }
 
 void OnViewSource(HWND hwnd)
