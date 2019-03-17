@@ -3,7 +3,7 @@
 // This file is public domain software.
 
 #ifndef MWEB_BROWSER_HPP_
-#define MWEB_BROWSER_HPP_   7   // Version 7
+#define MWEB_BROWSER_HPP_   8   // Version 8
 
 #include <windows.h>
 #include <exdisp.h>
@@ -40,8 +40,10 @@ public:
     IWebBrowser2 *GetIWebBrowser2();
     void AllowInsecure(BOOL bAllow);
 
+    HRESULT get_Application(IDispatch **ppApplication) const;
     HRESULT get_LocationURL(BSTR *bstrURL) const;
     HRESULT get_mimeType(BSTR *bstrMIME) const;
+    BOOL is_busy() const;
 
     // IUnknown interface
     STDMETHODIMP QueryInterface(REFIID riid, void **ppvObj);

@@ -415,6 +415,27 @@ HRESULT MWebBrowser::get_mimeType(BSTR *bstrMIME) const
     return hr;
 }
 
+BOOL MWebBrowser::is_busy() const
+{
+    if (!m_web_browser2)
+    {
+        return FALSE;
+    }
+
+    VARIANT_BOOL b = FALSE;
+    m_web_browser2->get_Busy(&b);
+    return b;
+}
+
+HRESULT MWebBrowser::get_Application(IDispatch **ppApplication) const
+{
+    *ppApplication = NULL;
+    if (!m_web_browser2)
+        return E_NOINTERFACE;
+
+    return m_web_browser2->get_Application(ppApplication);
+}
+
 void MWebBrowser::AllowInsecure(BOOL bAllow)
 {
     m_bAllowInsecure = bAllow;

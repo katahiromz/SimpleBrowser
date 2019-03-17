@@ -51,7 +51,6 @@ static std::wstring s_strTitle;
 
 void DoUpdateURL(const WCHAR *url)
 {
-    s_strURL = url;
     ::SetWindowTextW(s_hAddressBar, url);
 }
 
@@ -240,11 +239,20 @@ struct MEventHandler : MEventSinkListener
         IDispatch *pDispatch,
         VARIANT *URL)
     {
-        s_strURL = URL->bstrVal;
-        ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
-        s_pWebBrowser->Zoom();
-        s_bLoadingPage = FALSE;
-        InvalidateRect(s_hAddressBar, NULL, TRUE);
+        IDispatch *pApp = NULL;
+        HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+        if (SUCCEEDED(hr))
+        {
+            if (pApp == pDispatch)
+            {
+                s_strURL = URL->bstrVal;
+                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
+                s_pWebBrowser->Zoom();
+                s_bLoadingPage = FALSE;
+                InvalidateRect(s_hAddressBar, NULL, TRUE);
+            }
+            pApp->Release();
+        }
     }
 
     virtual void OnNewWindow3(
@@ -965,7 +973,12 @@ void OnCreateShortcut(HWND hwnd)
 
     if (!PathFileExists(strPath.c_str()))
     {
-        CreateInternetShortcut(strPath.c_str(), s_strURL.c_str());
+        std::wstring url = s_strURL;
+        if (url.find(L"view-source:") == 0)
+        {
+            url.erase(0, wcslen(L"view-source:"));
+        }
+        CreateInternetShortcut(strPath.c_str(), url.c_str());
     }
 }
 
