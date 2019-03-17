@@ -629,7 +629,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     SendDlgItemMessage(hwnd, ID_ADDRESS_BAR, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
     SendDlgItemMessage(hwnd, ID_GO, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
 
-    style = WS_CHILD | WS_VISIBLE;
+    style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
     s_hStatusBar = CreateStatusWindow(style, LoadStringDx(IDS_LOADING), hwnd, stc1);
     if (!s_hStatusBar)
         return FALSE;
