@@ -33,7 +33,7 @@ static const UINT s_control_ids[] =
 
 // button size
 #define BTN_WIDTH 80
-#define BTN_HEIGHT 25
+#define BTN_HEIGHT 30
 
 static const TCHAR s_szName[] = TEXT("SimpleBrowser");
 static HINSTANCE s_hInst = NULL;
