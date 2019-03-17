@@ -258,6 +258,7 @@ struct MEventHandler : MEventSinkListener
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
                 s_pWebBrowser->Zoom();
                 s_bLoadingPage = FALSE;
+                PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
             }
             pApp->Release();
         }
@@ -631,7 +632,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     if (!s_hStatusBar)
         return FALSE;
 
-    s_hAddrBarEdit = (HWND)SendMessage(s_hAddrBarComboBox, CBEM_GETEDITCONTROL, 0, 0);
+    s_hAddrBarEdit = GetTopWindow(s_hAddrBarComboBox);
     SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
 
     DoNavigate(hwnd, L"about:blank");
@@ -1020,6 +1021,23 @@ void OnSettings(HWND hwnd)
     ShowSettingsDlg(s_hInst, hwnd);
 }
 
+void OnAddToComboBox(HWND hwnd)
+{
+    std::wstring url = s_strURL;
+    INT iItem = SendMessage(s_hAddrBarComboBox, CB_FINDSTRINGEXACT, -1, (LPARAM)url.c_str());
+    if (iItem != CB_ERR)
+    {
+        SendMessage(s_hAddrBarComboBox, CB_DELETESTRING, iItem, 0);
+    }
+
+    SendMessage(s_hAddrBarComboBox, CB_ADDSTRING, 0, (LPARAM)url.c_str());
+}
+
+void OnDocumentComplete(HWND hwnd)
+{
+    SetWindowTextW(s_hAddrBarComboBox, s_strURL.c_str());
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1088,6 +1106,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_SETTINGS:
         OnSettings(hwnd);
+        break;
+    case ID_ADD_TO_COMBOBOX:
+        OnAddToComboBox(hwnd);
+        break;
+    case ID_DOCUMENT_COMPLETE:
+        OnDocumentComplete(hwnd);
         break;
     }
 
@@ -1207,7 +1231,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     //    break;
     //}
 
-    if (pMsg->hwnd == s_hAddrBarEdit)
+    if (pMsg->hwnd == s_hAddrBarEdit || pMsg->hwnd == s_hAddrBarComboBox)
     {
         switch (pMsg->message)
         {
