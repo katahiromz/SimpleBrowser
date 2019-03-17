@@ -13,6 +13,7 @@
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
 #include "AboutBox.hpp"
+#include "Settings.hpp"
 #include "mime_info.h"
 #include <string>
 #include <cassert>
@@ -1013,6 +1014,11 @@ void OnCreateShortcut(HWND hwnd)
     }
 }
 
+void OnSettings(HWND hwnd)
+{
+    ShowSettingsDlg(s_hInst, hwnd);
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1078,6 +1084,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_CREATE_SHORTCUT:
         OnCreateShortcut(hwnd);
+        break;
+    case ID_SETTINGS:
+        OnSettings(hwnd);
         break;
     }
 
