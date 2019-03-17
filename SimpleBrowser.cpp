@@ -41,7 +41,8 @@ static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
 static HWND s_hMainWnd = NULL;
 static HWND s_hStatusBar = NULL;
-static HWND s_hAddressBar = NULL;
+static HWND s_hAddrBarComboBox = NULL;
+static HWND s_hAddrBarEdit = NULL;
 static MWebBrowser *s_pWebBrowser = NULL;
 static HFONT s_hGUIFont = NULL;
 static HFONT s_hAddressFont = NULL;
@@ -54,7 +55,7 @@ static std::wstring s_strTitle;
 
 void DoUpdateURL(const WCHAR *url)
 {
-    ::SetWindowTextW(s_hAddressBar, url);
+    ::SetWindowTextW(s_hAddrBarComboBox, url);
 }
 
 // load a resource string using rotated buffers
@@ -238,7 +239,6 @@ struct MEventHandler : MEventSinkListener
 
                 DoUpdateURL(url->bstrVal);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_STOP));
-                InvalidateRect(s_hAddressBar, NULL, TRUE);
             }
             pApp->Release();
         }
@@ -258,7 +258,6 @@ struct MEventHandler : MEventSinkListener
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
                 s_pWebBrowser->Zoom();
                 s_bLoadingPage = FALSE;
-                InvalidateRect(s_hAddressBar, NULL, TRUE);
             }
             pApp->Release();
         }
@@ -591,16 +590,16 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     LOGFONT lf;
     GetObject(s_hGUIFont, sizeof(lf), &lf);
-    lf.lfHeight = -(BTN_HEIGHT - 6);
+    lf.lfHeight = -(BTN_HEIGHT - 8);
     s_hAddressFont = CreateFontIndirect(&lf);
 
     cx = 260;
-    style = WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
-    CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), NULL,
-                   style, x, y, cx, cy,
+    style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
+            CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
+    CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
+                   style, x, y, cx, 300,
                    hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
-    s_hAddressBar = GetDlgItem(hwnd, ID_ADDRESS_BAR);
-    PostMessage(s_hAddressBar, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
+    s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
     x += cx;
 
     cx = BTN_WIDTH;
@@ -619,11 +618,12 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
                    hwnd, (HMENU) ID_DOTS, s_hInst, NULL);
     x += cx;
 
+    // set font
     SendDlgItemMessage(hwnd, ID_BACK, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
     SendDlgItemMessage(hwnd, ID_NEXT, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
     SendDlgItemMessage(hwnd, ID_STOP_REFRESH, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
     SendDlgItemMessage(hwnd, ID_HOME, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_ADDRESS_BAR, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
+    SendDlgItemMessage(hwnd, ID_ADDRESS_BAR, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
     SendDlgItemMessage(hwnd, ID_GO, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
 
     style = WS_CHILD | WS_VISIBLE;
@@ -631,13 +631,14 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     if (!s_hStatusBar)
         return FALSE;
 
-    SHAutoComplete(s_hAddressBar, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
+    s_hAddrBarEdit = (HWND)SendMessage(s_hAddrBarComboBox, CBEM_GETEDITCONTROL, 0, 0);
+    SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
 
     DoNavigate(hwnd, L"about:blank");
     DoNavigate(hwnd, LoadStringDx(IDS_HOMEPAGE));
 
-    WNDPROC fn = SubclassWindow(s_hAddressBar, AddressBarWindowProc);
-    SetWindowLongPtr(s_hAddressBar, GWLP_USERDATA, (LONG_PTR)fn);
+    WNDPROC fn = SubclassWindow(s_hAddrBarComboBox, AddressBarWindowProc);
+    SetWindowLongPtr(s_hAddrBarComboBox, GWLP_USERDATA, (LONG_PTR)fn);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
 
@@ -673,7 +674,7 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 
     cx = x - x1;
     x -= cx;
-    MoveWindow(GetDlgItem(hwnd, ID_ADDRESS_BAR), x, y, cx, cy, TRUE);
+    MoveWindow(s_hAddrBarComboBox, x, y, cx, cy, TRUE);
 
     rc.top += BTN_HEIGHT;
 
@@ -722,14 +723,14 @@ void OnStop(HWND hwnd)
 
 void OnGoToAddressBar(HWND hwnd)
 {
-    SendMessage(s_hAddressBar, EM_SETSEL, 0, -1);
-    SetFocus(s_hAddressBar);
+    SendMessage(s_hAddrBarComboBox, CB_SETEDITSEL, 0, MAKELPARAM(0, -1));
+    SetFocus(s_hAddrBarComboBox);
 }
 
 void OnGo(HWND hwnd)
 {
     WCHAR szURL[256];
-    GetWindowTextW(s_hAddressBar, szURL, 256);
+    GetWindowTextW(s_hAddrBarEdit, szURL, 256);
 
     StrTrimW(szURL, L" \t\n\r\f\v");
 
@@ -900,7 +901,7 @@ void OnDots(HWND hwnd)
 void OnViewSource(HWND hwnd)
 {
     WCHAR szURL[256];
-    GetWindowTextW(s_hAddressBar, szURL, ARRAYSIZE(szURL));
+    GetWindowTextW(s_hAddrBarEdit, szURL, ARRAYSIZE(szURL));
     StrTrimW(szURL, L" \t\n\r\f\v");
 
     std::wstring url = szURL;
@@ -1199,14 +1200,14 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     //    if (pMsg->wParam == 'D')
     //    {
     //        // Alt+D
-    //        SetFocus(s_hAddressBar);
-    //        SendMessage(s_hAddressBar, EM_SETSEL, 0, -1);
+    //        SetFocus(s_hAddrBarEdit);
+    //        SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
     //        return TRUE;
     //    }
     //    break;
     //}
 
-    if (pMsg->hwnd == s_hAddressBar)
+    if (pMsg->hwnd == s_hAddrBarEdit)
     {
         switch (pMsg->message)
         {
@@ -1236,7 +1237,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
             else if (pMsg->wParam == 'A' && ::GetAsyncKeyState(VK_CONTROL) < 0)
             {
                 // Ctrl+A
-                SendMessage(s_hAddressBar, EM_SETSEL, 0, -1);
+                SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
                 return TRUE;
             }
             break;
@@ -1280,7 +1281,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                         } while (!::IsWindowEnabled(hwnd));
                         if (nCtrlID == ID_ADDRESS_BAR)
                         {
-                            SendMessage(s_hAddressBar, EM_SETSEL, 0, -1);
+                            SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
                         }
                         ::SetFocus(hwnd);
                         return TRUE;
@@ -1311,7 +1312,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                         } while (!::IsWindowEnabled(hwnd));
                         if (nCtrlID == ID_ADDRESS_BAR)
                         {
-                            SendMessage(s_hAddressBar, EM_SETSEL, 0, -1);
+                            SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
                         }
                         ::SetFocus(hwnd);
                         return TRUE;
@@ -1334,7 +1335,9 @@ WinMain(HINSTANCE   hInstance,
     WNDCLASS wc;
 
     OleInitialize(NULL);
+
     InitCommonControls();
+
     s_hInst = hInstance;
 
     ZeroMemory(&wc, sizeof(wc));
