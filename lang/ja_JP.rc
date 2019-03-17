@@ -43,12 +43,12 @@ FONT 9, "MS UI Gothic"
 }
 
 IDD_SETTINGS DIALOG 0, 0, 215, 135
-CAPTION "Settings of SimpleBrowser"
+CAPTION "SimpleBrowser 設定"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
-FONT 9, "Tahoma"
+FONT 9, "MS UI Gothic"
 {
     DEFPUSHBUTTON "OK", IDOK, 85, 115, 60, 14
-    PUSHBUTTON "Cancel", IDCANCEL, 150, 115, 60, 14
+    PUSHBUTTON "キャンセル", IDCANCEL, 150, 115, 60, 14
 }
 
 //////////////////////////////////////////////////////////////////////////////
