@@ -9,6 +9,12 @@ void SETTINGS::reset()
 {
     LPTSTR LoadStringDx(INT nID);
 
+    m_x = CW_USEDEFAULT;
+    m_y = CW_USEDEFAULT;
+    m_cx = CW_USEDEFAULT;
+    m_cy = CW_USEDEFAULT;
+    m_bMaximized = FALSE;
+
     m_homepage = LoadStringDx(IDS_HOMEPAGE);
     m_url_list.clear();
     m_secure = TRUE;
@@ -29,21 +35,46 @@ BOOL SETTINGS::load()
     if (hApp)
     {
         WCHAR szText[256];
-        DWORD cb;
+        DWORD value, cb;
+
+        value = m_x;
+        cb = sizeof(szText);
+        RegQueryValueEx(hApp, L"X", NULL, NULL, (LPBYTE)&value, &cb);
+        m_x = value;
+
+        value = m_y;
+        cb = sizeof(szText);
+        RegQueryValueEx(hApp, L"Y", NULL, NULL, (LPBYTE)&value, &cb);
+        m_y = value;
+
+        value = m_cx;
+        cb = sizeof(szText);
+        RegQueryValueEx(hApp, L"CX", NULL, NULL, (LPBYTE)&value, &cb);
+        m_cx = value;
+
+        value = m_cy;
+        cb = sizeof(szText);
+        RegQueryValueEx(hApp, L"CY", NULL, NULL, (LPBYTE)&value, &cb);
+        m_cy = value;
+
+        value = m_bMaximized;
+        cb = sizeof(szText);
+        RegQueryValueEx(hApp, L"Maximized", NULL, NULL, (LPBYTE)&value, &cb);
+        m_bMaximized = !!value;
 
         cb = sizeof(szText);
         RegQueryValueEx(hApp, L"Homepage", NULL, NULL, (LPBYTE)szText, &cb);
         m_homepage = szText;
 
-        DWORD secure = m_secure;
-        cb = sizeof(secure);
-        RegQueryValueEx(hApp, L"Secure", NULL, NULL, (LPBYTE)&secure, &cb);
-        m_secure = !!secure;
+        value = m_secure;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"Secure", NULL, NULL, (LPBYTE)&value, &cb);
+        m_secure = !!value;
 
-        DWORD dont_r_click = m_dont_r_click;
-        cb = sizeof(secure);
-        RegQueryValueEx(hApp, L"DontRClick", NULL, NULL, (LPBYTE)&dont_r_click, &cb);
-        m_dont_r_click = !!dont_r_click;
+        value = m_dont_r_click;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"DontRClick", NULL, NULL, (LPBYTE)&value, &cb);
+        m_dont_r_click = !!value;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -110,19 +141,39 @@ BOOL SETTINGS::save()
                            KEY_ALL_ACCESS, NULL, &hApp, NULL);
             if (hApp)
             {
-                DWORD cb;
+                DWORD value, cb;
                 WCHAR szName[64];
 
                 cb = DWORD((m_homepage.size() + 1) * sizeof(WCHAR));
                 RegSetValueEx(hApp, L"Homepage", 0, REG_SZ, (LPBYTE)m_homepage.c_str(), cb);
 
-                DWORD secure = DWORD(m_secure);
-                cb = DWORD(sizeof(secure));
-                RegSetValueEx(hApp, L"Secure", 0, REG_DWORD, (LPBYTE)&secure, cb);
+                value = DWORD(m_x);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"X", 0, REG_DWORD, (LPBYTE)&value, cb);
 
-                DWORD dont_r_click = DWORD(m_dont_r_click);
-                cb = DWORD(sizeof(dont_r_click));
-                RegSetValueEx(hApp, L"DontRClick", 0, REG_DWORD, (LPBYTE)&dont_r_click, cb);
+                value = DWORD(m_y);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"Y", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_cx);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"CX", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_cy);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"CY", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_bMaximized);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"Maximized", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_secure);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"Secure", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_dont_r_click);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"DontRClick", 0, REG_DWORD, (LPBYTE)&value, cb);
 
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));

@@ -9,6 +9,8 @@
 
 struct SETTINGS
 {
+    INT m_x, m_y, m_cx, m_cy;
+    BOOL m_bMaximized;
     std::wstring m_homepage;
     std::vector<std::wstring> m_url_list;
     BOOL m_secure;

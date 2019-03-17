@@ -161,8 +161,7 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     if (protocol == L"http" ||
         protocol == L"https" ||
         protocol == L"view-source" ||
-        protocol == L"about" ||
-        protocol == L"ftp")
+        protocol == L"about")
     {
         return TRUE;
     }
@@ -647,6 +646,23 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     else
         s_pWebBrowser->AllowInsecure(TRUE);
 
+    if (g_settings.m_x != CW_USEDEFAULT)
+    {
+        UINT uFlags;
+        uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE;
+        SetWindowPos(hwnd, NULL, g_settings.m_x, g_settings.m_y, 0, 0, uFlags);
+    }
+    if (g_settings.m_cx != CW_USEDEFAULT)
+    {
+        UINT uFlags;
+        uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE;
+        SetWindowPos(hwnd, NULL, 0, 0, g_settings.m_cx, g_settings.m_cy, uFlags);
+    }
+    if (g_settings.m_bMaximized)
+    {
+        ShowWindowAsync(hwnd, SW_MAXIMIZE);
+    }
+
     for (size_t i = 0; i < g_settings.m_url_list.size(); ++i)
     {
         auto& url = g_settings.m_url_list[i];
@@ -676,9 +692,29 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     return TRUE;
 }
 
+void OnMove(HWND hwnd, int x, int y)
+{
+    RECT rc;
+
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd))
+    {
+        GetWindowRect(hwnd, &rc);
+        g_settings.m_x = rc.left;
+        g_settings.m_y = rc.top;
+    }
+}
+
 void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
+
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd))
+    {
+        GetWindowRect(hwnd, &rc);
+        g_settings.m_cx = rc.right - rc.left;
+        g_settings.m_cy = rc.bottom - rc.top;
+    }
+
     GetClientRect(hwnd, &rc);
 
     INT x, y;
@@ -1192,8 +1228,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnDestroy(HWND hwnd)
 {
-    g_settings.m_url_list.clear();
+    g_settings.m_bMaximized = IsZoomed(hwnd);
 
+    g_settings.m_url_list.clear();
     TCHAR szText[256];
     INT nCount = (INT)ComboBox_GetCount(s_hAddrBarComboBox);
     for (INT i = 0; i < nCount; ++i)
@@ -1251,6 +1288,7 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     HANDLE_MSG(hwnd, WM_CREATE, OnCreate);
+    HANDLE_MSG(hwnd, WM_MOVE, OnMove);
     HANDLE_MSG(hwnd, WM_SIZE, OnSize);
     HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
     HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
