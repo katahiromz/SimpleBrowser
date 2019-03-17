@@ -26,7 +26,7 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "Se&ttings...", ID_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "A&bout...", ID_ABOUT
+        MENUITEM "A&bout This Application", ID_ABOUT
     }
 }
 
