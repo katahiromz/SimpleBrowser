@@ -24,7 +24,7 @@ IDR_DOTSMENU MENU
         MENUITEM "コンボボックスにリンクを追加(&L)", ID_ADD_TO_COMBOBOX
         MENUITEM "ショートカットをデスクトップに作成(&D)...", ID_CREATE_SHORTCUT
         MENUITEM SEPARATOR
-        MENUITEM "設定(&T)...", ID_SETTINGS
+        MENUITEM "SimpleBrowser 設定(&T)...", ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "バージョン情報(&B)", ID_ABOUT
     }

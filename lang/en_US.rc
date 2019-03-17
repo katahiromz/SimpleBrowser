@@ -24,7 +24,7 @@ IDR_DOTSMENU MENU
         MENUITEM "Add a &link to ComboBox", ID_ADD_TO_COMBOBOX
         MENUITEM "Create Shortcut to &Desktop...", ID_CREATE_SHORTCUT
         MENUITEM SEPARATOR
-        MENUITEM "Se&ttings...", ID_SETTINGS
+        MENUITEM "SimpleBrowser Se&ttings...", ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "A&bout This Application", ID_ABOUT
     }
@@ -44,7 +44,7 @@ FONT 9, "Tahoma"
 }
 
 IDD_SETTINGS DIALOG 0, 0, 210, 185
-CAPTION "Settings of SimpleBrowser"
+CAPTION "SimpleBrowser Settings"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "MS UI Gothic"
 {
