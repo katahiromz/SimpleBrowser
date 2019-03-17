@@ -1008,6 +1008,9 @@ void OnCreateShortcut(HWND hwnd)
     else
         file_title = ConvertStringToFilename(s_strTitle);
 
+    if (file_title.size() >= 64)
+        file_title.resize(64);
+
     if (!ShowAddLinkDlg(s_hInst, hwnd, file_title))
         return;
 
