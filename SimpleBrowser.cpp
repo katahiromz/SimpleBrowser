@@ -1053,6 +1053,9 @@ void OnSettings(HWND hwnd)
 
 void OnAddToComboBox(HWND hwnd)
 {
+    WCHAR szText[256];
+    ComboBox_GetText(s_hAddrBarComboBox, szText, ARRAYSIZE(szText));
+
     std::wstring url = s_strURL;
     INT iItem = ComboBox_FindStringExact(s_hAddrBarComboBox, -1, (LPARAM)url.c_str());
     if (iItem != CB_ERR)
@@ -1060,7 +1063,9 @@ void OnAddToComboBox(HWND hwnd)
         ComboBox_DeleteString(s_hAddrBarComboBox, iItem);
     }
 
-    ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
+    ComboBox_InsertString(s_hAddrBarComboBox, 0, url.c_str());
+
+    ComboBox_SetText(s_hAddrBarComboBox, szText);
 }
 
 void OnDocumentComplete(HWND hwnd)
