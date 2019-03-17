@@ -945,9 +945,28 @@ void OnCreateShortcut(HWND hwnd)
         file_title = ConvertStringToFilename(s_strTitle);
 
     PathAppend(szPath, file_title.c_str());
-    lstrcat(szPath, L".url");
 
-    CreateInternetShortcut(szPath, s_strURL.c_str());
+    std::wstring strPath;
+    for (INT i = 1; i < 64; ++i)
+    {
+        strPath = szPath;
+        if (i > 1)
+        {
+            WCHAR sz[32];
+            wsprintfW(sz, L" (%u)", i);
+            strPath += sz;
+        }
+        strPath += L".url";
+        if (!PathFileExists(strPath.c_str()))
+        {
+            break;
+        }
+    }
+
+    if (!PathFileExists(strPath.c_str()))
+    {
+        CreateInternetShortcut(strPath.c_str(), s_strURL.c_str());
+    }
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
