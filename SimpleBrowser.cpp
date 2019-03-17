@@ -637,8 +637,15 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     s_hAddrBarEdit = GetTopWindow(s_hAddrBarComboBox);
     SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
 
-    DoNavigate(hwnd, L"about:blank");
-    DoNavigate(hwnd, LoadStringDx(IDS_HOMEPAGE));
+    g_settings.load();
+
+    for (size_t i = 0; i < g_settings.m_url_list.size(); ++i)
+    {
+        auto& url = g_settings.m_url_list[i];
+        ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
+    }
+
+    DoNavigate(hwnd, g_settings.m_homepage.c_str());
 
     WNDPROC fn = SubclassWindow(s_hAddrBarComboBox, AddressBarWindowProc);
     SetWindowLongPtr(s_hAddrBarComboBox, GWLP_USERDATA, (LONG_PTR)fn);
@@ -745,7 +752,7 @@ void OnGo(HWND hwnd)
 
 void OnHome(HWND hwnd)
 {
-    DoNavigate(hwnd, LoadStringDx(IDS_HOMEPAGE));
+    DoNavigate(hwnd, g_settings.m_homepage.c_str());
 }
 
 void OnPrint(HWND hwnd)
@@ -1152,6 +1159,18 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnDestroy(HWND hwnd)
 {
+    g_settings.m_url_list.clear();
+
+    TCHAR szText[256];
+    INT nCount = (INT)ComboBox_GetCount(s_hAddrBarComboBox);
+    for (INT i = 0; i < nCount; ++i)
+    {
+        ComboBox_GetLBText(s_hAddrBarComboBox, i, szText);
+        g_settings.m_url_list.push_back(szText);
+    }
+
+    g_settings.save();
+
     if (s_hAddressFont)
     {
         DeleteObject(s_hAddressFont);

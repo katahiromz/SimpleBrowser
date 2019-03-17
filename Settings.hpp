@@ -4,13 +4,18 @@
 #ifndef _INC_WINDOWS
     #include <windows.h>
 #endif
+#include <string>
+#include <vector>
 
 struct SETTINGS
 {
-    bool load();
-    bool save();
+    std::wstring m_homepage;
+    std::vector<std::wstring> m_url_list;
+    BOOL load();
+    BOOL save();
     void reset();
 };
+extern SETTINGS g_settings;
 
 void ShowSettingsDlg(HINSTANCE hInst, HWND hwnd);
 
