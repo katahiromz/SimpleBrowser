@@ -204,7 +204,7 @@ inline LPTSTR MakeFilterDx(LPTSTR psz)
 struct MEventHandler : MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
-        IDispatch *pDisp,
+        IDispatch *pDispatch,
         VARIANT *url,
         VARIANT *Flags,
         VARIANT *TargetFrameName,
@@ -212,26 +212,32 @@ struct MEventHandler : MEventSinkListener
         VARIANT *Headers,
         VARIANT_BOOL *Cancel)
     {
-        if (Flags->lVal & 0x100)    // ???
+        IDispatch *pApp = NULL;
+        HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+        if (SUCCEEDED(hr))
         {
-            if (UrlInBlackList(url->bstrVal))
+            if (pApp == pDispatch)
             {
-                SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
-                *Cancel = VARIANT_TRUE;
-                return;
-            }
-            if (!IsAccessibleURL(url->bstrVal))
-            {
-                SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
-                *Cancel = VARIANT_TRUE;
-                return;
-            }
+                if (UrlInBlackList(url->bstrVal))
+                {
+                    SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
+                    *Cancel = VARIANT_TRUE;
+                    return;
+                }
+                if (!IsAccessibleURL(url->bstrVal))
+                {
+                    SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
+                    *Cancel = VARIANT_TRUE;
+                    return;
+                }
 
-            s_bLoadingPage = TRUE;
+                s_bLoadingPage = TRUE;
 
-            DoUpdateURL(url->bstrVal);
-            ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_STOP));
-            InvalidateRect(s_hAddressBar, NULL, TRUE);
+                DoUpdateURL(url->bstrVal);
+                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_STOP));
+                InvalidateRect(s_hAddressBar, NULL, TRUE);
+            }
+            pApp->Release();
         }
     }
 
