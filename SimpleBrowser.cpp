@@ -27,6 +27,7 @@ static const UINT s_control_ids[] =
     ID_HOME,
     ID_ADDRESS_BAR,
     ID_GO,
+    ID_DOTS,
     ID_BROWSER
 };
 
@@ -42,6 +43,7 @@ static HWND s_hStatusBar = NULL;
 static HWND s_hAddressBar = NULL;
 static MWebBrowser *s_pWebBrowser = NULL;
 static HFONT s_hGUIFont = NULL;
+static HFONT s_hAddressFont = NULL;
 static MEventSink *s_pEventSink = MEventSink::Create();
 static BOOL s_bLoadingPage = FALSE;
 static HBITMAP s_hbmSecure = NULL;
@@ -586,27 +588,18 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
                    hwnd, (HMENU) ID_HOME, s_hInst, NULL);
     x += cx;
 
-    LONG nHeight = BTN_HEIGHT;
-    if (HDC hDC = CreateCompatibleDC(NULL))
-    {
-        HGDIOBJ hFontOld = SelectObject(hDC, s_hGUIFont);
-        {
-            TCHAR sz[] = TEXT("Mg");
-            SIZE siz;
-            GetTextExtentPoint32(hDC, sz, 2, &siz);
-            nHeight = siz.cy + 8;
-        }
-        SelectObject(hDC, hFontOld);
-        DeleteDC(hDC);
-    }
+    LOGFONT lf;
+    GetObject(s_hGUIFont, sizeof(lf), &lf);
+    lf.lfHeight = -(BTN_HEIGHT - 6);
+    s_hAddressFont = CreateFontIndirect(&lf);
 
     cx = 260;
     style = WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
-    CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), NULL, style,
-                   x, (BTN_HEIGHT - nHeight) / 2 + 1,
-                   cx, nHeight,
+    CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("EDIT"), NULL,
+                   style, x, y, cx, cy,
                    hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
     s_hAddressBar = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+    PostMessage(s_hAddressBar, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
     x += cx;
 
     cx = BTN_WIDTH;
@@ -654,6 +647,33 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
     GetClientRect(hwnd, &rc);
+
+    INT x, y;
+
+    x = rc.left;
+    y = rc.top;
+    cx = BTN_WIDTH;
+    cy = BTN_HEIGHT;
+    MoveWindow(GetDlgItem(hwnd, ID_BACK), x, y, cx, cy, TRUE);
+    x += cx;
+    MoveWindow(GetDlgItem(hwnd, ID_NEXT), x, y, cx, cy, TRUE);
+    x += cx;
+    MoveWindow(GetDlgItem(hwnd, ID_STOP_REFRESH), x, y, cx, cy, TRUE);
+    x += cx;
+    MoveWindow(GetDlgItem(hwnd, ID_HOME), x, y, cx, cy, TRUE);
+    x += cx;
+
+    INT x1 = x;
+
+    x = rc.right - cx;
+    MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, cx, cy, TRUE);
+    x -= cx;
+    MoveWindow(GetDlgItem(hwnd, ID_GO), x, y, cx, cy, TRUE);
+
+    cx = x - x1;
+    x -= cx;
+    MoveWindow(GetDlgItem(hwnd, ID_ADDRESS_BAR), x, y, cx, cy, TRUE);
+
     rc.top += BTN_HEIGHT;
 
     RECT rcStatus;
@@ -1070,6 +1090,11 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnDestroy(HWND hwnd)
 {
+    if (s_hAddressFont)
+    {
+        DeleteObject(s_hAddressFont);
+        s_hAddressFont = NULL;
+    }
     if (s_hbmSecure)
     {
         DeleteObject(s_hbmSecure);
