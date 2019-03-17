@@ -878,15 +878,20 @@ void OnDots(HWND hwnd)
 
 void OnViewSource(HWND hwnd)
 {
-    if (s_strURL.find(L"view-source:") == 0)
-    {
-        assert(0);
-        return;
-    }
+    WCHAR szURL[256];
+    GetWindowTextW(s_hAddressBar, szURL, ARRAYSIZE(szURL));
+    StrTrimW(szURL, L" \t\n\r\f\v");
 
-    std::wstring url = L"view-source:";
-    url += s_strURL;
-    DoNavigate(hwnd, url.c_str());
+    std::wstring url = szURL;
+    if (url.find(L"view-source:") == 0)
+    {
+        url.erase(0, wcslen(L"view-source:"));
+        DoNavigate(hwnd, url.c_str());
+    }
+    else
+    {
+        DoNavigate(hwnd, (L"view-source:" + url).c_str());
+    }
 }
 
 void OnAbout(HWND hwnd)
