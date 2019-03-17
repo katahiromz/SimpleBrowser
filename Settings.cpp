@@ -13,6 +13,7 @@ void SETTINGS::reset()
     m_url_list.clear();
     m_secure = TRUE;
     m_dont_r_click = FALSE;
+    m_black_list.clear();
 }
 
 BOOL SETTINGS::load()
@@ -46,12 +47,13 @@ BOOL SETTINGS::load()
 
         DWORD count = 0;
         cb = sizeof(count);
-        RegQueryValueEx(hApp, L"URL Count", NULL, NULL, (LPBYTE)&count, &cb);
+        RegQueryValueEx(hApp, L"URLCount", NULL, NULL, (LPBYTE)&count, &cb);
+
+        WCHAR szName[64];
 
         for (DWORD i = 0; i < count; ++i)
         {
-            WCHAR szName[64];
-            wsprintfW(szName, L"URL %lu", i);
+            wsprintfW(szName, L"URL%lu", i);
 
             cb = sizeof(szText);
             if (!RegQueryValueEx(hApp, szName, NULL, NULL, (LPBYTE)szText, &cb))
@@ -64,6 +66,26 @@ BOOL SETTINGS::load()
                 break;
             }
         }
+
+        cb = sizeof(count);
+        RegQueryValueEx(hApp, L"ForbiddenCount", NULL, NULL, (LPBYTE)&count, &cb);
+
+        for (DWORD i = 0; i < count; ++i)
+        {
+            wsprintfW(szName, L"Forbidden%lu", i);
+
+            cb = sizeof(szText);
+            if (!RegQueryValueEx(hApp, szName, NULL, NULL, (LPBYTE)szText, &cb))
+            {
+                StrTrimW(szText, L" \t\n\r\f\v");
+                m_black_list.push_back(szText);
+            }
+            else
+            {
+                break;
+            }
+        }
+
         bOK = TRUE;
     }
 
@@ -89,6 +111,7 @@ BOOL SETTINGS::save()
             if (hApp)
             {
                 DWORD cb;
+                WCHAR szName[64];
 
                 cb = DWORD((m_homepage.size() + 1) * sizeof(WCHAR));
                 RegSetValueEx(hApp, L"Homepage", 0, REG_SZ, (LPBYTE)m_homepage.c_str(), cb);
@@ -103,14 +126,27 @@ BOOL SETTINGS::save()
 
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));
-                RegSetValueEx(hApp, L"URL Count", 0, REG_DWORD, (LPBYTE)&count, cb);
+                RegSetValueEx(hApp, L"URLCount", 0, REG_DWORD, (LPBYTE)&count, cb);
 
                 for (DWORD i = 0; i < count; ++i)
                 {
                     auto& url = m_url_list[i];
 
-                    WCHAR szName[64];
-                    wsprintfW(szName, L"URL %lu", i);
+                    wsprintfW(szName, L"URL%lu", i);
+
+                    cb = DWORD((url.size() + 1) * sizeof(WCHAR));
+                    RegSetValueEx(hApp, szName, 0, REG_DWORD, (LPBYTE)url.c_str(), cb);
+                }
+
+                count = DWORD(m_black_list.size());
+                cb = DWORD(sizeof(count));
+                RegSetValueEx(hApp, L"ForbiddenCount", 0, REG_DWORD, (LPBYTE)&count, cb);
+
+                for (DWORD i = 0; i < count; ++i)
+                {
+                    auto& url = m_black_list[i];
+
+                    wsprintfW(szName, L"Forbidden%lu", i);
 
                     cb = DWORD((url.size() + 1) * sizeof(WCHAR));
                     RegSetValueEx(hApp, szName, 0, REG_DWORD, (LPBYTE)url.c_str(), cb);
