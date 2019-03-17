@@ -23,6 +23,6 @@ struct SETTINGS
 };
 extern SETTINGS g_settings;
 
-void ShowSettingsDlg(HINSTANCE hInst, HWND hwnd);
+void ShowSettingsDlg(HINSTANCE hInst, HWND hwnd, const std::wstring& strCurPage);
 
 #endif  // ndef SETTINGS_HPP_

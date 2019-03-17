@@ -54,7 +54,7 @@ FONT 9, "MS UI Gothic"
     PUSHBUTTON "&Reset", psh2, 155, 25, 50, 14
     PUSHBUTTON "URL &Lists...", psh3, 5, 45, 95, 35
     PUSHBUTTON "&Forbidden URLs...", psh4, 105, 45, 100, 35
-    AUTOCHECKBOX "&Secure Connection", chx1, 5, 85, 95, 14
+    AUTOCHECKBOX "More &Secure Connection", chx1, 5, 85, 95, 14
     AUTOCHECKBOX "Lo&cal File Access", chx2, 5, 105, 95, 14
     LTEXT "&Protcols:", IDC_STATIC, 5, 127, 43, 12
     EDITTEXT edt2, 55, 125, 95, 14, ES_AUTOHSCROLL

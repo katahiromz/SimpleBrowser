@@ -1096,7 +1096,7 @@ void OnCreateShortcut(HWND hwnd)
 
 void OnSettings(HWND hwnd)
 {
-    ShowSettingsDlg(s_hInst, hwnd);
+    ShowSettingsDlg(s_hInst, hwnd, s_strURL);
 }
 
 void OnAddToComboBox(HWND hwnd)

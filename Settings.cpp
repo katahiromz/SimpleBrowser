@@ -4,11 +4,12 @@
 #include "resource.h"
 
 SETTINGS g_settings;
+static std::wstring s_strCurPage;
+
+LPTSTR LoadStringDx(INT nID);
 
 void SETTINGS::reset()
 {
-    LPTSTR LoadStringDx(INT nID);
-
     m_x = CW_USEDEFAULT;
     m_y = CW_USEDEFAULT;
     m_cx = CW_USEDEFAULT;
@@ -216,11 +217,22 @@ BOOL SETTINGS::save()
 
 static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
+    if (g_settings.m_secure)
+        CheckDlgButton(hwnd, chx1, BST_CHECKED);
+
+    SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
+
     return TRUE;
 }
 
 static void OnOK(HWND hwnd)
 {
+    g_settings.m_secure = (IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED);
+
+    TCHAR szText[256];
+    GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));
+    g_settings.m_homepage = szText;
+
     EndDialog(hwnd, IDOK);
 }
 
@@ -233,6 +245,22 @@ static void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case IDCANCEL:
         EndDialog(hwnd, id);
+        break;
+    case psh1:
+        SetDlgItemText(hwnd, edt1, s_strCurPage.c_str());
+        break;
+    case psh2:
+        SetDlgItemText(hwnd, edt1, LoadStringDx(IDS_HOMEPAGE));
+        break;
+    case psh3:
+        break;
+    case psh4:
+        break;
+    case psh5:
+        break;
+    case psh6:
+        g_settings.reset();
+        EndDialog(hwnd, psh6);
         break;
     }
 }
@@ -248,7 +276,8 @@ SettingsDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void ShowSettingsDlg(HINSTANCE hInst, HWND hwnd)
+void ShowSettingsDlg(HINSTANCE hInst, HWND hwnd, const std::wstring& strCurPage)
 {
+    s_strCurPage = strCurPage;
     DialogBox(hInst, MAKEINTRESOURCE(IDD_SETTINGS), hwnd, SettingsDlgProc);
 }
