@@ -1350,7 +1350,26 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     switch (pMsg->message)
     {
     case WM_KEYDOWN:
-        if (pMsg->wParam == VK_TAB)
+        if (pMsg->wParam == VK_ESCAPE)
+        {
+            if (pMsg->hwnd == s_pWebBrowser->GetControlWindow() ||
+                pMsg->hwnd == s_pWebBrowser->GetIEServerWindow() ||
+                pMsg->hwnd == s_hMainWnd)
+            {
+                WCHAR szURL[256];
+                GetWindowTextW(s_hAddrBarEdit, szURL, ARRAYSIZE(szURL));
+                StrTrimW(szURL, L" \t\n\r\f\v");
+
+                std::wstring url = szURL;
+                if (url.find(L"view-source:") == 0)
+                {
+                    url.erase(0, wcslen(L"view-source:"));
+                    DoNavigate(s_hMainWnd, url.c_str());
+                    return TRUE;
+                }
+            }
+        }
+        else if (pMsg->wParam == VK_TAB)
         {
             UINT nCtrlID = GetDlgCtrlID(pMsg->hwnd);
             if (pMsg->hwnd == s_pWebBrowser->GetControlWindow() ||
