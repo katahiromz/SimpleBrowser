@@ -64,6 +64,7 @@ include_directories(mime_info)
 # executable
 add_executable(SimpleBrowser WIN32
     SimpleBrowser.cpp
+    AboutBox.cpp
     MWebBrowser.cpp
     MEventSink.cpp
     MBindStatusCallback.cpp

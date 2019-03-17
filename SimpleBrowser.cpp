@@ -10,6 +10,7 @@
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
+#include "AboutBox.hpp"
 #include "mime_info.h"
 #include <string>
 #include <cassert>
@@ -873,6 +874,11 @@ void OnViewSource(HWND hwnd)
     DoNavigate(hwnd, url.c_str());
 }
 
+void OnAbout(HWND hwnd)
+{
+    ShowAboutBox(s_hInst, hwnd);
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -932,6 +938,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_VIEW_SOURCE:
         OnViewSource(hwnd);
+        break;
+    case ID_ABOUT:
+        OnAbout(hwnd);
         break;
     }
 

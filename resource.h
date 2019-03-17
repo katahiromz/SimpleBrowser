@@ -8,6 +8,8 @@
 #define IDB_SECURE                          100
 #define IDB_INSECURE                        101
 
+#define IDD_ABOUTBOX                        100
+
 #define IDR_DOTSMENU                        100
 
 #define IDS_READY                           100
@@ -51,12 +53,13 @@
 #define ID_VIEW_SOURCE_DONE                 116
 #define ID_DOTS                             117
 #define ID_VIEW_SOURCE                      118
+#define ID_ABOUT                            119
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     119
+        #define _APS_NEXT_COMMAND_VALUE     120
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif
