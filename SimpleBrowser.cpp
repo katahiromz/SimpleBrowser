@@ -601,6 +601,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
                    style, x, y, cx, 300,
                    hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
     s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+    ComboBox_LimitText(s_hAddrBarComboBox, 255);
     x += cx;
 
     cx = BTN_WIDTH;
@@ -724,7 +725,7 @@ void OnStop(HWND hwnd)
 
 void OnGoToAddressBar(HWND hwnd)
 {
-    SendMessage(s_hAddrBarComboBox, CB_SETEDITSEL, 0, MAKELPARAM(0, -1));
+    ComboBox_SetEditSel(s_hAddrBarComboBox, 0, -1);
     SetFocus(s_hAddrBarComboBox);
 }
 
@@ -1024,18 +1025,36 @@ void OnSettings(HWND hwnd)
 void OnAddToComboBox(HWND hwnd)
 {
     std::wstring url = s_strURL;
-    INT iItem = SendMessage(s_hAddrBarComboBox, CB_FINDSTRINGEXACT, -1, (LPARAM)url.c_str());
+    INT iItem = ComboBox_FindStringExact(s_hAddrBarComboBox, -1, (LPARAM)url.c_str());
     if (iItem != CB_ERR)
     {
-        SendMessage(s_hAddrBarComboBox, CB_DELETESTRING, iItem, 0);
+        ComboBox_DeleteString(s_hAddrBarComboBox, iItem);
     }
 
-    SendMessage(s_hAddrBarComboBox, CB_ADDSTRING, 0, (LPARAM)url.c_str());
+    ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
 }
 
 void OnDocumentComplete(HWND hwnd)
 {
     SetWindowTextW(s_hAddrBarComboBox, s_strURL.c_str());
+}
+
+void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
+{
+    switch (codeNotify)
+    {
+    case CBN_SELCHANGE:
+        {
+            INT iItem = (INT)ComboBox_GetCurSel(s_hAddrBarComboBox);
+            if (iItem != CB_ERR)
+            {
+                WCHAR szText[256];
+                ComboBox_GetLBText(s_hAddrBarComboBox, iItem, szText);
+                DoNavigate(hwnd, szText);
+            }
+        }
+        break;
+    }
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -1064,6 +1083,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_HOME:
         OnHome(hwnd);
+        break;
+    case ID_ADDRESS_BAR:
+        OnAddressBar(hwnd, hwndCtl, codeNotify);
         break;
     case ID_REFRESH:
         OnRefresh(hwnd);
