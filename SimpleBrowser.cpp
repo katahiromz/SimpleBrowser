@@ -522,36 +522,35 @@ BOOL DoSetBrowserEmulation(DWORD dwValue)
 }
 
 LRESULT CALLBACK
-AddressBarWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+AddressBarEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     WNDPROC fn = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    LRESULT result = CallWindowProc(fn, hwnd, uMsg, wParam, lParam);
     switch (uMsg)
     {
-    case WM_PAINT:
-        //if (HDC hDC = GetDC(hwnd))
-        //{
-        //    if (HDC hdcMem = CreateCompatibleDC(NULL))
-        //    {
-        //        IDispatch *pDisp = NULL;
-        //        s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-        //        if (pDisp)
-        //        {
-        //            if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
-        //            {
-        //                BSTR bstr;
-        //                pDocument->get_security(&bstr);
-        //                //MessageBoxW(NULL, bstr, L"bstr", 0);
-        //                SysFreeString(bstr);
-        //            }
-        //            pDisp->Release();
-        //        }
-        //        DeleteDC(hdcMem);
-        //    }
-        //    ReleaseDC(hwnd, hDC);
-        //}
+    case WM_KEYDOWN:
+        if (wParam == VK_ESCAPE)
+        {
+            if (ComboBox_GetDroppedState(s_hAddrBarComboBox))
+            {
+                ComboBox_ShowDropdown(s_hAddrBarComboBox, FALSE);
+                return 0;
+            }
+        }
+        else if (wParam == VK_DELETE)
+        {
+            if (ComboBox_GetDroppedState(s_hAddrBarComboBox))
+            {
+                INT iItem = ComboBox_GetCurSel(s_hAddrBarComboBox);
+                if (iItem != CB_ERR)
+                {
+                    ComboBox_DeleteString(s_hAddrBarComboBox, iItem);
+                    return 0;
+                }
+            }
+        }
         break;
     }
+    LRESULT result = CallWindowProc(fn, hwnd, uMsg, wParam, lParam);
     return result;
 }
 
@@ -704,8 +703,8 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         DoNavigate(hwnd, g_settings.m_homepage.c_str());
     }
 
-    WNDPROC fn = SubclassWindow(s_hAddrBarComboBox, AddressBarWindowProc);
-    SetWindowLongPtr(s_hAddrBarComboBox, GWLP_USERDATA, (LONG_PTR)fn);
+    WNDPROC fn = SubclassWindow(s_hAddrBarEdit, AddressBarEditWndProc);
+    SetWindowLongPtr(s_hAddrBarEdit, GWLP_USERDATA, (LONG_PTR)fn);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
 
