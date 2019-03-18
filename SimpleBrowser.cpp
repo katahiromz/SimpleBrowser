@@ -175,21 +175,10 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
 
 BOOL IsAccessibleURL(const WCHAR *url)
 {
-    if (!g_settings.m_local_file_access)
+    if (PathFileExists(url) || UrlIsFileUrl(url) ||
+        PathIsUNC(url) || PathIsNetworkPath(url))
     {
-        if (PathFileExists(url) || UrlIsFileUrl(url) ||
-            PathIsUNC(url) || PathIsNetworkPath(url))
-        {
-            return FALSE;
-        }
-    }
-    else
-    {
-        if (PathFileExists(url) || PathIsUNC(url) ||
-            PathIsNetworkPath(url))
-        {
-            return TRUE;
-        }
+        return g_settings.m_local_file_access;
     }
 
     if (LPWSTR pch = wcschr(url, L':'))
