@@ -183,12 +183,22 @@ BOOL IsAccessibleURL(const WCHAR *url)
             return FALSE;
         }
     }
+    else
+    {
+        if (PathFileExists(url) || PathIsUNC(url) ||
+            PathIsNetworkPath(url))
+        {
+            return TRUE;
+        }
+    }
 
     if (LPWSTR pch = wcschr(url, L':'))
     {
         std::wstring protocol(url, pch - url);
         if (!IsAccessibleProtocol(protocol))
             return FALSE;
+        if (g_settings.m_local_file_access && protocol == L"file")
+            return TRUE;
     }
 
     if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
