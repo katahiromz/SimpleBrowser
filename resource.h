@@ -12,6 +12,7 @@
 #define IDD_SETTINGS                        101
 #define IDD_ADDLINK                         102
 #define IDD_URLLIST                         103
+#define IDD_FORBIDDEN                       104
 
 #define IDR_DOTSMENU                        100
 
