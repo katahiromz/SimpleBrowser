@@ -18,6 +18,7 @@ struct SETTINGS
     BOOL m_dont_r_click;
     BOOL m_local_file_access;
     BOOL m_dont_popup;
+    bool m_ignore_errors;
     DWORD m_emulation;
 
     BOOL load();

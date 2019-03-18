@@ -24,6 +24,7 @@ void SETTINGS::reset()
     m_dont_r_click = FALSE;
     m_local_file_access = TRUE;
     m_dont_popup = TRUE;
+    m_ignore_errors = FALSE;
     m_emulation = 11001;
     m_black_list.clear();
 }
@@ -91,6 +92,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"DontPopup", NULL, NULL, (LPBYTE)&value, &cb);
         m_dont_popup = !!value;
+
+        value = m_ignore_errors;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"IgnoreErrors", NULL, NULL, (LPBYTE)&value, &cb);
+        m_ignore_errors = !!value;
 
         value = m_emulation;
         cb = sizeof(value);
@@ -204,6 +210,10 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"DontPopup", 0, REG_DWORD, (LPBYTE)&value, cb);
 
+                value = DWORD(m_ignore_errors);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"IgnoreErrors", 0, REG_DWORD, (LPBYTE)&value, cb);
+
                 value = DWORD(m_emulation);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"Emulation", 0, REG_DWORD, (LPBYTE)&value, cb);
@@ -257,6 +267,8 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         CheckDlgButton(hwnd, chx3, BST_CHECKED);
     if (g_settings.m_dont_popup)
         CheckDlgButton(hwnd, chx4, BST_CHECKED);
+    if (g_settings.m_ignore_errors)
+        CheckDlgButton(hwnd, chx5, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
     SetDlgItemInt(hwnd, edt2, g_settings.m_emulation, TRUE);
@@ -270,6 +282,7 @@ static void OnOK(HWND hwnd)
     g_settings.m_local_file_access = (IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED);
     g_settings.m_dont_r_click = (IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED);
     g_settings.m_dont_popup = (IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED);
+    g_settings.m_ignore_errors = (IsDlgButtonChecked(hwnd, chx5) == BST_CHECKED);
 
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));

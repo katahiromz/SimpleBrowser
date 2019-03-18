@@ -441,6 +441,13 @@ void MWebBrowser::AllowInsecure(BOOL bAllow)
     m_bAllowInsecure = bAllow;
 }
 
+HRESULT MWebBrowser::put_Silent(VARIANT_BOOL bSilent)
+{
+    if (!m_web_browser2)
+        return E_NOINTERFACE;
+    return m_web_browser2->put_Silent(bSilent);
+}
+
 // IUnknown interface
 
 STDMETHODIMP MWebBrowser::QueryInterface(REFIID riid, void **ppvObj)

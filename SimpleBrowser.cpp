@@ -586,8 +586,15 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     IWebBrowser2 *pBrowser2 = s_pWebBrowser->GetIWebBrowser2();
 
-    // Don't show JavaScript errors
-    pBrowser2->put_Silent(VARIANT_TRUE);
+    if (g_settings.m_ignore_errors)
+    {
+        // Don't show script errors
+        s_pWebBrowser->put_Silent(VARIANT_TRUE);
+    }
+    else
+    {
+        s_pWebBrowser->put_Silent(VARIANT_FALSE);
+    }
 
     s_pEventSink->Connect(pBrowser2, &s_listener);
 
@@ -1133,6 +1140,16 @@ void OnSettings(HWND hwnd)
     ShowSettingsDlg(s_hInst, hwnd, s_strURL);
 
     InitAddrBarComboBox();
+
+    if (g_settings.m_ignore_errors)
+    {
+        // Don't show script errors
+        s_pWebBrowser->put_Silent(VARIANT_TRUE);
+    }
+    else
+    {
+        s_pWebBrowser->put_Silent(VARIANT_FALSE);
+    }
 }
 
 void OnAddToComboBox(HWND hwnd)
