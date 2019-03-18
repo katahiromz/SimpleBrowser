@@ -666,9 +666,8 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         ShowWindowAsync(hwnd, SW_MAXIMIZE);
     }
 
-    for (size_t i = 0; i < g_settings.m_url_list.size(); ++i)
+    for (auto& url : g_settings.m_url_list)
     {
-        auto& url = g_settings.m_url_list[i];
         ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
     }
 
@@ -1034,15 +1033,15 @@ BOOL CreateInternetShortcut(
 std::wstring ConvertStringToFilename(const std::wstring& str)
 {
     std::wstring ret;
-    for (size_t i = 0; i < str.size(); ++i)
+    for (wchar_t wch : str)
     {
-        if (wcschr(L"\\/:*?\"<>|", str[i]) != NULL)
+        if (wcschr(L"\\/:*?\"<>|", wch) != NULL)
         {
             ret += L'_';
         }
         else
         {
-            ret += str[i];
+            ret += wch;
         }
     }
     return ret;
