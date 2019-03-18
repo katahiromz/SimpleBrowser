@@ -231,6 +231,8 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         CheckDlgButton(hwnd, chx1, BST_CHECKED);
     if (g_settings.m_dont_r_click)
         CheckDlgButton(hwnd, chx3, BST_CHECKED);
+    if (g_settings.m_dont_open_popups)
+        CheckDlgButton(hwnd, chx4, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
 
@@ -241,6 +243,7 @@ static void OnOK(HWND hwnd)
 {
     g_settings.m_secure = (IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED);
     g_settings.m_dont_r_click = (IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED);
+    g_settings.m_dont_open_popups = (IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED);
 
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));
