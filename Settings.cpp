@@ -2,6 +2,7 @@
 #include <windowsx.h>
 #include <shlwapi.h>
 #include "URLListDlg.hpp"
+#include "BlackListDlg.hpp"
 #include "resource.h"
 
 SETTINGS g_settings;
@@ -300,6 +301,7 @@ static void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         ShowURLListDlg(GetModuleHandle(NULL), hwnd);
         break;
     case psh4:
+        ShowBlackListDlg(GetModuleHandle(NULL), hwnd);
         break;
     case psh5:
         g_settings.m_emulation = 11001;

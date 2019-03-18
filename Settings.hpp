@@ -13,12 +13,12 @@ struct SETTINGS
     BOOL m_bMaximized;
     std::wstring m_homepage;
     std::vector<std::wstring> m_url_list;
+    std::vector<std::wstring> m_black_list;
     BOOL m_secure;
     BOOL m_dont_r_click;
     BOOL m_local_file_access;
     BOOL m_dont_popup;
     DWORD m_emulation;
-    std::vector<std::wstring> m_black_list;
 
     BOOL load();
     BOOL save();

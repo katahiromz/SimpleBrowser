@@ -1,4 +1,4 @@
-#include "URLListDlg.hpp"
+#include "BlackListDlg.hpp"
 #include "Settings.hpp"
 #include <windowsx.h>
 #include <shlwapi.h>
@@ -7,7 +7,7 @@
 static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
     HWND hLst1 = GetDlgItem(hwnd, lst1);
-    for (auto& url : g_settings.m_url_list)
+    for (auto& url : g_settings.m_black_list)
     {
         ListBox_AddString(hLst1, url.c_str());
     }
@@ -17,14 +17,14 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 static void OnOK(HWND hwnd)
 {
     HWND hLst1 = GetDlgItem(hwnd, lst1);
-    g_settings.m_url_list.clear();
+    g_settings.m_black_list.clear();
 
     TCHAR szText[256];
     INT i, nCount = ListBox_GetCount(hLst1);
     for (i = 0; i < nCount; ++i)
     {
         ListBox_GetText(hLst1, i, szText);
-        g_settings.m_url_list.push_back(szText);
+        g_settings.m_black_list.push_back(szText);
     }
 
     EndDialog(hwnd, IDOK);
@@ -128,7 +128,7 @@ static void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 }
 
 static INT_PTR CALLBACK
-URLListDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+ForbiddenDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
@@ -138,7 +138,7 @@ URLListDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void ShowURLListDlg(HINSTANCE hInst, HWND hwnd)
+void ShowBlackListDlg(HINSTANCE hInst, HWND hwnd)
 {
-    DialogBox(hInst, MAKEINTRESOURCE(IDD_URLLIST), hwnd, URLListDlgProc);
+    DialogBox(hInst, MAKEINTRESOURCE(IDD_FORBIDDEN), hwnd, ForbiddenDlgProc);
 }

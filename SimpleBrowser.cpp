@@ -1162,7 +1162,7 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
 {
     switch (codeNotify)
     {
-    case CBN_SELCHANGE:
+    case CBN_SELENDOK:
         {
             INT iItem = (INT)ComboBox_GetCurSel(s_hAddrBarComboBox);
             if (iItem != CB_ERR)

@@ -66,6 +66,7 @@ add_executable(SimpleBrowser WIN32
     SimpleBrowser.cpp
     AboutBox.cpp
     AddLinkDlg.cpp
+    BlackListDlg.cpp
     MBindStatusCallback.cpp
     MEventSink.cpp
     MWebBrowser.cpp
