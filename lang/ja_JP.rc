@@ -104,7 +104,7 @@ STRINGTABLE
     IDS_REFRESH, "再読み込み"
     IDS_BACK, "< 戻る"
     IDS_NEXT, "次へ >"
-    IDS_GO, "Go!"
+    IDS_GO, "Go >"
     IDS_LOADING, "読み込み中..."
     IDS_HOMEPAGE, "https://yahoo.co.jp"
     IDS_EXECUTING_CMD, "コマンド実行中..."

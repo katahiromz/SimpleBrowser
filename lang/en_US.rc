@@ -104,7 +104,7 @@ STRINGTABLE
     IDS_REFRESH, "Refresh"
     IDS_BACK, "< Back"
     IDS_NEXT, "Next >"
-    IDS_GO, "Go!"
+    IDS_GO, "Go >"
     IDS_LOADING, "Loading..."
     IDS_HOMEPAGE, "https://google.com"
     IDS_EXECUTING_CMD, "Executing command..."
