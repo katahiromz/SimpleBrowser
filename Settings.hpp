@@ -17,6 +17,7 @@ struct SETTINGS
     BOOL m_dont_r_click;
     BOOL m_local_file_access;
     BOOL m_dont_popup;
+    DWORD m_emulation;
     std::vector<std::wstring> m_black_list;
 
     BOOL load();

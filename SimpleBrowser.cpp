@@ -564,9 +564,9 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     s_hbmInsecure = LoadBitmap(s_hInst, MAKEINTRESOURCE(IDB_INSECURE));
     s_hAccel = LoadAccelerators(s_hInst, MAKEINTRESOURCE(1));
 
-    DoSetBrowserEmulation(11001);   // EDGE
-    //DoSetBrowserEmulation(11000);   // IE
-    //DoSetBrowserEmulation(0);
+    g_settings.load();
+
+    DoSetBrowserEmulation(g_settings.m_emulation);
 
     s_pWebBrowser = MWebBrowser::Create(hwnd);
     if (!s_pWebBrowser)
@@ -651,8 +651,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     s_hAddrBarEdit = GetTopWindow(s_hAddrBarComboBox);
     SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
-
-    g_settings.load();
 
     if (g_settings.m_secure)
         s_pWebBrowser->AllowInsecure(FALSE);

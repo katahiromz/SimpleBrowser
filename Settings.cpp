@@ -22,6 +22,7 @@ void SETTINGS::reset()
     m_dont_r_click = FALSE;
     m_local_file_access = TRUE;
     m_dont_popup = TRUE;
+    m_emulation = 11001;
     m_black_list.clear();
 }
 
@@ -88,6 +89,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"DontPopup", NULL, NULL, (LPBYTE)&value, &cb);
         m_dont_popup = !!value;
+
+        value = m_emulation;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"Emulation", NULL, NULL, (LPBYTE)&value, &cb);
+        m_emulation = value;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -196,6 +202,10 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"DontPopup", 0, REG_DWORD, (LPBYTE)&value, cb);
 
+                value = DWORD(m_emulation);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"Emulation", 0, REG_DWORD, (LPBYTE)&value, cb);
+
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));
                 RegSetValueEx(hApp, L"URLCount", 0, REG_DWORD, (LPBYTE)&count, cb);
@@ -247,6 +257,7 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         CheckDlgButton(hwnd, chx4, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
+    SetDlgItemInt(hwnd, edt2, g_settings.m_emulation, TRUE);
 
     return TRUE;
 }
@@ -261,6 +272,9 @@ static void OnOK(HWND hwnd)
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));
     g_settings.m_homepage = szText;
+
+    GetDlgItemText(hwnd, edt2, szText, ARRAYSIZE(szText));
+    g_settings.m_emulation = wcstol(szText, NULL, 0);
 
     EndDialog(hwnd, IDOK);
 }
@@ -286,6 +300,8 @@ static void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case psh4:
         break;
     case psh5:
+        g_settings.m_emulation = 11001;
+        SetDlgItemInt(hwnd, edt2, g_settings.m_emulation, TRUE);
         break;
     case psh6:
         g_settings.reset();
