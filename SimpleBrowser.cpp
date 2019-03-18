@@ -165,13 +165,24 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     {
         return TRUE;
     }
+    if (g_settings.m_local_file_access)
+    {
+        if (protocol == L"file")
+            return TRUE;
+    }
     return FALSE;
 }
 
 BOOL IsAccessibleURL(const WCHAR *url)
 {
-    if (PathFileExists(url))
-        return FALSE;
+    if (!g_settings.m_local_file_access)
+    {
+        if (PathFileExists(url) || UrlIsFileUrl(url) ||
+            PathIsUNC(url) || PathIsNetworkPath(url))
+        {
+            return FALSE;
+        }
+    }
 
     if (LPWSTR pch = wcschr(url, L':'))
     {
