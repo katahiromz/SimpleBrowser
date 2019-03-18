@@ -934,14 +934,24 @@ void OnViewSourceDone(HWND hwnd)
 
 void OnDots(HWND hwnd)
 {
-    if (SendDlgItemMessage(hwnd, ID_DOTS, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
-        return;
+    if (GetAsyncKeyState(VK_MENU) < 0 &&
+        GetAsyncKeyState(L'F') < 0)
+    {
+        // Alt+F
+        SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, TRUE, 0);
+    }
 
     RECT rc;
     GetWindowRect(GetDlgItem(hwnd, ID_DOTS), &rc);
 
     POINT pt;
     GetCursorPos(&pt);
+
+    if (!PtInRect(&rc, pt))
+    {
+        pt.x = (rc.left + rc.right) / 2;
+        pt.y = (rc.top + rc.bottom) / 2;
+    }
 
     HMENU hMenu = LoadMenu(s_hInst, MAKEINTRESOURCE(IDR_DOTSMENU));
     if (!hMenu)
