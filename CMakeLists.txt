@@ -70,6 +70,7 @@ add_executable(SimpleBrowser WIN32
     MEventSink.cpp
     MWebBrowser.cpp
     Settings.cpp
+    URLListDlg.cpp
     SimpleBrowser_res.rc)
 target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)
 

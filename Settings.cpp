@@ -1,6 +1,7 @@
 #include "Settings.hpp"
 #include <windowsx.h>
 #include <shlwapi.h>
+#include "URLListDlg.hpp"
 #include "resource.h"
 
 SETTINGS g_settings;
@@ -296,6 +297,7 @@ static void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         SetDlgItemText(hwnd, edt1, LoadStringDx(IDS_HOMEPAGE));
         break;
     case psh3:
+        ShowURLListDlg(GetModuleHandle(NULL), hwnd);
         break;
     case psh4:
         break;

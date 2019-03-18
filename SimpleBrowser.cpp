@@ -555,6 +555,19 @@ AddressBarWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return result;
 }
 
+void InitAddrBarComboBox(void)
+{
+    TCHAR szText[256];
+    GetWindowText(s_hAddrBarComboBox, szText, ARRAYSIZE(szText));
+
+    ComboBox_ResetContent(s_hAddrBarComboBox);
+    for (auto& url : g_settings.m_url_list)
+    {
+        ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
+    }
+
+    SetWindowText(s_hAddrBarComboBox, szText);
+}
 
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 {
@@ -674,10 +687,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         ShowWindowAsync(hwnd, SW_MAXIMIZE);
     }
 
-    for (auto& url : g_settings.m_url_list)
-    {
-        ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
-    }
+    InitAddrBarComboBox();
 
     int argc = 0;
     if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
@@ -1122,6 +1132,8 @@ void OnCreateShortcut(HWND hwnd)
 void OnSettings(HWND hwnd)
 {
     ShowSettingsDlg(s_hInst, hwnd, s_strURL);
+
+    InitAddrBarComboBox();
 }
 
 void OnAddToComboBox(HWND hwnd)
