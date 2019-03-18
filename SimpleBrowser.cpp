@@ -274,8 +274,11 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        // prevent new window open
-        *Cancel = VARIANT_TRUE;
+        if (g_settings.m_dont_open_popups)
+        {
+            // prevent new window open
+            *Cancel = VARIANT_TRUE;
+        }
     }
 
     virtual void OnCommandStateChange(

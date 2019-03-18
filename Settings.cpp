@@ -20,6 +20,7 @@ void SETTINGS::reset()
     m_url_list.clear();
     m_secure = TRUE;
     m_dont_r_click = FALSE;
+    m_dont_open_popups = TRUE;
     m_black_list.clear();
 }
 
@@ -76,6 +77,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"DontRClick", NULL, NULL, (LPBYTE)&value, &cb);
         m_dont_r_click = !!value;
+
+        value = m_dont_open_popups;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"DontPopup", NULL, NULL, (LPBYTE)&value, &cb);
+        m_dont_open_popups = !!value;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -175,6 +181,10 @@ BOOL SETTINGS::save()
                 value = DWORD(m_dont_r_click);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"DontRClick", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_dont_open_popups);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"DontPopup", 0, REG_DWORD, (LPBYTE)&value, cb);
 
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));

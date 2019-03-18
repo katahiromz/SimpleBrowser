@@ -57,6 +57,7 @@ FONT 9, "MS UI Gothic"
     AUTOCHECKBOX "More &Secure Connection", chx1, 5, 85, 95, 14
     AUTOCHECKBOX "Lo&cal File Access", chx2, 5, 105, 95, 14
     AUTOCHECKBOX "Prohibit Context &Menu", chx3, 105, 85, 100, 14
+    AUTOCHECKBOX "Don't &Open Popups", chx4, 105, 105, 95, 14
     LTEXT "&Protcols:", IDC_STATIC, 5, 127, 43, 12
     EDITTEXT edt2, 55, 125, 95, 14, ES_AUTOHSCROLL
     PUSHBUTTON "R&eset", psh5, 155, 125, 50, 14

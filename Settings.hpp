@@ -15,6 +15,7 @@ struct SETTINGS
     std::vector<std::wstring> m_url_list;
     BOOL m_secure;
     BOOL m_dont_r_click;
+    BOOL m_dont_open_popups;
     std::vector<std::wstring> m_black_list;
 
     BOOL load();
