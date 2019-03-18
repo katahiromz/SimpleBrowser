@@ -274,7 +274,7 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        if (g_settings.m_dont_open_popups)
+        if (g_settings.m_dont_popup)
         {
             // prevent new window open
             *Cancel = VARIANT_TRUE;
@@ -939,6 +939,11 @@ void OnDots(HWND hwnd)
     {
         // Alt+F
         SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, TRUE, 0);
+    }
+    else
+    {
+        if (SendDlgItemMessage(hwnd, ID_DOTS, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+            return;
     }
 
     RECT rc;

@@ -20,7 +20,8 @@ void SETTINGS::reset()
     m_url_list.clear();
     m_secure = TRUE;
     m_dont_r_click = FALSE;
-    m_dont_open_popups = TRUE;
+    m_local_file_access = TRUE;
+    m_dont_popup = TRUE;
     m_black_list.clear();
 }
 
@@ -78,10 +79,15 @@ BOOL SETTINGS::load()
         RegQueryValueEx(hApp, L"DontRClick", NULL, NULL, (LPBYTE)&value, &cb);
         m_dont_r_click = !!value;
 
-        value = m_dont_open_popups;
+        value = m_local_file_access;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"LocalFileAccess", NULL, NULL, (LPBYTE)&value, &cb);
+        m_local_file_access = !!value;
+
+        value = m_dont_popup;
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"DontPopup", NULL, NULL, (LPBYTE)&value, &cb);
-        m_dont_open_popups = !!value;
+        m_dont_popup = !!value;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -182,7 +188,11 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"DontRClick", 0, REG_DWORD, (LPBYTE)&value, cb);
 
-                value = DWORD(m_dont_open_popups);
+                value = DWORD(m_local_file_access);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"LocalFileAccess", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_dont_popup);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"DontPopup", 0, REG_DWORD, (LPBYTE)&value, cb);
 
@@ -229,9 +239,11 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
     if (g_settings.m_secure)
         CheckDlgButton(hwnd, chx1, BST_CHECKED);
+    if (g_settings.m_local_file_access)
+        CheckDlgButton(hwnd, chx2, BST_CHECKED);
     if (g_settings.m_dont_r_click)
         CheckDlgButton(hwnd, chx3, BST_CHECKED);
-    if (g_settings.m_dont_open_popups)
+    if (g_settings.m_dont_popup)
         CheckDlgButton(hwnd, chx4, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
@@ -242,8 +254,9 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 static void OnOK(HWND hwnd)
 {
     g_settings.m_secure = (IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED);
+    g_settings.m_local_file_access = (IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED);
     g_settings.m_dont_r_click = (IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED);
-    g_settings.m_dont_open_popups = (IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED);
+    g_settings.m_dont_popup = (IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED);
 
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));
