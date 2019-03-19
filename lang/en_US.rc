@@ -58,10 +58,10 @@ FONT 9, "Tahoma"
     PUSHBUTTON "URL &Lists...", psh3, 5, 45, 95, 35
     PUSHBUTTON "&Forbidden URLs...", psh4, 105, 45, 100, 35
     AUTOCHECKBOX "More &Secure Connection", chx1, 5, 85, 95, 14
-    AUTOCHECKBOX "Lo&cal File Access", chx2, 5, 105, 95, 14
+    AUTOCHECKBOX "L&ocal File Access", chx2, 5, 105, 95, 14
     AUTOCHECKBOX "Prohibit Context &Menu", chx3, 105, 85, 100, 14
-    AUTOCHECKBOX "Don't &Open Popups", chx4, 105, 105, 95, 14
-    RTEXT "B&rowser Emulation:", IDC_STATIC, 5, 127, 85, 12
+    AUTOCHECKBOX "Don't Open &Popups", chx4, 105, 105, 95, 14
+    RTEXT "Browser Em&ulation:", IDC_STATIC, 5, 127, 85, 12
     EDITTEXT edt2, 95, 125, 40, 14, ES_AUTOHSCROLL
     PUSHBUTTON "R&eset", psh5, 140, 125, 50, 14
     AUTOCHECKBOX "&Ignore script errors", chx5, 5, 145, 95, 14

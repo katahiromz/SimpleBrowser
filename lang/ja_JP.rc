@@ -58,10 +58,10 @@ FONT 9, "MS UI Gothic"
     PUSHBUTTON "URL リスト(&L)...", psh3, 5, 45, 95, 35
     PUSHBUTTON "禁じられたURL(&F)...", psh4, 105, 45, 100, 35
     AUTOCHECKBOX "より安全な接続(&S)", chx1, 5, 85, 95, 14
-    AUTOCHECKBOX "ローカル ファイル アクセス(&C)", chx2, 5, 105, 95, 14
+    AUTOCHECKBOX "ローカル ファイル アクセス(&O)", chx2, 5, 105, 95, 14
     AUTOCHECKBOX "コンテキストメニューを禁止(&M)", chx3, 105, 85, 100, 14
-    AUTOCHECKBOX "ポップアップを開かない(&O)", chx4, 105, 105, 95, 14
-    RTEXT "ブラウザ エミュレーション(&R):", IDC_STATIC, 5, 127, 85, 12
+    AUTOCHECKBOX "ポップアップを開かない(&P)", chx4, 105, 105, 95, 14
+    RTEXT "ブラウザ エミュレーション(&U):", IDC_STATIC, 5, 127, 85, 12
     EDITTEXT edt2, 95, 125, 40, 14, ES_AUTOHSCROLL
     PUSHBUTTON "リセット(&E)", psh5, 140, 125, 50, 14
     AUTOCHECKBOX "スクリプト エラーを無視する(&I)", chx5, 5, 145, 95, 14
