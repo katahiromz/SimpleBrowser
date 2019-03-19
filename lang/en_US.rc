@@ -12,6 +12,7 @@ IDR_DOTSMENU MENU
 {
     POPUP "Popup #0"
     {
+        MENUITEM "&New\tCtrl+N", ID_NEW
         MENUITEM "Save Page &As...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
         MENUITEM "Page &Setup...", ID_PAGE_SETUP
@@ -27,6 +28,8 @@ IDR_DOTSMENU MENU
         MENUITEM "SimpleBrowser Se&ttings...", ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "A&bout This Application", ID_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit\tAlt+F4", ID_EXIT
     }
 }
 

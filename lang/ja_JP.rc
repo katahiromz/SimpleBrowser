@@ -12,6 +12,7 @@ IDR_DOTSMENU MENU
 {
     POPUP "Popup #0"
     {
+        MENUITEM "新しいウィンドウ(&N)\tCtrl+N", ID_NEW
         MENUITEM "ページを名前を付けて保存(&A)...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
         MENUITEM "ページ設定(&S)...", ID_PAGE_SETUP
@@ -27,6 +28,8 @@ IDR_DOTSMENU MENU
         MENUITEM "SimpleBrowser 設定(&T)...", ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "バージョン情報(&B)", ID_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "終了(&X)\tAlt+F4", ID_EXIT
     }
 }
 

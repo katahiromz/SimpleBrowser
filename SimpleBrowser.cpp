@@ -1201,6 +1201,19 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
     }
 }
 
+void OnExit(HWND hwnd)
+{
+    DestroyWindow(hwnd);
+}
+
+void OnNew(HWND hwnd)
+{
+    TCHAR szPath[MAX_PATH];
+    GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
+
+    ShellExecute(hwnd, NULL, szPath, g_settings.m_homepage.c_str(), NULL, SW_SHOWNORMAL);
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1278,6 +1291,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_DOCUMENT_COMPLETE:
         OnDocumentComplete(hwnd);
+        break;
+    case ID_EXIT:
+        OnExit(hwnd);
+        break;
+    case ID_NEW:
+        OnNew(hwnd);
         break;
     }
 
@@ -1386,6 +1405,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                     case 'L':   // Ctrl+L
                     case 'S':   // Ctrl+S
                     case 'O':   // Ctrl+O
+                    case 'N':   // Ctrl+N
                         bIgnore = TRUE;
                         break;
                     }
