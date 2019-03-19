@@ -333,7 +333,10 @@ struct MEventHandler : MEventSinkListener
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel)
     {
-        *Cancel = TRUE;
+        if (g_settings.m_dont_r_click)
+        {
+            *Cancel = TRUE;
+        }
     }
 };
 MEventHandler s_listener;
