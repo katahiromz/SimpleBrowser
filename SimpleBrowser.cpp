@@ -56,6 +56,7 @@ static HBITMAP s_hbmSecure = NULL;
 static HBITMAP s_hbmInsecure = NULL;
 static std::wstring s_strURL;
 static std::wstring s_strTitle;
+static BOOL s_bKiosk = FALSE;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -168,7 +169,7 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     {
         return TRUE;
     }
-    if (g_settings.m_local_file_access)
+    if (g_settings.m_local_file_access && !g_settings.m_kiosk_mode)
     {
         if (protocol == L"file")
             return TRUE;
@@ -181,7 +182,7 @@ BOOL IsAccessibleURL(const WCHAR *url)
     if (PathFileExists(url) || UrlIsFileUrl(url) ||
         PathIsUNC(url) || PathIsNetworkPath(url))
     {
-        return g_settings.m_local_file_access;
+        return g_settings.m_local_file_access && !g_settings.m_kiosk_mode;
     }
 
     if (LPCWSTR pch = wcschr(url, L':'))
@@ -189,8 +190,11 @@ BOOL IsAccessibleURL(const WCHAR *url)
         std::wstring protocol(url, pch - url);
         if (!IsAccessibleProtocol(protocol))
             return FALSE;
-        if (g_settings.m_local_file_access && protocol == L"file")
-            return TRUE;
+        if (g_settings.m_local_file_access && !g_settings.m_kiosk_mode)
+        {
+            if (protocol == L"file")
+                return TRUE;
+        }
     }
 
     if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
@@ -291,7 +295,7 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        if (g_settings.m_dont_popup)
+        if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
             // prevent new window open
             *Cancel = VARIANT_TRUE;
@@ -334,7 +338,7 @@ struct MEventHandler : MEventSinkListener
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel)
     {
-        if (g_settings.m_dont_r_click)
+        if (g_settings.m_dont_r_click || g_settings.m_kiosk_mode)
         {
             *Cancel = VARIANT_TRUE;
         }
@@ -567,6 +571,61 @@ void InitAddrBarComboBox(void)
     SetWindowText(s_hAddrBarComboBox, szText);
 }
 
+void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
+{
+    if (s_bKiosk == bKiosk)
+        return;
+
+    static DWORD s_old_style;
+    static DWORD s_old_exstyle;
+    static BOOL s_old_maximized;
+    static RECT s_old_rect;
+
+    if (bKiosk)
+    {
+        s_old_style = GetWindowLong(hwnd, GWL_STYLE);
+        s_old_exstyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+        s_old_maximized = g_settings.m_bMaximized;
+        GetWindowRect(hwnd, &s_old_rect);
+
+        DWORD style = s_old_exstyle & ~(WS_CAPTION | WS_THICKFRAME);
+        DWORD exstyle = s_old_exstyle & ~(WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE |
+                                          WS_EX_DLGMODALFRAME | WS_EX_STATICEDGE);
+        exstyle |= WS_EX_TOPMOST;
+        SetWindowLong(hwnd, GWL_STYLE, style);
+        SetWindowLong(hwnd, GWL_EXSTYLE, exstyle);
+
+        HMONITOR hMonitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY);
+
+        MONITORINFO mi;
+        mi.cbSize = sizeof(mi);
+        ::GetMonitorInfo(hMonitor, &mi);
+
+        RECT& rect = mi.rcMonitor;
+        ::MoveWindow(hwnd, rect.left, rect.top,
+                     rect.right - rect.left, rect.bottom - rect.top,
+                     TRUE);
+        ShowWindow(hwnd, SW_SHOWNORMAL);
+    }
+    else
+    {
+        SetWindowLong(hwnd, GWL_STYLE, s_old_style);
+        SetWindowLong(hwnd, GWL_EXSTYLE, s_old_exstyle);
+        MoveWindow(hwnd, s_old_rect.left, s_old_rect.top,
+                   s_old_rect.right - s_old_rect.left,
+                   s_old_rect.bottom - s_old_rect.top,
+                   TRUE);
+        if (s_old_maximized)
+            ShowWindow(hwnd, SW_MAXIMIZE);
+    }
+
+    InvalidateRect(hwnd, NULL, TRUE);
+    PostMessage(hwnd, WM_MOVE, 0, 0);
+    PostMessage(hwnd, WM_SIZE, 0, 0);
+
+    s_bKiosk = bKiosk;
+}
+
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 {
     s_hMainWnd = hwnd;
@@ -585,7 +644,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     IWebBrowser2 *pBrowser2 = s_pWebBrowser->GetIWebBrowser2();
 
-    if (g_settings.m_ignore_errors)
+    if (g_settings.m_ignore_errors || g_settings.m_kiosk_mode)
     {
         // Don't show script errors
         s_pWebBrowser->put_Silent(VARIANT_TRUE);
@@ -670,26 +729,33 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     s_hAddrBarEdit = GetTopWindow(s_hAddrBarComboBox);
     SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
 
-    if (g_settings.m_secure)
+    if (g_settings.m_secure || g_settings.m_kiosk_mode)
         s_pWebBrowser->AllowInsecure(FALSE);
     else
         s_pWebBrowser->AllowInsecure(TRUE);
 
-    if (g_settings.m_x != CW_USEDEFAULT)
+    if (!g_settings.m_kiosk_mode)
     {
-        UINT uFlags;
-        uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE;
-        SetWindowPos(hwnd, NULL, g_settings.m_x, g_settings.m_y, 0, 0, uFlags);
+        if (g_settings.m_x != CW_USEDEFAULT)
+        {
+            UINT uFlags;
+            uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE;
+            SetWindowPos(hwnd, NULL, g_settings.m_x, g_settings.m_y, 0, 0, uFlags);
+        }
+        if (g_settings.m_cx != CW_USEDEFAULT)
+        {
+            UINT uFlags;
+            uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE;
+            SetWindowPos(hwnd, NULL, 0, 0, g_settings.m_cx, g_settings.m_cy, uFlags);
+        }
+        if (g_settings.m_bMaximized)
+        {
+            ShowWindowAsync(hwnd, SW_MAXIMIZE);
+        }
     }
-    if (g_settings.m_cx != CW_USEDEFAULT)
+    else
     {
-        UINT uFlags;
-        uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE;
-        SetWindowPos(hwnd, NULL, 0, 0, g_settings.m_cx, g_settings.m_cy, uFlags);
-    }
-    if (g_settings.m_bMaximized)
-    {
-        ShowWindowAsync(hwnd, SW_MAXIMIZE);
+        DoMakeItKiosk(hwnd, TRUE);
     }
 
     InitAddrBarComboBox();
@@ -721,7 +787,7 @@ void OnMove(HWND hwnd, int x, int y)
 {
     RECT rc;
 
-    if (!IsZoomed(hwnd) && !IsIconic(hwnd))
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk)
     {
         GetWindowRect(hwnd, &rc);
         g_settings.m_x = rc.left;
@@ -733,7 +799,7 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
 
-    if (!IsZoomed(hwnd) && !IsIconic(hwnd))
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk)
     {
         GetWindowRect(hwnd, &rc);
         g_settings.m_cx = rc.right - rc.left;
@@ -760,8 +826,15 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
     INT x1 = x;
 
     x = rc.right - cx;
-    MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, cx, cy, TRUE);
-    x -= cx;
+    if (g_settings.m_kiosk_mode)
+    {
+        MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, 0, cy, TRUE);
+    }
+    else
+    {
+        MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, cx, cy, TRUE);
+        x -= cx;
+    }
     MoveWindow(GetDlgItem(hwnd, ID_GO), x, y, cx, cy, TRUE);
 
     cx = x - x1;
@@ -1140,7 +1213,7 @@ void OnSettings(HWND hwnd)
 
     InitAddrBarComboBox();
 
-    if (g_settings.m_ignore_errors)
+    if (g_settings.m_ignore_errors || g_settings.m_kiosk_mode)
     {
         // Don't show script errors
         s_pWebBrowser->put_Silent(VARIANT_TRUE);
@@ -1149,6 +1222,14 @@ void OnSettings(HWND hwnd)
     {
         s_pWebBrowser->put_Silent(VARIANT_FALSE);
     }
+
+    if (g_settings.m_kiosk_mode)
+        DoMakeItKiosk(hwnd, TRUE);
+    else
+        DoMakeItKiosk(hwnd, FALSE);
+
+    PostMessage(hwnd, WM_MOVE, 0, 0);
+    PostMessage(hwnd, WM_SIZE, 0, 0);
 }
 
 void OnAddToComboBox(HWND hwnd)
@@ -1389,7 +1470,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
             case WM_RBUTTONDBLCLK:
             case WM_RBUTTONDOWN:
             case WM_RBUTTONUP:
-                if (g_settings.m_dont_r_click)
+                if (g_settings.m_dont_r_click || g_settings.m_kiosk_mode)
                     return TRUE;
                 break;
             case WM_KEYDOWN:
