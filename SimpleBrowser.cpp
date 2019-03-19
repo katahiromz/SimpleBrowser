@@ -547,6 +547,7 @@ AddressBarEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (iItem != CB_ERR)
                 {
                     ComboBox_DeleteString(s_hAddrBarComboBox, iItem);
+                    g_settings.m_url_list.erase(g_settings.m_url_list.begin() + iItem);
                     return 0;
                 }
             }
