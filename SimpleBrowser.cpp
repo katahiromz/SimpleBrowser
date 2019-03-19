@@ -1,6 +1,7 @@
 // SimpleBrowser.cpp --- simple Win32 browser
 // Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
 // This file is public domain software.
+#define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>
@@ -18,6 +19,7 @@
 #include "mime_info.h"
 #include <string>
 #include <cassert>
+#include <strsafe.h>
 #include <comdef.h>
 #include "resource.h"
 
@@ -181,7 +183,7 @@ BOOL IsAccessibleURL(const WCHAR *url)
         return g_settings.m_local_file_access;
     }
 
-    if (LPWSTR pch = wcschr(url, L':'))
+    if (LPCWSTR pch = wcschr(url, L':'))
     {
         std::wstring protocol(url, pch - url);
         if (!IsAccessibleProtocol(protocol))
@@ -318,7 +320,7 @@ struct MEventHandler : MEventSinkListener
     virtual void OnTitleTextChange(BSTR Text)
     {
         WCHAR szText[256];
-        wsprintfW(szText, LoadStringDx(IDS_TITLE_TEXT), Text);
+        StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_TITLE_TEXT), Text);
         SetWindowTextW(s_hMainWnd, szText);
         s_strTitle = Text;
     }
@@ -1108,13 +1110,13 @@ void OnCreateShortcut(HWND hwnd)
     PathAppend(szPath, file_title.c_str());
 
     std::wstring strPath;
+    WCHAR sz[32];
     for (INT i = 1; i < 64; ++i)
     {
         strPath = szPath;
         if (i > 1)
         {
-            WCHAR sz[32];
-            wsprintfW(sz, L" (%u)", i);
+            StringCbPrintfW(sz, sizeof(sz), L" (%u)", i);
             strPath += sz;
         }
         strPath += L".url";

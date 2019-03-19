@@ -1,6 +1,7 @@
 #include "Settings.hpp"
 #include <windowsx.h>
 #include <shlwapi.h>
+#include <strsafe.h>
 #include "URLListDlg.hpp"
 #include "BlackListDlg.hpp"
 #include "resource.h"
@@ -111,7 +112,7 @@ BOOL SETTINGS::load()
 
         for (DWORD i = 0; i < count; ++i)
         {
-            wsprintfW(szName, L"URL%lu", i);
+            StringCbPrintfW(szName, sizeof(szName), L"URL%lu", i);
 
             cb = sizeof(szText);
             if (!RegQueryValueEx(hApp, szName, NULL, NULL, (LPBYTE)szText, &cb))
@@ -130,7 +131,7 @@ BOOL SETTINGS::load()
 
         for (DWORD i = 0; i < count; ++i)
         {
-            wsprintfW(szName, L"Forbidden%lu", i);
+            StringCbPrintfW(szName, sizeof(szName), L"Forbidden%lu", i);
 
             cb = sizeof(szText);
             if (!RegQueryValueEx(hApp, szName, NULL, NULL, (LPBYTE)szText, &cb))
@@ -226,7 +227,7 @@ BOOL SETTINGS::save()
                 {
                     auto& url = m_url_list[i];
 
-                    wsprintfW(szName, L"URL%lu", i);
+                    StringCbPrintfW(szName, sizeof(szName), L"URL%lu", i);
 
                     cb = DWORD((url.size() + 1) * sizeof(WCHAR));
                     RegSetValueEx(hApp, szName, 0, REG_DWORD, (LPBYTE)url.c_str(), cb);
@@ -240,7 +241,7 @@ BOOL SETTINGS::save()
                 {
                     auto& url = m_black_list[i];
 
-                    wsprintfW(szName, L"Forbidden%lu", i);
+                    StringCbPrintfW(szName, sizeof(szName), L"Forbidden%lu", i);
 
                     cb = DWORD((url.size() + 1) * sizeof(WCHAR));
                     RegSetValueEx(hApp, szName, 0, REG_DWORD, (LPBYTE)url.c_str(), cb);
