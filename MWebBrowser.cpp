@@ -469,6 +469,12 @@ STDMETHODIMP MWebBrowser::QueryInterface(REFIID riid, void **ppvObj)
     {
         *ppvObj = static_cast<IHttpSecurity *>(this);
     }
+#ifndef NO_DOWNLOADMGR
+    else if (riid == __uuidof(IDownloadManager))
+    {
+        *ppvObj = static_cast<IDownloadManager *>(this);
+    }
+#endif
     else
     {
         return E_NOINTERFACE;
@@ -763,3 +769,20 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
         return S_OK;
     return E_ABORT;
 }
+
+#ifndef NO_DOWNLOADMGR
+// IDownloadManager interface
+
+STDMETHODIMP MWebBrowser::Download(
+    IMoniker *pmk,
+    IBindCtx *pbc,
+    DWORD dwBindVerb,
+    LONG grfBINDF,
+    BINDINFO *pBindInfo,
+    LPCOLESTR pszHeaders,
+    LPCOLESTR pszRedir,
+    UINT uiCP)
+{
+    return E_NOTIMPL;
+}
+#endif
