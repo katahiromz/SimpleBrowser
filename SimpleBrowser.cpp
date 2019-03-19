@@ -335,7 +335,7 @@ struct MEventHandler : MEventSinkListener
     {
         if (g_settings.m_dont_r_click)
         {
-            *Cancel = TRUE;
+            *Cancel = VARIANT_TRUE;
         }
     }
 };
