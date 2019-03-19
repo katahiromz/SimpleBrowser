@@ -826,7 +826,7 @@ void OnGo(HWND hwnd)
     StrTrimW(szURL, L" \t\n\r\f\v");
 
     if (szURL[0] == 0)
-        lstrcpyW(szURL, L"about:blank");
+        StringCbCopyW(szURL, sizeof(szURL), L"about:blank");
 
     DoNavigate(hwnd, szURL);
 }
