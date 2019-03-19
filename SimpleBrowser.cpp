@@ -1316,6 +1316,16 @@ void OnDestroy(HWND hwnd)
         DestroyAcceleratorTable(s_hAccel);
         s_hAccel = NULL;
     }
+    if (s_pEventSink)
+    {
+        s_pEventSink->Disconnect();
+        s_pEventSink->Release();
+        s_pEventSink = NULL;
+    }
+    if (s_pWebBrowser)
+    {
+        s_pWebBrowser->Destroy();
+    }
     PostQuitMessage(0);
 }
 
@@ -1585,6 +1595,12 @@ WinMain(HINSTANCE   hInstance,
 
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+    }
+
+    if (s_pWebBrowser)
+    {
+        s_pWebBrowser->Release();
+        s_pWebBrowser = NULL;
     }
 
     OleUninitialize();
