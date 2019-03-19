@@ -577,6 +577,8 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
     if (s_bKiosk == bKiosk)
         return;
 
+    s_bKiosk = bKiosk;
+
     static DWORD s_old_style;
     static DWORD s_old_exstyle;
     static BOOL s_old_maximized;
@@ -625,8 +627,6 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
     InvalidateRect(hwnd, NULL, TRUE);
     PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
-
-    s_bKiosk = bKiosk;
 }
 
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
@@ -790,6 +790,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     WNDPROC fn = SubclassWindow(s_hAddrBarEdit, AddressBarEditWndProc);
     SetWindowLongPtr(s_hAddrBarEdit, GWLP_USERDATA, (LONG_PTR)fn);
 
+    PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
 
     return TRUE;
@@ -799,7 +800,7 @@ void OnMove(HWND hwnd, int x, int y)
 {
     RECT rc;
 
-    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk)
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk && !g_settings.m_kiosk_mode)
     {
         GetWindowRect(hwnd, &rc);
         g_settings.m_x = rc.left;
@@ -811,7 +812,7 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
 
-    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk)
+    if (!IsZoomed(hwnd) && !IsIconic(hwnd) && !s_bKiosk && !g_settings.m_kiosk_mode)
     {
         GetWindowRect(hwnd, &rc);
         g_settings.m_cx = rc.right - rc.left;
@@ -1312,6 +1313,12 @@ void OnNew(HWND hwnd)
     ShellExecute(hwnd, NULL, szPath, g_settings.m_homepage.c_str(), NULL, SW_SHOWNORMAL);
 }
 
+void OnKiosk(HWND hwnd)
+{
+    g_settings.m_kiosk_mode = !s_bKiosk;
+    DoMakeItKiosk(hwnd, !s_bKiosk);
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1396,6 +1403,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case ID_NEW:
         OnNew(hwnd);
         break;
+    case ID_KIOSK:
+        OnKiosk(hwnd);
+        break;
     }
 
     --s_nLevel;
@@ -1407,7 +1417,8 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnDestroy(HWND hwnd)
 {
-    g_settings.m_bMaximized = IsZoomed(hwnd);
+    if (!g_settings.m_kiosk_mode)
+        g_settings.m_bMaximized = IsZoomed(hwnd);
 
     g_settings.m_url_list.clear();
     TCHAR szText[256];
@@ -1504,6 +1515,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                     case 'S':   // Ctrl+S
                     case 'O':   // Ctrl+O
                     case 'N':   // Ctrl+N
+                    case 'K':   // Ctrl+K
                         bIgnore = TRUE;
                         break;
                     }

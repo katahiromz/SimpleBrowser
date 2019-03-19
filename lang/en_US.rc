@@ -26,7 +26,7 @@ IDR_DOTSMENU MENU
         MENUITEM "Create Shortcut to &Desktop...", ID_CREATE_SHORTCUT
         MENUITEM SEPARATOR
         MENUITEM "SimpleBrowser Se&ttings...", ID_SETTINGS
-        MENUITEM SEPARATOR
+        MENUITEM "&Kiosk Mode\tCtrl+K", ID_KIOSK
         MENUITEM "A&bout This Application", ID_ABOUT
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4", ID_EXIT

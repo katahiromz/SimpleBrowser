@@ -38,6 +38,7 @@ IDB_INSECURE BITMAP "res/Bitmap_101.bmp"
     "U", ID_VIEW_SOURCE, CONTROL, VIRTKEY
     "F", ID_DOTS, ALT, VIRTKEY
     "N", ID_NEW, CONTROL, VIRTKEY
+    "K", ID_KIOSK, CONTROL, VIRTKEY
 }
 
 //////////////////////////////////////////////////////////////////////////////
