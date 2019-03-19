@@ -1166,7 +1166,17 @@ void OnAddToComboBox(HWND hwnd)
         ComboBox_DeleteString(s_hAddrBarComboBox, iItem);
     }
 
+    for (size_t i = 0; i < g_settings.m_url_list.size(); ++i)
+    {
+        if (g_settings.m_url_list[i] == url)
+        {
+            g_settings.m_url_list.erase(g_settings.m_url_list.begin() + i);
+            break;
+        }
+    }
+
     ComboBox_InsertString(s_hAddrBarComboBox, 0, url.c_str());
+    g_settings.m_url_list.insert(g_settings.m_url_list.begin(), url);
 
     ComboBox_SetText(s_hAddrBarComboBox, szText);
 }
