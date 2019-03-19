@@ -1316,17 +1316,6 @@ void OnDestroy(HWND hwnd)
         DestroyAcceleratorTable(s_hAccel);
         s_hAccel = NULL;
     }
-    if (s_pEventSink)
-    {
-        s_pEventSink->Disconnect();
-        s_pEventSink->Release();
-        s_pEventSink = NULL;
-    }
-    if (s_pWebBrowser)
-    {
-        s_pWebBrowser->Release();
-        s_pWebBrowser = NULL;
-    }
     PostQuitMessage(0);
 }
 
@@ -1599,6 +1588,22 @@ WinMain(HINSTANCE   hInstance,
     }
 
     OleUninitialize();
+
+#if (WINVER >= 0x0500)
+    HANDLE hProcess = GetCurrentProcess();
+    TCHAR szText[128];
+    StringCbPrintf(szText, sizeof(szText), TEXT("Count of GDI objects: %ld\n"),
+                   GetGuiResources(hProcess, GR_GDIOBJECTS));
+    OutputDebugString(szText);
+    StringCbPrintf(szText, sizeof(szText), TEXT("Count of USER objects: %ld\n"),
+                   GetGuiResources(hProcess, GR_USEROBJECTS));
+    OutputDebugString(szText);
+#endif
+
+#if defined(_MSC_VER) && !defined(NDEBUG)
+    // for detecting memory leak (MSVC only)
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
     return 0;
 }
