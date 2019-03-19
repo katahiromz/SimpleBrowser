@@ -1235,6 +1235,11 @@ void OnSettings(HWND hwnd)
         s_pWebBrowser->put_Silent(VARIANT_FALSE);
     }
 
+    if (g_settings.m_secure || g_settings.m_kiosk_mode)
+        s_pWebBrowser->AllowInsecure(FALSE);
+    else
+        s_pWebBrowser->AllowInsecure(TRUE);
+
     if (g_settings.m_kiosk_mode)
         DoMakeItKiosk(hwnd, TRUE);
     else
