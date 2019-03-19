@@ -7,9 +7,6 @@
 
 #include <windows.h>
 #include <exdisp.h>
-#ifndef NO_DOWNLOADMGR
-    #include <downloadmgr.h>
-#endif
 
 class MWebBrowser :
     public IOleClientSite,
@@ -17,9 +14,6 @@ class MWebBrowser :
     public IStorage,
     public IServiceProvider,
     public IHttpSecurity
-#ifndef NO_DOWNLOADMGR
-    , public IDownloadManager
-#endif
 {
 public:
     static MWebBrowser *Create(HWND hwndParent);
@@ -156,19 +150,6 @@ public:
 
     // IHttpSecurity interface
     STDMETHODIMP OnSecurityProblem(DWORD dwProblem);
-
-#ifndef NO_DOWNLOADMGR
-    // IDownloadManager interface
-    STDMETHODIMP Download(
-        IMoniker *pmk,
-        IBindCtx *pbc,
-        DWORD dwBindVerb,
-        LONG grfBINDF,
-        BINDINFO *pBindInfo,
-        LPCOLESTR pszHeaders,
-        LPCOLESTR pszRedir,
-        UINT uiCP);
-#endif
 
 protected:
     LONG m_nRefCount;

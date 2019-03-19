@@ -239,14 +239,18 @@ struct MEventHandler : MEventSinkListener
             {
                 if (UrlInBlackList(url->bstrVal))
                 {
+                    s_strURL = url->bstrVal;
                     SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
                     *Cancel = VARIANT_TRUE;
+                    PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
                     return;
                 }
                 if (!IsAccessibleURL(url->bstrVal))
                 {
+                    s_strURL = url->bstrVal;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                     *Cancel = VARIANT_TRUE;
+                    PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
                     return;
                 }
 
@@ -361,17 +365,6 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
     else
     {
         assert(0);
-        return;
-    }
-
-    if (UrlInBlackList(strURL.c_str()))
-    {
-        SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
-        return;
-    }
-    if (!IsAccessibleURL(strURL.c_str()))
-    {
-        SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
         return;
     }
 
