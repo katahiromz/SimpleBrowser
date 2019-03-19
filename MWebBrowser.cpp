@@ -3,7 +3,6 @@
 // This file is public domain software.
 
 #include "MWebBrowser.hpp"
-#include "Settings.hpp"
 #include <cstdio>
 #include <mshtml.h>
 #include <comdef.h>
