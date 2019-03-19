@@ -1316,17 +1316,16 @@ void OnDestroy(HWND hwnd)
         DestroyAcceleratorTable(s_hAccel);
         s_hAccel = NULL;
     }
-    if (s_pWebBrowser)
-    {
-        s_pWebBrowser->Destroy();
-        s_pWebBrowser->Release();
-        s_pWebBrowser = NULL;
-    }
     if (s_pEventSink)
     {
         s_pEventSink->Disconnect();
         s_pEventSink->Release();
         s_pEventSink = NULL;
+    }
+    if (s_pWebBrowser)
+    {
+        s_pWebBrowser->Release();
+        s_pWebBrowser = NULL;
     }
     PostQuitMessage(0);
 }
@@ -1592,7 +1591,7 @@ WinMain(HINSTANCE   hInstance,
         if (PreProcessBrowserKeys(&msg))
             continue;
 
-        if (TranslateAccelerator(hwnd, s_hAccel, &msg))
+        if (s_hAccel && TranslateAccelerator(hwnd, s_hAccel, &msg))
             continue;
 
         TranslateMessage(&msg);
