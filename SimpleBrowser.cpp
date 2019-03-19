@@ -736,6 +736,27 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     else
         s_pWebBrowser->AllowInsecure(TRUE);
 
+    InitAddrBarComboBox();
+
+    int argc = 0;
+    if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
+    {
+        if (argc >= 2)
+        {
+            if (lstrcmpiW(wargv[1], L"-kiosk") == 0 ||
+                lstrcmpiW(wargv[1], L"--kiosk") == 0 ||
+                lstrcmpiW(wargv[1], L"/kiosk") == 0)
+            {
+                g_settings.m_kiosk_mode = TRUE;
+            }
+            else
+            {
+                DoNavigate(hwnd, wargv[1]);
+            }
+        }
+        LocalFree(wargv);
+    }
+
     if (!g_settings.m_kiosk_mode)
     {
         if (g_settings.m_x != CW_USEDEFAULT)
@@ -760,19 +781,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         DoMakeItKiosk(hwnd, TRUE);
     }
 
-    InitAddrBarComboBox();
-
-    int argc = 0;
-    if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
-    {
-        if (argc >= 2)
-        {
-            DoNavigate(hwnd, wargv[1]);
-        }
-        LocalFree(wargv);
-    }
-
-    if (argc <= 1)
+    if (argc <= 1 || g_settings.m_kiosk_mode)
     {
         DoNavigate(hwnd, g_settings.m_homepage.c_str());
     }
