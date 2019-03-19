@@ -1,3 +1,7 @@
+// Settings.hpp --- SimpleBrowser settings
+// Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
+// This file is public domain software.
+
 #ifndef SETTINGS_HPP_
 #define SETTINGS_HPP_
 

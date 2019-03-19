@@ -1,3 +1,7 @@
+// MBindStatusCallback.hpp --- progress info class
+// Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
+// This file is public domain software.
+
 #ifndef MBIND_STATUS_CALLBACK_HPP_
 #define MBIND_STATUS_CALLBACK_HPP_
 

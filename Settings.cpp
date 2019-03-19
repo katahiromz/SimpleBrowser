@@ -1,3 +1,7 @@
+// Settings.cpp --- SimpleBrowser settings
+// Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
+// This file is public domain software.
+
 #include "Settings.hpp"
 #include <windowsx.h>
 #include <shlwapi.h>
