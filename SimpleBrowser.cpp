@@ -617,6 +617,8 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
                    TRUE);
         if (s_old_maximized)
             ShowWindow(hwnd, SW_MAXIMIZE);
+        else
+            ShowWindow(hwnd, SW_SHOWNORMAL);
     }
 
     InvalidateRect(hwnd, NULL, TRUE);
@@ -1588,6 +1590,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                     if (s_control_ids[i] == nCtrlID)
                     {
                         HWND hwnd = NULL;
+                        RECT rc;
                         do
                         {
                             i += ARRAYSIZE(s_control_ids) - 1;
@@ -1602,12 +1605,17 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                             hwnd = GetDlgItem(s_hMainWnd, s_control_ids[i]);
                             if (++nCount > ARRAYSIZE(s_control_ids))
                                 return TRUE;
-                        } while (!::IsWindowEnabled(hwnd));
+                            GetWindowRect(hwnd, &rc);
+                        } while (!::IsWindowEnabled(hwnd) || IsRectEmpty(&rc));
                         if (nCtrlID == ID_ADDRESS_BAR)
                         {
                             SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
+                            SetFocus(s_hAddrBarComboBox);
                         }
-                        ::SetFocus(hwnd);
+                        else
+                        {
+                            ::SetFocus(hwnd);
+                        }
                         return TRUE;
                     }
                 }
@@ -1619,6 +1627,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                     if (s_control_ids[i] == nCtrlID)
                     {
                         HWND hwnd = NULL;
+                        RECT rc;
                         do
                         {
                             i += 1;
@@ -1633,12 +1642,17 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                             hwnd = GetDlgItem(s_hMainWnd, s_control_ids[i]);
                             if (++nCount > ARRAYSIZE(s_control_ids))
                                 return TRUE;
-                        } while (!::IsWindowEnabled(hwnd));
+                            GetWindowRect(hwnd, &rc);
+                        } while (!::IsWindowEnabled(hwnd) || IsRectEmpty(&rc));
                         if (nCtrlID == ID_ADDRESS_BAR)
                         {
                             SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
+                            SetFocus(s_hAddrBarComboBox);
                         }
-                        ::SetFocus(hwnd);
+                        else
+                        {
+                            ::SetFocus(hwnd);
+                        }
                         return TRUE;
                     }
                 }
