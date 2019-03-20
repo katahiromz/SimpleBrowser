@@ -1445,6 +1445,8 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void OnDestroy(HWND hwnd)
 {
+    KillTimer(hwnd, REFRESH_TIMER);
+
     if (!g_settings.m_kiosk_mode)
         g_settings.m_bMaximized = IsZoomed(hwnd);
 
@@ -1501,7 +1503,8 @@ void OnTimer(HWND hwnd, UINT id)
         PostMessage(hwnd, WM_COMMAND, ID_VIEW_SOURCE_DONE, 0);
         break;
     case REFRESH_TIMER:
-        PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+        if (g_settings.m_kiosk_mode)
+            PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
         break;
     }
 }
