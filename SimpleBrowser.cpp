@@ -1319,6 +1319,18 @@ void OnKiosk(HWND hwnd)
     DoMakeItKiosk(hwnd, !s_bKiosk);
 }
 
+void OnKioskOff(HWND hwnd)
+{
+    g_settings.m_kiosk_mode = FALSE;
+    DoMakeItKiosk(hwnd, FALSE);
+}
+
+void OnKioskOn(HWND hwnd)
+{
+    g_settings.m_kiosk_mode = TRUE;
+    DoMakeItKiosk(hwnd, TRUE);
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1405,6 +1417,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_KIOSK:
         OnKiosk(hwnd);
+        break;
+    case ID_KIOSK_OFF:
+        OnKioskOff(hwnd);
+        break;
+    case ID_KIOSK_ON:
+        OnKioskOn(hwnd);
         break;
     }
 

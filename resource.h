@@ -68,12 +68,14 @@
 #define ID_EXIT                             124
 #define ID_NEW                              125
 #define ID_KIOSK                            126
+#define ID_KIOSK_OFF                        127
+#define ID_KIOSK_ON                         128
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     127
+        #define _APS_NEXT_COMMAND_VALUE     129
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif
