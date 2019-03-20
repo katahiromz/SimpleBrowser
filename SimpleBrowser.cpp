@@ -40,6 +40,12 @@ static const UINT s_control_ids[] =
 #define BTN_WIDTH 80
 #define BTN_HEIGHT 30
 
+// timer IDs
+#define SOURCE_DONE_TIMER      999
+#define REFRESH_TIMER   888
+
+#define REFRESH_INTERVAL    (30 * 1000)     // 30 seconds
+
 static const TCHAR s_szName[] = TEXT("SimpleBrowser");
 static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
@@ -475,7 +481,7 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
             assert(0);
         }
         DoUpdateURL(strURL.c_str());
-        SetTimer(s_hMainWnd, 999, 500, NULL);
+        SetTimer(s_hMainWnd, SOURCE_DONE_TIMER, 500, NULL);
     }
     else
     {
@@ -1335,6 +1341,8 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
 
+    KillTimer(hwnd, REFRESH_TIMER);
+
     if (s_nLevel == 0)
     {
         SendMessage(s_hStatusBar, SB_SETTEXT, 0, (LPARAM)LoadStringDx(IDS_EXECUTING_CMD));
@@ -1431,6 +1439,8 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     {
         SendMessage(s_hStatusBar, SB_SETTEXT, 0, (LPARAM)LoadStringDx(IDS_READY));
     }
+
+    SetTimer(hwnd, REFRESH_TIMER, REFRESH_INTERVAL, NULL);
 }
 
 void OnDestroy(HWND hwnd)
@@ -1484,8 +1494,16 @@ void OnDestroy(HWND hwnd)
 
 void OnTimer(HWND hwnd, UINT id)
 {
-    KillTimer(hwnd, id);
-    PostMessage(s_hMainWnd, WM_COMMAND, ID_VIEW_SOURCE_DONE, 0);
+    switch (id)
+    {
+    case SOURCE_DONE_TIMER:
+        KillTimer(hwnd, id);
+        PostMessage(hwnd, WM_COMMAND, ID_VIEW_SOURCE_DONE, 0);
+        break;
+    case REFRESH_TIMER:
+        PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+        break;
+    }
 }
 
 LRESULT CALLBACK
@@ -1754,6 +1772,12 @@ WinMain(HINSTANCE   hInstance,
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        if (msg.message != WM_TIMER)
+        {
+            KillTimer(s_hMainWnd, REFRESH_TIMER);
+            SetTimer(s_hMainWnd, REFRESH_TIMER, REFRESH_INTERVAL, NULL);
+        }
+
         if (PreProcessBrowserKeys(&msg))
             continue;
 
