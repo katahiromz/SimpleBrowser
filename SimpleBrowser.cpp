@@ -1776,7 +1776,8 @@ WinMain(HINSTANCE   hInstance,
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
-        if (msg.message != WM_TIMER)
+        if ((WM_KEYFIRST <= msg.message && msg.message <= WM_KEYLAST) ||
+            (WM_MOUSEFIRST <= msg.message && msg.message <= WM_MOUSELAST))
         {
             KillTimer(s_hMainWnd, REFRESH_TIMER);
             if (g_settings.m_refresh_interval)
