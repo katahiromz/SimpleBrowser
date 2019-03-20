@@ -44,8 +44,6 @@ static const UINT s_control_ids[] =
 #define SOURCE_DONE_TIMER      999
 #define REFRESH_TIMER   888
 
-#define REFRESH_INTERVAL    (30 * 1000)     // 30 seconds
-
 static const TCHAR s_szName[] = TEXT("SimpleBrowser");
 static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
@@ -1440,7 +1438,10 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         SendMessage(s_hStatusBar, SB_SETTEXT, 0, (LPARAM)LoadStringDx(IDS_READY));
     }
 
-    SetTimer(hwnd, REFRESH_TIMER, REFRESH_INTERVAL, NULL);
+    if (g_settings.m_refresh_interval)
+    {
+        SetTimer(hwnd, REFRESH_TIMER, g_settings.m_refresh_interval, NULL);
+    }
 }
 
 void OnDestroy(HWND hwnd)
@@ -1778,7 +1779,10 @@ WinMain(HINSTANCE   hInstance,
         if (msg.message != WM_TIMER)
         {
             KillTimer(s_hMainWnd, REFRESH_TIMER);
-            SetTimer(s_hMainWnd, REFRESH_TIMER, REFRESH_INTERVAL, NULL);
+            if (g_settings.m_refresh_interval)
+            {
+                SetTimer(s_hMainWnd, REFRESH_TIMER, g_settings.m_refresh_interval, NULL);
+            }
         }
 
         if (PreProcessBrowserKeys(&msg))

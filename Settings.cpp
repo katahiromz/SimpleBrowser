@@ -25,6 +25,7 @@ void SETTINGS::reset()
 
     m_homepage = LoadStringDx(IDS_HOMEPAGE);
     m_url_list.clear();
+    m_black_list.clear();
     m_secure = TRUE;
     m_dont_r_click = FALSE;
     m_local_file_access = TRUE;
@@ -32,7 +33,7 @@ void SETTINGS::reset()
     m_ignore_errors = FALSE;
     m_kiosk_mode = FALSE;
     m_emulation = 11001;
-    m_black_list.clear();
+    m_refresh_interval = (30 * 1000);  // 30 seconds
 }
 
 BOOL SETTINGS::load()
@@ -113,6 +114,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"Emulation", NULL, NULL, (LPBYTE)&value, &cb);
         m_emulation = value;
+
+        value = m_refresh_interval;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"RefreshInterval", NULL, NULL, (LPBYTE)&value, &cb);
+        m_refresh_interval = value;
 
         DWORD count = 0;
         cb = sizeof(count);
@@ -232,6 +238,10 @@ BOOL SETTINGS::save()
                 value = DWORD(m_emulation);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"Emulation", 0, REG_DWORD, (LPBYTE)&value, cb);
+
+                value = DWORD(m_refresh_interval);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"RefreshInterval", 0, REG_DWORD, (LPBYTE)&value, cb);
 
                 DWORD count = DWORD(m_url_list.size());
                 cb = DWORD(sizeof(count));

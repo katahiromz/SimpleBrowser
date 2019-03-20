@@ -25,6 +25,7 @@ struct SETTINGS
     BOOL m_ignore_errors;
     BOOL m_kiosk_mode;
     DWORD m_emulation;
+    DWORD m_refresh_interval;
 
     BOOL load();
     BOOL save();
