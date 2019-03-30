@@ -1510,6 +1510,18 @@ void OnTimer(HWND hwnd, UINT id)
     }
 }
 
+void OnInitMenuPopup(HWND hwnd, HMENU hMenu, UINT item, BOOL fSystemMenu)
+{
+    if (g_settings.m_kiosk_mode)
+    {
+        CheckMenuItem(hMenu, ID_KIOSK, MF_CHECKED | MF_BYCOMMAND);
+    }
+    else
+    {
+        CheckMenuItem(hMenu, ID_KIOSK, MF_UNCHECKED | MF_BYCOMMAND);
+    }
+}
+
 LRESULT CALLBACK
 WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1521,6 +1533,7 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     HANDLE_MSG(hwnd, WM_COMMAND, OnCommand);
     HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
     HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
+    HANDLE_MSG(hwnd, WM_INITMENUPOPUP, OnInitMenuPopup);
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
