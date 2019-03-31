@@ -2059,7 +2059,7 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 
     if (!IsWindowEnabled(hwndItem))
     {
-        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_INACTIVE | DFCS_ADJUSTRECT);
+        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO | DFCS_ADJUSTRECT);
     }
     else if (GetCheck(hwndItem))
     {
