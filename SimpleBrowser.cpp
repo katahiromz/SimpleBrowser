@@ -1057,6 +1057,12 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
             {
                 g_settings.m_kiosk_mode = TRUE;
             }
+            else if (lstrcmpiW(wargv[1], L"-non-kiosk") == 0 ||
+                     lstrcmpiW(wargv[1], L"--non-kiosk") == 0 ||
+                     lstrcmpiW(wargv[1], L"/non-kiosk") == 0)
+            {
+                g_settings.m_kiosk_mode = FALSE;
+            }
             else
             {
                 DoNavigate(hwnd, wargv[1]);
@@ -2023,7 +2029,10 @@ void OnTimer(HWND hwnd, UINT id)
         break;
     case REFRESH_TIMER:
         if (g_settings.m_kiosk_mode)
+        {
             PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+            SetForegroundWindow(hwnd);
+        }
         break;
     }
 }
@@ -2291,7 +2300,18 @@ WinMain(HINSTANCE   hInstance,
         LPSTR       lpCmdLine,
         INT         nCmdShow)
 {
-    WNDCLASS wc;
+    if (strstr(lpCmdLine, "kiosk") != NULL &&
+        strstr(lpCmdLine, "non-kiosk") == NULL)
+    {
+        INT i = 0;
+        while (HWND hwnd = FindWindow(s_szName, NULL))
+        {
+            PostMessage(hwnd, WM_CLOSE, 0, 0);
+            Sleep(100);
+            if (++i > 100)
+                break;
+        }
+    }
 
     OleInitialize(NULL);
 
@@ -2299,15 +2319,19 @@ WinMain(HINSTANCE   hInstance,
 
     s_hInst = hInstance;
 
-    ZeroMemory(&wc, sizeof(wc));
-    wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(1));
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1);
-    wc.lpszClassName = s_szName;
-    if (!RegisterClass(&wc))
+    WNDCLASSEX wcx;
+    ZeroMemory(&wcx, sizeof(wcx));
+    wcx.cbSize = sizeof(wcx);
+    wcx.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+    wcx.lpfnWndProc = WindowProc;
+    wcx.hInstance = hInstance;
+    wcx.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(1));
+    wcx.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcx.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1);
+    wcx.lpszClassName = s_szName;
+    wcx.hIconSm = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(1), IMAGE_ICON,
+        GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+    if (!RegisterClassEx(&wcx))
     {
         MessageBox(NULL, LoadStringDx(IDS_REGISTER_WND_FAIL), NULL, MB_ICONERROR);
         return 1;
