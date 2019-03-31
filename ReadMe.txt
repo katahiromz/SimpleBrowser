@@ -24,4 +24,7 @@ Supported Platforms: Windows XP/Vista/7/10
 | Ctrl+N          | New Window        |
 | Ctrl+K          | Toggle Kiosk Mode |
 
+On kiosk mode, the dots menu ("...") and print preview are
+not available for security reason.
+
 License: MIT
