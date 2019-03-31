@@ -2121,6 +2121,11 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
         hFont = CreateFontIndirectW(&lf);
     }
 
+    if (GetCheck(hwndItem) || (lpDrawItem->itemState & ODS_SELECTED))
+    {
+        OffsetRect(&rcItem, 1, 1);
+    }
+
     SetBkMode(hDC, TRANSPARENT);
     HGDIOBJ hFontOld = SelectObject(hDC, hFont);
     {
