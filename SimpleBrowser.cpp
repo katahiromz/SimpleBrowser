@@ -22,12 +22,13 @@
 #include "Settings.hpp"
 #include "mime_info.h"
 #include "mstr.hpp"
+#include "color_value.h"
 #include <strsafe.h>
 #include <comdef.h>
 #include "resource.h"
 
 // button size
-#define BTN_WIDTH 100
+#define BTN_WIDTH 120
 #define BTN_HEIGHT 60
 
 // timer IDs
@@ -53,17 +54,24 @@ static std::wstring s_strTitle;
 static BOOL s_bKiosk = FALSE;
 static const TCHAR s_szButton[] = TEXT("BUTTON");
 
-std::wstring s_strStop = L"Stop";
-std::wstring s_strRefresh = L"Refresh";
-std::map<HWND, std::wstring> s_hwnd2url;
+static std::wstring s_strStop = L"Stop";
+static std::wstring s_strRefresh = L"Refresh";
+static std::map<HWND, std::wstring> s_hwnd2url;
+static std::map<HWND, COLORREF> s_hwnd2color;
+static std::map<HWND, COLORREF> s_hwnd2bgcolor;
+
+static DWORD s_bgcolor = RGB(255, 255, 255);
+static DWORD s_color = RGB(0, 0, 0);
 
 static std::wstring s_upside_data;
 static std::vector<HWND> s_upside_hwnds;
+
 static std::wstring s_downside_data;
 static std::vector<HWND> s_downside_hwnds;
 
 static std::wstring s_leftside_data;
 static std::vector<HWND> s_leftside_hwnds;
+
 static std::wstring s_rightside_data;
 static std::vector<HWND> s_rightside_hwnds;
 
@@ -85,6 +93,25 @@ LPTSTR LoadStringDx(INT nID)
     if (!::LoadString(NULL, nID, pszBuff, cchBuffMax))
         assert(0);
     return pszBuff;
+}
+
+UINT GetCheck(HWND hwnd)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    if (!(style & BS_PUSHLIKE))
+        return FALSE;
+
+    return (BOOL)(LONG_PTR)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+}
+
+void SetCheck(HWND hwnd, UINT uCheck)
+{
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    if (!(style & BS_PUSHLIKE))
+        return;
+
+    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)(LONG)uCheck);
+    InvalidateRect(hwnd, NULL, TRUE);
 }
 
 std::wstring text2html(const WCHAR *text)
@@ -698,7 +725,7 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
         MultiByteToWideChar(CP_UTF8, 0, buf, -1, szText, ARRAYSIZE(szText));
         StrTrimW(szText, L" \t\n\r\f\v");
 
-        mstr_split(fields, szText, L"|");
+        mstr_split(fields, szText, L"\t");
         if (fields.size() < 3)
             continue;
 
@@ -707,7 +734,7 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
             mstr_trim(fields[i], L" \t\n\r\f\v");
         }
 
-        std::wstring line = mstr_join(fields, L"|");
+        std::wstring line = mstr_join(fields, L"\t");
         lines.push_back(line);
     }
 
@@ -754,7 +781,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
     for (size_t i = 1; i < lines.size(); ++i)
     {
         std::vector<std::wstring> fields;
-        mstr_split(fields, lines[i], L"|");
+        mstr_split(fields, lines[i], L"\t");
         if (fields.size() < 3)
             continue;
 
@@ -772,7 +799,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
             id = ID_EXECUTE_CMD;
         }
 
-        HWND hCtrl;
+        HWND hCtrl = NULL;
         std::wstring& text = fields[0];
         if (id == ID_ADDRESS_BAR)
         {
@@ -795,21 +822,21 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
                 s_strStop = L"Stop";
                 s_strRefresh = L"Refresh";
             }
-            DWORD style = WS_CHILD | WS_VISIBLE;
+            DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
             hCtrl = CreateWindowEx(0, s_szButton, s_strRefresh.c_str(), style, 0, 0, 0, 0,
                                    hwnd, (HMENU)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
         else if (id == ID_DOTS)
         {
-            DWORD style = WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE;
+            DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW | BS_PUSHLIKE;
             hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
                                    hwnd, (HMENU)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
         else if (text.size())
         {
-            DWORD style = WS_CHILD | WS_VISIBLE;
+            DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
             hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
                                    hwnd, (HMENU)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
@@ -820,10 +847,35 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
         }
 
         s_hwnd2url[hCtrl] = fields[2];
+        s_hwnd2color[hCtrl] = s_color;
+        s_hwnd2bgcolor[hCtrl] = s_bgcolor;
+
+        //printf("%p: %08X, %08X\n", hCtrl, s_color, s_bgcolor);
 
         hwnds.push_back(hCtrl);
     }
 
+    return TRUE;
+}
+
+BOOL DoParseColors(HWND hwnd, const std::vector<std::wstring>& lines)
+{
+    s_color = RGB(0, 0, 0);
+    s_bgcolor = RGB(255, 255, 255);
+    if (lines.size())
+    {
+        std::vector<std::wstring> fields;
+        mstr_split(fields, lines[0], L"\t");
+        if (fields.size() >= 3)
+        {
+            char buf[32];
+            WideCharToMultiByte(CP_UTF8, 0, fields[1].c_str(), -1, buf, 32, NULL, NULL);
+            s_bgcolor = color_value_fix(color_value_parse(buf));
+
+            WideCharToMultiByte(CP_UTF8, 0, fields[2].c_str(), -1, buf, 32, NULL, NULL);
+            s_color = color_value_fix(color_value_parse(buf));
+        }
+    }
     return TRUE;
 }
 
@@ -841,6 +893,7 @@ BOOL DoParseUpside(HWND hwnd, HFONT hButtonFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_upside_data, L"\n");
 
+    DoParseColors(hwnd, lines);
     DoParseLines(hwnd, lines, s_upside_hwnds, hButtonFont);
 
     return TRUE;
@@ -860,6 +913,7 @@ BOOL DoParseDownside(HWND hwnd, HFONT hButtonFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_downside_data, L"\n");
 
+    DoParseColors(hwnd, lines);
     DoParseLines(hwnd, lines, s_downside_hwnds, hButtonFont);
 
     return TRUE;
@@ -879,6 +933,7 @@ BOOL DoParseLeftSide(HWND hwnd, HFONT hButtonFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_leftside_data, L"\n");
 
+    DoParseColors(hwnd, lines);
     DoParseLines(hwnd, lines, s_leftside_hwnds, hButtonFont);
 
     return TRUE;
@@ -898,6 +953,7 @@ BOOL DoParseRightSide(HWND hwnd, HFONT hButtonFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_rightside_data, L"\n");
 
+    DoParseColors(hwnd, lines);
     DoParseLines(hwnd, lines, s_rightside_hwnds, hButtonFont);
 
     return TRUE;
@@ -1088,7 +1144,7 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
     {
         std::wstring str = lines[i];
         std::vector<std::wstring> fields;
-        mstr_split(fields, str, L"|");
+        mstr_split(fields, str, L"\t");
         if (fields.size() < 3)
             continue;
         if (fields[1] == L"*")
@@ -1116,7 +1172,7 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
     {
         std::wstring str = lines[i];
         std::vector<std::wstring> fields;
-        mstr_split(fields, str, L"|");
+        mstr_split(fields, str, L"\t");
         if (fields.size() < 3)
             continue;
 
@@ -1174,7 +1230,7 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
     {
         std::wstring str = lines[i];
         std::vector<std::wstring> fields;
-        mstr_split(fields, str, L"|");
+        mstr_split(fields, str, L"\t");
         if (fields.size() < 3)
             continue;
         if (fields[1] == L"*")
@@ -1202,7 +1258,7 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
     {
         std::wstring str = lines[i];
         std::vector<std::wstring> fields;
-        mstr_split(fields, str, L"|");
+        mstr_split(fields, str, L"\t");
         if (fields.size() < 3)
             continue;
 
@@ -1444,22 +1500,24 @@ void OnViewSourceDone(HWND hwnd)
 
 void OnDots(HWND hwnd)
 {
+    HWND hwndDots = GetDlgItem(hwnd, ID_DOTS);
+
     if (GetAsyncKeyState(VK_MENU) < 0 &&
         GetAsyncKeyState(L'F') < 0)
     {
         // Alt+F
-        SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, TRUE, 0);
+        SetCheck(hwndDots, TRUE);
     }
     else
     {
-        if (SendDlgItemMessage(hwnd, ID_DOTS, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+        SetCheck(hwndDots, !GetCheck(hwndDots));
+        if (!GetCheck(hwndDots))
         {
             return;
         }
     }
 
     RECT rc;
-    HWND hwndDots = GetDlgItem(hwnd, ID_DOTS);
     if (IsWindow(hwndDots))
         GetWindowRect(hwndDots, &rc);
     else
@@ -1498,7 +1556,7 @@ void OnDots(HWND hwnd)
     GetCursorPos(&pt);
     if (!PtInRect(&rc, pt) || GetAsyncKeyState(VK_LBUTTON) >= 0)
     {
-        SendDlgItemMessage(hwnd, ID_DOTS, BM_SETCHECK, FALSE, 0);
+        SetCheck(hwndDots, FALSE);
     }
 }
 
@@ -1983,6 +2041,61 @@ void OnInitMenuPopup(HWND hwnd, HMENU hMenu, UINT item, BOOL fSystemMenu)
     }
 }
 
+void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
+{
+    if (lpDrawItem->CtlType != ODT_BUTTON)
+        return;
+
+    HWND hwndItem = lpDrawItem->hwndItem;
+    HDC hDC = lpDrawItem->hDC;
+    RECT rcItem = lpDrawItem->rcItem;
+
+    WCHAR szText[64];
+    GetWindowTextW(hwndItem, szText, ARRAYSIZE(szText));
+
+    DWORD style = GetWindowStyle(hwndItem);
+
+    if (lpDrawItem->itemState & ODS_GRAYED)
+    {
+        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_INACTIVE | DFCS_ADJUSTRECT);
+    }
+    else if (GetCheck(hwndItem))
+    {
+        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
+    }
+    else if (lpDrawItem->itemState & ODS_SELECTED)
+    {
+        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
+    }
+    else
+    {
+        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_ADJUSTRECT);
+    }
+
+    COLORREF bgColor = RGB(255, 255, 255);
+    {
+        auto it = s_hwnd2bgcolor.find(hwndItem);
+        if (it != s_hwnd2bgcolor.end())
+            bgColor = it->second;
+    }
+    HBRUSH hbr = CreateSolidBrush(bgColor);
+    FillRect(hDC, &rcItem, hbr);
+    DeleteObject(hbr);
+
+    COLORREF color = RGB(0, 0, 0);
+    {
+        auto it = s_hwnd2color.find(hwndItem);
+        if (it != s_hwnd2color.end())
+            color = it->second;
+    }
+    SetTextColor(hDC, color);
+
+    SetBkMode(hDC, TRANSPARENT);
+    DrawText(hDC, szText, -1, &rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+
+    //printf("%p: %08X, %08X\n", hwndItem, color, bgColor);
+}
+
 LRESULT CALLBACK
 WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -1995,6 +2108,7 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     HANDLE_MSG(hwnd, WM_TIMER, OnTimer);
     HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
     HANDLE_MSG(hwnd, WM_INITMENUPOPUP, OnInitMenuPopup);
+    HANDLE_MSG(hwnd, WM_DRAWITEM, OnDrawItem);
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }

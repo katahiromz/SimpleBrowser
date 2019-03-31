@@ -59,7 +59,7 @@ endif()
 
 ##############################################################################
 
-include_directories(mime_info mstr)
+include_directories(mime_info mstr color_value)
 
 # executable
 add_executable(SimpleBrowser WIN32

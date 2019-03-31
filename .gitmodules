@@ -4,3 +4,6 @@
 [submodule "mstr"]
 	path = mstr
 	url = https://github.com/katahiromz/mstr.git
+[submodule "color_value"]
+	path = color_value
+	url = https://github.com/katahiromz/color_value.git
