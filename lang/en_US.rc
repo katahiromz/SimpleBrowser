@@ -143,7 +143,7 @@ STRINGTABLE
     IDS_CREATE_WND_FAIL, "CreateWindow failed."
     IDS_ACCESS_FAIL, "Your access failed."
     IDS_DOTS, "..."
-    IDS_TITLE_TEXT, "%s - SimpleBrowser"
+    IDS_TITLE_TEXT, "%s - SimpleBrowser ver.0.9"
     IDS_NONAME, "(Untitled)"
     IDS_ENTER_TEXT, "Enter the text."
     IDS_UPSIDE, "Upside_en.txt"
