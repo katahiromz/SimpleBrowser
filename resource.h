@@ -76,6 +76,7 @@
 #define ID_KIOSK_ON                         128
 #define ID_GO_URL                           129
 #define ID_EXECUTE_CMD                      130
+#define ID_CANCEL_PRINTING                  131
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS

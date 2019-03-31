@@ -1,1 +1,9 @@
-﻿120|#FFFFFF|#000000
+﻿150|#FFFFFF|#000000
+Home|60|#104
+< Back|60|#101
+Forward >|60|#102
+Stop/Reload|60|#103
+Print Preview|60|#113
+Print...|60|#111
+Cancel Printing|60|#131
+...|60|#117

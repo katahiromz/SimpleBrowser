@@ -1091,6 +1091,10 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         HWND hwndCtrl = hwnds[i - 1];
 
         cx = wcstoul(fields[1].c_str(), NULL, 10);
+
+        if (rc.right <= x + cx)
+            cx = rc.right - x;
+
         if (hwndCtrl)
             MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
         x += cx;
@@ -1167,6 +1171,10 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         HWND hwndCtrl = hwnds[i - 1];
 
         cy = wcstoul(fields[1].c_str(), NULL, 10);
+
+        if (rc.bottom <= y + cy)
+            cy = rc.bottom - y;
+
         if (hwndCtrl)
             MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
         y += cy;
@@ -1266,6 +1274,8 @@ void OnStopRefresh(HWND hwnd)
 void OnRefresh(HWND hwnd)
 {
     s_pWebBrowser->Refresh();
+
+    DoReloadLayout(hwnd, s_hGUIFont);
 }
 
 void OnStop(HWND hwnd)
@@ -1433,7 +1443,11 @@ void OnDots(HWND hwnd)
     }
 
     RECT rc;
-    GetWindowRect(GetDlgItem(hwnd, ID_DOTS), &rc);
+    HWND hwndDots = GetDlgItem(hwnd, ID_DOTS);
+    if (IsWindow(hwndDots))
+        GetWindowRect(hwndDots, &rc);
+    else
+        GetWindowRect(hwnd, &rc);
 
     POINT pt;
     GetCursorPos(&pt);
@@ -1717,30 +1731,44 @@ void OnGoURL(HWND hwnd, HWND hwndCtl)
     }
 }
 
+BOOL DoExecute(HWND hwnd, LPCWSTR pszCmd, INT nCmdShow)
+{
+    WCHAR szText[256];
+    StringCbCopyW(szText, sizeof(szText), pszCmd);
+
+    WCHAR szPath[MAX_PATH];
+    GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
+    *PathFindFileName(szPath) = 0;
+
+    STARTUPINFO si;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    si.wShowWindow = nCmdShow;
+    si.dwFlags = STARTF_USESHOWWINDOW;
+
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&pi, sizeof(pi));
+
+    HANDLE hProcess;
+    BOOL ret = CreateProcessW(NULL, szText, NULL, NULL, TRUE, 0, NULL, szPath, &si, &pi);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
+    return ret;
+}
+
 void OnExecuteCmd(HWND hwnd, HWND hwndCtl)
 {
     auto it = s_hwnd2url.find(hwndCtl);
     if (it != s_hwnd2url.end())
     {
-        WCHAR szText[256];
-        StringCbCopyW(szText, sizeof(szText), it->second.c_str());
-
-        WCHAR szPath[MAX_PATH];
-        GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
-        *PathFindFileName(szPath) = 0;
-
-        STARTUPINFO si;
-        ZeroMemory(&si, sizeof(si));
-        si.cb = sizeof(si);
-
-        PROCESS_INFORMATION pi;
-        ZeroMemory(&pi, sizeof(pi));
-
-        HANDLE hProcess;
-        CreateProcessW(NULL, szText, NULL, NULL, TRUE, 0, NULL, szPath, &si, &pi);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+        DoExecute(hwnd, it->second.c_str(), SW_SHOWNORMAL);
     }
+}
+
+void OnCancelPrinting(HWND hwnd)
+{
+    DoExecute(hwnd, L"CancelPrinting.bat", SW_HIDE);
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -1843,6 +1871,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_EXECUTE_CMD:
         OnExecuteCmd(hwnd, hwndCtl);
+        break;
+    case ID_CANCEL_PRINTING:
+        OnCancelPrinting(hwnd);
         break;
     }
 
