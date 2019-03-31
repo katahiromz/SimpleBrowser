@@ -1,3 +1,6 @@
 [submodule "mime_info"]
 	path = mime_info
 	url = https://github.com/katahiromz/mime_info.git
+[submodule "mstr"]
+	path = mstr
+	url = https://github.com/katahiromz/mstr.git

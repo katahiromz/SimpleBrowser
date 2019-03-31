@@ -18,23 +18,12 @@
 #include "AboutBox.hpp"
 #include "Settings.hpp"
 #include "mime_info.h"
+#include "mstr.hpp"
 #include <string>
 #include <cassert>
 #include <strsafe.h>
 #include <comdef.h>
 #include "resource.h"
-
-static const UINT s_control_ids[] =
-{
-    ID_BACK,
-    ID_NEXT,
-    ID_STOP_REFRESH,
-    ID_HOME,
-    ID_ADDRESS_BAR,
-    ID_GO,
-    ID_DOTS,
-    ID_BROWSER
-};
 
 // button size
 #define BTN_WIDTH 80
@@ -61,6 +50,18 @@ static HBITMAP s_hbmInsecure = NULL;
 static std::wstring s_strURL;
 static std::wstring s_strTitle;
 static BOOL s_bKiosk = FALSE;
+
+static std::vector<std::string> s_buttons =
+{
+    "30",
+    "< Back|80|101",
+    "Next >|80|102",
+    "Refresh|80|103",
+    "Home|80|104",
+    "Address Bar|*|105",
+    "GO >|80|106",
+    "Dots|80|117",
+};
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -831,34 +832,52 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
     y = rc.top;
     cx = BTN_WIDTH;
     cy = BTN_HEIGHT;
-    MoveWindow(GetDlgItem(hwnd, ID_BACK), x, y, cx, cy, TRUE);
-    x += cx;
-    MoveWindow(GetDlgItem(hwnd, ID_NEXT), x, y, cx, cy, TRUE);
-    x += cx;
-    MoveWindow(GetDlgItem(hwnd, ID_STOP_REFRESH), x, y, cx, cy, TRUE);
-    x += cx;
-    MoveWindow(GetDlgItem(hwnd, ID_HOME), x, y, cx, cy, TRUE);
-    x += cx;
+
+    cy = atoi(s_buttons[0].c_str());
+
+    size_t i = 1;
+    for (; i < s_buttons.size(); ++i)
+    {
+        std::string str = s_buttons[i];
+        std::vector<std::string> fields;
+        mstr_split(fields, str, "|");
+        if (fields.size() < 3)
+            continue;
+        INT id = atoi(fields[2].c_str());
+        if (fields[1] == "*")
+            break;
+        cx = atoi(fields[1].c_str());
+
+        MoveWindow(GetDlgItem(hwnd, id), x, y, cx, cy, TRUE);
+        x += cx;
+    }
 
     INT x1 = x;
+    x = rc.right;
 
-    x = rc.right - cx;
-    if (g_settings.m_kiosk_mode)
+    size_t k = i;
+    for (i = s_buttons.size(); i--; )
     {
-        MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, 0, cy, TRUE);
+        std::string str = s_buttons[i];
+        std::vector<std::string> fields;
+        mstr_split(fields, str, "|");
+        if (fields.size() < 3)
+            continue;
+        INT id = atoi(fields[2].c_str());
+        if (fields[1] == "*")
+        {
+            cx = x - x1;
+            x -= cx;
+        }
+        else
+        {
+            cx = atoi(fields[1].c_str());
+            x -= cx;
+        }
+        MoveWindow(GetDlgItem(hwnd, id), x, y, cx, cy, TRUE);
     }
-    else
-    {
-        MoveWindow(GetDlgItem(hwnd, ID_DOTS), x, y, cx, cy, TRUE);
-        x -= cx;
-    }
-    MoveWindow(GetDlgItem(hwnd, ID_GO), x, y, cx, cy, TRUE);
 
-    cx = x - x1;
-    x -= cx;
-    MoveWindow(s_hAddrBarComboBox, x, y, cx, cy, TRUE);
-
-    rc.top += BTN_HEIGHT;
+    rc.top += cy;
 
     RECT rcStatus;
     SendMessage(s_hStatusBar, WM_SIZE, 0, 0);
@@ -1650,91 +1669,6 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                     url.erase(0, wcslen(L"view-source:"));
                     DoNavigate(s_hMainWnd, url.c_str());
                     return TRUE;
-                }
-            }
-        }
-        else if (pMsg->wParam == VK_TAB)
-        {
-            UINT nCtrlID = GetDlgCtrlID(pMsg->hwnd);
-            if (pMsg->hwnd == s_pWebBrowser->GetControlWindow() ||
-                pMsg->hwnd == s_pWebBrowser->GetIEServerWindow() ||
-                pMsg->hwnd == s_hMainWnd)
-            {
-                nCtrlID = ID_BROWSER;
-            }
-            INT nCount = 0;
-            if (::GetAsyncKeyState(VK_SHIFT) < 0)
-            {
-                for (size_t i = 0; i < ARRAYSIZE(s_control_ids); ++i)
-                {
-                    if (s_control_ids[i] == nCtrlID)
-                    {
-                        HWND hwnd = NULL;
-                        RECT rc;
-                        do
-                        {
-                            i += ARRAYSIZE(s_control_ids) - 1;
-                            i %= (INT)ARRAYSIZE(s_control_ids);
-                            nCtrlID = s_control_ids[i];
-                            if (nCtrlID == ID_BROWSER)
-                            {
-                                HWND hwndServer = s_pWebBrowser->GetIEServerWindow();
-                                ::SetFocus(hwndServer);
-                                return TRUE;
-                            }
-                            hwnd = GetDlgItem(s_hMainWnd, s_control_ids[i]);
-                            if (++nCount > ARRAYSIZE(s_control_ids))
-                                return TRUE;
-                            GetWindowRect(hwnd, &rc);
-                        } while (!::IsWindowEnabled(hwnd) || IsRectEmpty(&rc));
-                        if (nCtrlID == ID_ADDRESS_BAR)
-                        {
-                            SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
-                            SetFocus(s_hAddrBarComboBox);
-                        }
-                        else
-                        {
-                            ::SetFocus(hwnd);
-                        }
-                        return TRUE;
-                    }
-                }
-            }
-            else
-            {
-                for (size_t i = 0; i < ARRAYSIZE(s_control_ids); ++i)
-                {
-                    if (s_control_ids[i] == nCtrlID)
-                    {
-                        HWND hwnd = NULL;
-                        RECT rc;
-                        do
-                        {
-                            i += 1;
-                            i %= (INT)ARRAYSIZE(s_control_ids);
-                            nCtrlID = s_control_ids[i];
-                            if (nCtrlID == ID_BROWSER)
-                            {
-                                HWND hwndServer = s_pWebBrowser->GetIEServerWindow();
-                                ::SetFocus(hwndServer);
-                                return TRUE;
-                            }
-                            hwnd = GetDlgItem(s_hMainWnd, s_control_ids[i]);
-                            if (++nCount > ARRAYSIZE(s_control_ids))
-                                return TRUE;
-                            GetWindowRect(hwnd, &rc);
-                        } while (!::IsWindowEnabled(hwnd) || IsRectEmpty(&rc));
-                        if (nCtrlID == ID_ADDRESS_BAR)
-                        {
-                            SendMessage(s_hAddrBarEdit, EM_SETSEL, 0, -1);
-                            SetFocus(s_hAddrBarComboBox);
-                        }
-                        else
-                        {
-                            ::SetFocus(hwnd);
-                        }
-                        return TRUE;
-                    }
                 }
             }
         }
