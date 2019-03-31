@@ -43,7 +43,7 @@ static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
 static MWebBrowser *s_pWebBrowser = NULL;
-static HFONT s_hGUIFont = NULL;
+static HFONT s_hButtonFont = NULL;
 static HFONT s_hAddressFont = NULL;
 static MEventSink *s_pEventSink = MEventSink::Create();
 static BOOL s_bLoadingPage = FALSE;
@@ -616,6 +616,8 @@ void InitAddrBarComboBox(void)
     SetWindowText(s_hAddrBarComboBox, szText);
 }
 
+BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont);
+
 void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
 {
     if (s_bKiosk == bKiosk)
@@ -671,6 +673,8 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
     InvalidateRect(hwnd, NULL, TRUE);
     PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
+
+    DoReloadLayout(hwnd, s_hButtonFont);
 }
 
 static
@@ -739,6 +743,22 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
     }
 
     fclose(fp);
+
+    // Delete "..." if kiosk
+    if (g_settings.m_kiosk_mode)
+    {
+        for (size_t i = 0; i < lines.size(); ++i)
+        {
+            mstr_split(fields, lines[i], L"\t");
+            assert(fields.size() >= 3);
+
+            if (fields[2] == L"#117")
+            {
+                lines.erase(lines.begin() + i);
+                break;
+            }
+        }
+    }
 
     data = mstr_join(lines, L"\n");
 
@@ -988,7 +1008,7 @@ BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
     INT height = cy1 ? cy1 : cy2;
 
     LOGFONT lf;
-    GetObject(s_hGUIFont, sizeof(lf), &lf);
+    GetObject(s_hButtonFont, sizeof(lf), &lf);
     lf.lfHeight = -(height - 8);
     s_hAddressFont = CreateFontIndirect(&lf);
 
@@ -1029,9 +1049,9 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     s_pEventSink->Connect(pBrowser2, &s_listener);
 
-    s_hGUIFont = GetStockFont(DEFAULT_GUI_FONT);
+    s_hButtonFont = GetStockFont(DEFAULT_GUI_FONT);
 
-    DoReloadLayout(hwnd, s_hGUIFont);
+    DoReloadLayout(hwnd, s_hButtonFont);
 
     DWORD style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
     s_hStatusBar = CreateStatusWindow(style, LoadStringDx(IDS_LOADING), hwnd, stc1);
@@ -1332,7 +1352,7 @@ void OnNext(HWND hwnd)
 
 void OnRefresh(HWND hwnd)
 {
-    DoReloadLayout(hwnd, s_hGUIFont);
+    DoReloadLayout(hwnd, s_hButtonFont);
     s_pWebBrowser->Refresh();
     SetDlgItemText(hwnd, ID_ADDRESS_BAR, s_strURL.c_str());
 }
