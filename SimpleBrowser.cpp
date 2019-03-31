@@ -2055,7 +2055,7 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 
     DWORD style = GetWindowStyle(hwndItem);
 
-    if (lpDrawItem->itemState & ODS_GRAYED)
+    if (!IsWindowEnabled(hwndItem))
     {
         DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_INACTIVE | DFCS_ADJUSTRECT);
     }
@@ -2081,6 +2081,15 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
     HBRUSH hbr = CreateSolidBrush(bgColor);
     FillRect(hDC, &rcItem, hbr);
     DeleteObject(hbr);
+
+    if (IsWindowEnabled(hwndItem))
+    {
+        RECT rc = rcItem;
+        InflateRect(&rc, -2, -2);
+        SelectObject(hDC, GetStockObject(NULL_BRUSH));
+        SelectObject(hDC, GetStockObject(BLACK_PEN));
+        Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+    }
 
     COLORREF color = RGB(0, 0, 0);
     {
@@ -2110,7 +2119,7 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
         SIZE siz;
         siz.cx = rc.right - rc.left;
         siz.cy = rc.bottom - rc.top;
-        if (siz.cx < rcItem.right - rcItem.left &&
+        if (siz.cx < (rcItem.right - rcItem.left) * 9 / 10 &&
             siz.cy < rcItem.bottom - rcItem.top)
         {
             break;
@@ -2128,9 +2137,11 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 
     SetBkMode(hDC, TRANSPARENT);
     HGDIOBJ hFontOld = SelectObject(hDC, hFont);
+    if (!IsWindowEnabled(hwndItem))
     {
-        DrawText(hDC, szText, -1, &rcItem, uFormat);
+        SetTextColor(hDC, GetSysColor(COLOR_GRAYTEXT));
     }
+    DrawTextW(hDC, szText, -1, &rcItem, uFormat);
     SelectObject(hDC, hFontOld);
     DeleteObject(hFont);
 
