@@ -1,7 +1,5 @@
 ﻿150|#FFFFFF|#000000
 Home|60|#104
-< Back|60|#101
-Forward >|60|#102
 Stop/Reload|60|#103
 Print Preview|60|#113
 Print...|60|#111
