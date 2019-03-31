@@ -744,7 +744,7 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
 
     fclose(fp);
 
-    // Delete "..." if kiosk
+    // Delete "..." and print preview if kiosk for security
     if (g_settings.m_kiosk_mode)
     {
         for (size_t i = 0; i < lines.size(); ++i)
@@ -752,7 +752,18 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
             mstr_split(fields, lines[i], L"\t");
             assert(fields.size() >= 3);
 
-            if (fields[2] == L"#117")
+            if (fields[2] == L"#117")   // dots menu
+            {
+                lines.erase(lines.begin() + i);
+                break;
+            }
+        }
+        for (size_t i = 0; i < lines.size(); ++i)
+        {
+            mstr_split(fields, lines[i], L"\t");
+            assert(fields.size() >= 3);
+
+            if (fields[2] == L"#113")   // print preview
             {
                 lines.erase(lines.begin() + i);
                 break;
