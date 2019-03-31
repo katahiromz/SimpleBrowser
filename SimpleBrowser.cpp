@@ -616,7 +616,7 @@ void InitAddrBarComboBox(void)
     SetWindowText(s_hAddrBarComboBox, szText);
 }
 
-BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont);
+void OnRefresh(HWND hwnd);
 
 void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
 {
@@ -674,7 +674,7 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
     PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
 
-    DoReloadLayout(hwnd, s_hButtonFont);
+    OnRefresh(hwnd);
 }
 
 static
