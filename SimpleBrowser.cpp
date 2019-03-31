@@ -1330,30 +1330,29 @@ void OnNext(HWND hwnd)
     s_pWebBrowser->GoForward();
 }
 
-void OnStopRefresh(HWND hwnd)
-{
-    if (s_bLoadingPage)
-    {
-        s_pWebBrowser->Stop();
-        s_pWebBrowser->StopDownload();
-    }
-    else
-    {
-        s_pWebBrowser->Refresh();
-    }
-}
-
 void OnRefresh(HWND hwnd)
 {
     DoReloadLayout(hwnd, s_hGUIFont);
-
     s_pWebBrowser->Refresh();
+    SetDlgItemText(hwnd, ID_ADDRESS_BAR, s_strURL.c_str());
 }
 
 void OnStop(HWND hwnd)
 {
     s_pWebBrowser->Stop();
     s_pWebBrowser->StopDownload();
+}
+
+void OnStopRefresh(HWND hwnd)
+{
+    if (s_bLoadingPage)
+    {
+        OnStop(hwnd);
+    }
+    else
+    {
+        OnRefresh(hwnd);
+    }
 }
 
 void OnGoToAddressBar(HWND hwnd)
@@ -2139,7 +2138,7 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
     HGDIOBJ hFontOld = SelectObject(hDC, hFont);
     if (!IsWindowEnabled(hwndItem))
     {
-        SetTextColor(hDC, GetSysColor(COLOR_GRAYTEXT));
+        SetTextColor(hDC, bgColor);
     }
     DrawTextW(hDC, szText, -1, &rcItem, uFormat);
     SelectObject(hDC, hFontOld);
