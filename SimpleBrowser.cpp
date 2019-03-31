@@ -2090,8 +2090,44 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
     }
     SetTextColor(hDC, color);
 
+    HFONT hFont = GetWindowFont(hwndItem);
+
+    LOGFONTW lf;
+    GetObject(hFont, sizeof(lf), &lf);
+    lf.lfHeight = -(rcItem.bottom - rcItem.top) * 9 / 10;
+    hFont = CreateFontIndirectW(&lf);
+
+    UINT uFormat = DT_SINGLELINE | DT_CENTER | DT_VCENTER;
+    for (INT k = 0; k < 16; ++k)
+    {
+        RECT rc = rcItem;
+        HGDIOBJ hFontOld = SelectObject(hDC, hFont);
+        {
+            DrawText(hDC, szText, -1, &rc, uFormat | DT_CALCRECT);
+        }
+        SelectObject(hDC, hFontOld);
+
+        SIZE siz;
+        siz.cx = rc.right - rc.left;
+        siz.cy = rc.bottom - rc.top;
+        if (siz.cx < rcItem.right - rcItem.left &&
+            siz.cy < rcItem.bottom - rcItem.top)
+        {
+            break;
+        }
+
+        DeleteObject(hFont);
+        lf.lfHeight = -lf.lfHeight * 9 / 10;
+        hFont = CreateFontIndirectW(&lf);
+    }
+
     SetBkMode(hDC, TRANSPARENT);
-    DrawText(hDC, szText, -1, &rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+    HGDIOBJ hFontOld = SelectObject(hDC, hFont);
+    {
+        DrawText(hDC, szText, -1, &rcItem, uFormat);
+    }
+    SelectObject(hDC, hFontOld);
+    DeleteObject(hFont);
 
     //printf("%p: %08X, %08X\n", hwndItem, color, bgColor);
 }
