@@ -27,8 +27,8 @@
 #include "resource.h"
 
 // button size
-#define BTN_WIDTH 80
-#define BTN_HEIGHT 30
+#define BTN_WIDTH 100
+#define BTN_HEIGHT 60
 
 // timer IDs
 #define SOURCE_DONE_TIMER      999
@@ -668,7 +668,7 @@ void DoDeleteButtons(HWND hwnd)
 
     for (size_t i = 0; i < buttons.size(); ++i)
     {
-        DestroyWindow(buttons[0]);
+        DestroyWindow(buttons[i]);
     }
 
     HWND hAddressBar = GetDlgItem(hwnd, ID_ADDRESS_BAR);
@@ -924,7 +924,11 @@ BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
     s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
 
     INT cy1 = _wtoi(s_upside_data.c_str());
+    if (cy1 == 0)
+        cy1 = BTN_HEIGHT;
     INT cy2 = _wtoi(s_downside_data.c_str());
+    if (cy2 == 0)
+        cy2 = BTN_HEIGHT;
     INT height = cy1 ? cy1 : cy2;
 
     LOGFONT lf;
@@ -1074,6 +1078,8 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
 
     INT x, y, cx, cy;
     cy = wcstoul(lines[0].c_str(), NULL, 10);
+    if (cy == 0)
+        cy = BTN_HEIGHT;
     x = rc.left;
     y = bDown ? rc.bottom - cy : rc.top;
 
@@ -1091,6 +1097,8 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         HWND hwndCtrl = hwnds[i - 1];
 
         cx = wcstoul(fields[1].c_str(), NULL, 10);
+        if (cx == 0)
+            cx = BTN_WIDTH;
 
         if (rc.right <= x + cx)
             cx = rc.right - x;
@@ -1120,6 +1128,8 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         else
         {
             cx = wcstoul(fields[1].c_str(), NULL, 10);
+            if (cx == 0)
+                cx = BTN_WIDTH;
             x -= cx;
         }
 
@@ -1154,6 +1164,8 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
 
     INT x, y, cx, cy;
     cx = wcstoul(lines[0].c_str(), NULL, 10);
+    if (cx == 0)
+        cx = BTN_WIDTH;
     x = bRight ? rc.right - cx : rc.left;
     y = rc.top;
 
@@ -1171,6 +1183,8 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         HWND hwndCtrl = hwnds[i - 1];
 
         cy = wcstoul(fields[1].c_str(), NULL, 10);
+        if (cy == 0)
+            cy = BTN_HEIGHT;
 
         if (rc.bottom <= y + cy)
             cy = rc.bottom - y;
@@ -1200,6 +1214,8 @@ INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
         else
         {
             cy = wcstoul(fields[1].c_str(), NULL, 10);
+            if (cy == 0)
+                cy = BTN_HEIGHT;
             y += cy;
         }
 
@@ -1273,9 +1289,9 @@ void OnStopRefresh(HWND hwnd)
 
 void OnRefresh(HWND hwnd)
 {
-    s_pWebBrowser->Refresh();
-
     DoReloadLayout(hwnd, s_hGUIFont);
+
+    s_pWebBrowser->Refresh();
 }
 
 void OnStop(HWND hwnd)
