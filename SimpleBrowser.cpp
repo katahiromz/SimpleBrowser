@@ -62,6 +62,11 @@ static std::vector<HWND> s_upside_hwnds;
 static std::wstring s_downside_data;
 static std::vector<HWND> s_downside_hwnds;
 
+static std::wstring s_leftside_data;
+static std::vector<HWND> s_leftside_hwnds;
+static std::wstring s_rightside_data;
+static std::vector<HWND> s_rightside_hwnds;
+
 void DoUpdateURL(const WCHAR *url)
 {
     ::SetWindowTextW(s_hAddrBarComboBox, url);
@@ -742,7 +747,7 @@ BOOL LoadDataFile2(HWND hwnd, const WCHAR *filename, std::wstring& data)
 }
 
 BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
-                  std::vector<HWND>& hwnds, HFONT hButtonFont, HFONT hAddressFont)
+                  std::vector<HWND>& hwnds, HFONT hButtonFont)
 {
     hwnds.clear();
 
@@ -776,10 +781,6 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
             hCtrl = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
                                    style, 0, 0, 0, 0,
                                    hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
-            s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
-            SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)hAddressFont, TRUE);
-            InitAddrBarComboBox();
-            ComboBox_LimitText(s_hAddrBarComboBox, 255);
         }
         else if (id == ID_STOP_REFRESH)
         {
@@ -826,7 +827,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
     return TRUE;
 }
 
-BOOL DoParseUpside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+BOOL DoParseUpside(HWND hwnd, HFONT hButtonFont)
 {
     std::wstring data;
     if (!LoadDataFile2(hwnd, LoadStringDx(IDS_UPSIDE), data))
@@ -840,12 +841,12 @@ BOOL DoParseUpside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_upside_data, L"\n");
 
-    DoParseLines(hwnd, lines, s_upside_hwnds, hButtonFont, hAddressFont);
+    DoParseLines(hwnd, lines, s_upside_hwnds, hButtonFont);
 
     return TRUE;
 }
 
-BOOL DoParseDownside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+BOOL DoParseDownside(HWND hwnd, HFONT hButtonFont)
 {
     std::wstring data;
     if (!LoadDataFile2(hwnd, LoadStringDx(IDS_DOWNSIDE), data))
@@ -859,31 +860,81 @@ BOOL DoParseDownside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
     std::vector<std::wstring> lines;
     mstr_split(lines, s_downside_data, L"\n");
 
-    DoParseLines(hwnd, lines, s_downside_hwnds, hButtonFont, hAddressFont);
+    DoParseLines(hwnd, lines, s_downside_hwnds, hButtonFont);
 
     return TRUE;
 }
 
-BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+BOOL DoParseLeftSide(HWND hwnd, HFONT hButtonFont)
+{
+    std::wstring data;
+    if (!LoadDataFile2(hwnd, LoadStringDx(IDS_LEFTSIDE), data))
+    {
+        assert(0);
+        return FALSE;
+    }
+
+    s_leftside_data = data;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, s_leftside_data, L"\n");
+
+    DoParseLines(hwnd, lines, s_leftside_hwnds, hButtonFont);
+
+    return TRUE;
+}
+
+BOOL DoParseRightSide(HWND hwnd, HFONT hButtonFont)
+{
+    std::wstring data;
+    if (!LoadDataFile2(hwnd, LoadStringDx(IDS_RIGHTSIDE), data))
+    {
+        assert(0);
+        return FALSE;
+    }
+
+    s_rightside_data = data;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, s_rightside_data, L"\n");
+
+    DoParseLines(hwnd, lines, s_rightside_hwnds, hButtonFont);
+
+    return TRUE;
+}
+
+BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
 {
     s_hwnd2url.clear();
     DoDeleteButtons(hwnd);
 
-    DoParseUpside(hwnd, hButtonFont, hAddressFont);
-    DoParseDownside(hwnd, hButtonFont, hAddressFont);
+    DoParseUpside(hwnd, hButtonFont);
+    DoParseDownside(hwnd, hButtonFont);
+    DoParseLeftSide(hwnd, hButtonFont);
+    DoParseRightSide(hwnd, hButtonFont);
 
     if (GetDlgItem(hwnd, ID_ADDRESS_BAR) == NULL)
     {
         DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
                       CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
-        CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
-                       style, 0, 0, 0, 0,
+        CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL, style, 0, 0, 0, 0,
                        hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
-        s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
-        SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
-        InitAddrBarComboBox();
-        ComboBox_LimitText(s_hAddrBarComboBox, 255);
     }
+
+    s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+
+    INT cy1 = _wtoi(s_upside_data.c_str());
+    INT cy2 = _wtoi(s_downside_data.c_str());
+    INT height = cy1 ? cy1 : cy2;
+
+    LOGFONT lf;
+    GetObject(s_hGUIFont, sizeof(lf), &lf);
+    lf.lfHeight = -(height - 8);
+    s_hAddressFont = CreateFontIndirect(&lf);
+
+    SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
+    InitAddrBarComboBox();
+    ComboBox_LimitText(s_hAddrBarComboBox, 255);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
 }
@@ -920,12 +971,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     s_hGUIFont = GetStockFont(DEFAULT_GUI_FONT);
 
-    LOGFONT lf;
-    GetObject(s_hGUIFont, sizeof(lf), &lf);
-    lf.lfHeight = -(BTN_HEIGHT - 8);
-    s_hAddressFont = CreateFontIndirect(&lf);
-
-    DoReloadLayout(hwnd, s_hGUIFont, s_hAddressFont);
+    DoReloadLayout(hwnd, s_hGUIFont);
 
     DWORD style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
     s_hStatusBar = CreateStatusWindow(style, LoadStringDx(IDS_LOADING), hwnd, stc1);
@@ -1085,6 +1131,82 @@ INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
     return cy;
 }
 
+INT DoResizeLeftRightSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
+                          const std::wstring& data, BOOL bRight)
+{
+    RECT& rc = *prc;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, data, L"\n");
+
+    if (lines.size() <= 1)
+    {
+        return 0;
+    }
+    if (hwnds.size() != lines.size() - 1)
+    {
+        return 0;
+    }
+
+    INT x, y, cx, cy;
+    cx = wcstoul(lines[0].c_str(), NULL, 10);
+    x = bRight ? rc.right - cx : rc.left;
+    y = rc.top;
+
+    size_t i = 1;
+    for (; i < lines.size(); ++i)
+    {
+        std::wstring str = lines[i];
+        std::vector<std::wstring> fields;
+        mstr_split(fields, str, L"|");
+        if (fields.size() < 3)
+            continue;
+        if (fields[1] == L"*")
+            break;
+
+        HWND hwndCtrl = hwnds[i - 1];
+
+        cy = wcstoul(fields[1].c_str(), NULL, 10);
+        if (hwndCtrl)
+            MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
+        y += cy;
+    }
+
+    INT y1 = y;
+    y = rc.bottom;
+    size_t k = i;
+
+    for (i = lines.size(); i-- > k; )
+    {
+        std::wstring str = lines[i];
+        std::vector<std::wstring> fields;
+        mstr_split(fields, str, L"|");
+        if (fields.size() < 3)
+            continue;
+
+        if (fields[1] == L"*")
+        {
+            cy = y - y1;
+            y += cy;
+        }
+        else
+        {
+            cy = wcstoul(fields[1].c_str(), NULL, 10);
+            y += cy;
+        }
+
+        HWND hwndCtrl = hwnds[i - 1];
+
+        if (hwndCtrl)
+            MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
+
+        if (fields[1] == L"*")
+            break;
+    }
+
+    return cx;
+}
+
 void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
@@ -1108,6 +1230,12 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 
     INT cyDownSide = DoResizeUpDownSide(hwnd, &rc, s_downside_hwnds, s_downside_data, TRUE);
     rc.bottom -= cyDownSide;
+
+    INT cxLeftSide = DoResizeLeftRightSide(hwnd, &rc, s_leftside_hwnds, s_leftside_data, FALSE);
+    rc.left += cxLeftSide;
+
+    INT cxRightSide = DoResizeLeftRightSide(hwnd, &rc, s_rightside_hwnds, s_rightside_data, TRUE);
+    rc.right -= cxRightSide;
 
     s_pWebBrowser->MoveWindow(rc);
 }

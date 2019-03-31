@@ -1,1 +1,3 @@
 30|#FFFFFF|#000000
+Print Preview|130|#113
+Print...|100|#111
