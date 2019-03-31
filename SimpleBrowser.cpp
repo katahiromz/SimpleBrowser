@@ -11,6 +11,9 @@
 #include <shlwapi.h>
 #include <mshtml.h>
 #include <intshcut.h>
+#include <string>
+#include <map>
+#include <cassert>
 #include "MWebBrowser.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
@@ -19,8 +22,6 @@
 #include "Settings.hpp"
 #include "mime_info.h"
 #include "mstr.hpp"
-#include <string>
-#include <cassert>
 #include <strsafe.h>
 #include <comdef.h>
 #include "resource.h"
@@ -50,18 +51,16 @@ static HBITMAP s_hbmInsecure = NULL;
 static std::wstring s_strURL;
 static std::wstring s_strTitle;
 static BOOL s_bKiosk = FALSE;
+static const TCHAR s_szButton[] = TEXT("BUTTON");
 
-static std::vector<std::string> s_buttons =
-{
-    "30",
-    "< Back|80|101",
-    "Next >|80|102",
-    "Refresh|80|103",
-    "Home|80|104",
-    "Address Bar|*|105",
-    "GO >|80|106",
-    "Dots|80|117",
-};
+std::wstring s_strStop = L"Stop";
+std::wstring s_strRefresh = L"Refresh";
+std::map<HWND, std::wstring> s_hwnd2url;
+
+static std::wstring s_upside_data;
+static std::vector<HWND> s_upside_hwnds;
+static std::wstring s_downside_data;
+static std::vector<HWND> s_downside_hwnds;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -182,7 +181,27 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     return FALSE;
 }
 
-BOOL IsAccessibleURL(const WCHAR *url)
+BOOL IsURL(const WCHAR *url)
+{
+    if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
+        return TRUE;
+    if (wcsstr(url, L"www.") == url || wcsstr(url, L"ftp.") == url)
+        return TRUE;
+
+    int cch = lstrlenW(url);
+    if (cch >= 4 && wcsstr(&url[cch - 4], L".com") != NULL)
+        return TRUE;
+    if (cch >= 5 && wcsstr(&url[cch - 5], L".com/") != NULL)
+        return TRUE;
+    if (cch >= 6 && wcsstr(&url[cch - 6], L".co.jp") != NULL)
+        return TRUE;
+    if (cch >= 7 && wcsstr(&url[cch - 7], L".co.jp/") != NULL)
+        return TRUE;
+
+    return FALSE;
+}
+
+BOOL IsAccessible(const WCHAR *url)
 {
     if (PathFileExists(url) || UrlIsFileUrl(url) ||
         PathIsUNC(url) || PathIsNetworkPath(url))
@@ -202,19 +221,7 @@ BOOL IsAccessibleURL(const WCHAR *url)
         }
     }
 
-    if (PathIsURL(url) || UrlIs(url, URLIS_APPLIABLE))
-        return TRUE;
-    if (wcsstr(url, L"www.") == url || wcsstr(url, L"ftp.") == url)
-        return TRUE;
-
-    int cch = lstrlenW(url);
-    if (cch >= 4 && wcsstr(&url[cch - 4], L".com") != NULL)
-        return TRUE;
-    if (cch >= 5 && wcsstr(&url[cch - 5], L".com/") != NULL)
-        return TRUE;
-    if (cch >= 6 && wcsstr(&url[cch - 6], L".co.jp") != NULL)
-        return TRUE;
-    if (cch >= 7 && wcsstr(&url[cch - 7], L".co.jp/") != NULL)
+    if (IsURL(url))
         return TRUE;
 
     return FALSE;
@@ -255,7 +262,7 @@ struct MEventHandler : MEventSinkListener
                     PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
                     return;
                 }
-                if (!IsAccessibleURL(url->bstrVal))
+                if (!IsAccessible(url->bstrVal))
                 {
                     s_strURL = url->bstrVal;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
@@ -267,7 +274,7 @@ struct MEventHandler : MEventSinkListener
                 s_bLoadingPage = TRUE;
 
                 DoUpdateURL(url->bstrVal);
-                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_STOP));
+                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
             }
             pApp->Release();
         }
@@ -284,7 +291,7 @@ struct MEventHandler : MEventSinkListener
             if (pApp == pDispatch)
             {
                 s_strURL = URL->bstrVal;
-                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, LoadStringDx(IDS_REFRESH));
+                ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strRefresh.c_str());
                 s_pWebBrowser->Zoom();
                 s_bLoadingPage = FALSE;
                 PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
@@ -634,6 +641,253 @@ void DoMakeItKiosk(HWND hwnd, BOOL bKiosk)
     PostMessage(hwnd, WM_SIZE, 0, 0);
 }
 
+static
+BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
+{
+    std::vector<HWND> *pbuttons = (std::vector<HWND> *)lParam;
+
+    TCHAR szClass[64];
+    GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
+    if (lstrcmpi(szClass, s_szButton) == 0)
+    {
+        pbuttons->push_back(hwnd);
+    }
+
+    return TRUE;
+}
+
+void DoDeleteButtons(HWND hwnd)
+{
+    std::vector<HWND> buttons;
+    EnumChildWindows(hwnd, EnumChildProc, (LPARAM)&buttons);
+
+    for (size_t i = 0; i < buttons.size(); ++i)
+    {
+        DestroyWindow(buttons[0]);
+    }
+
+    HWND hAddressBar = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+    DestroyWindow(hAddressBar);
+}
+
+BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
+{
+    FILE *fp = _wfopen(path, L"r");
+    if (!fp)
+        return FALSE;
+
+    std::vector<std::wstring> lines;
+    std::vector<std::wstring> fields;
+    char buf[256];
+    WCHAR szText[256];
+    while (fgets(buf, ARRAYSIZE(buf), fp))
+    {
+        if (char *pch = strchr(buf, ';'))
+            *pch = 0;
+
+        if (memcmp(buf, "\xEF\xBB\xBF", 3) == 0)
+        {
+            buf[0] = buf[1] = buf[2] = ' ';
+        }
+
+        MultiByteToWideChar(CP_UTF8, 0, buf, -1, szText, ARRAYSIZE(szText));
+        StrTrimW(szText, L" \t\n\r\f\v");
+
+        mstr_split(fields, szText, L"|");
+        if (fields.size() < 3)
+            continue;
+
+        for (size_t i = 0; i < fields.size(); ++i)
+        {
+            mstr_trim(fields[i], L" \t\n\r\f\v");
+        }
+
+        std::wstring line = mstr_join(fields, L"|");
+        lines.push_back(line);
+    }
+
+    fclose(fp);
+
+    data = mstr_join(lines, L"\n");
+
+    return TRUE;
+}
+
+BOOL LoadDataFile2(HWND hwnd, const WCHAR *filename, std::wstring& data)
+{
+    WCHAR szPath[MAX_PATH];
+
+    GetModuleFileNameW(NULL, szPath, ARRAYSIZE(szPath));
+    *PathFindFileNameW(szPath) = 0;
+    PathAppendW(szPath, filename);
+    if (LoadDataFile(hwnd, szPath, data))
+        return TRUE;
+
+    GetModuleFileNameW(NULL, szPath, ARRAYSIZE(szPath));
+    *PathFindFileNameW(szPath) = 0;
+    PathAppendW(szPath, L"..");
+    PathAppendW(szPath, filename);
+    if (LoadDataFile(hwnd, szPath, data))
+        return TRUE;
+
+    GetModuleFileNameW(NULL, szPath, ARRAYSIZE(szPath));
+    *PathFindFileNameW(szPath) = 0;
+    PathAppendW(szPath, L"..");
+    PathAppendW(szPath, L"..");
+    PathAppendW(szPath, filename);
+    if (LoadDataFile(hwnd, szPath, data))
+        return TRUE;
+
+    return FALSE;
+}
+
+BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
+                  std::vector<HWND>& hwnds, HFONT hButtonFont, HFONT hAddressFont)
+{
+    hwnds.clear();
+
+    for (size_t i = 1; i < lines.size(); ++i)
+    {
+        std::vector<std::wstring> fields;
+        mstr_split(fields, lines[i], L"|");
+        if (fields.size() < 3)
+            continue;
+
+        INT id;
+        if (fields[2][0] == L'#')
+        {
+            id = _wtoi(&fields[2][1]);
+        }
+        else if (IsURL(fields[2].c_str()))
+        {
+            id = ID_GO_URL;
+        }
+        else
+        {
+            id = ID_EXECUTE_CMD;
+        }
+
+        HWND hCtrl;
+        std::wstring& text = fields[0];
+        if (id == ID_ADDRESS_BAR)
+        {
+            DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
+                          CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
+            hCtrl = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
+                                   style, 0, 0, 0, 0,
+                                   hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
+            s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+            SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)hAddressFont, TRUE);
+            InitAddrBarComboBox();
+            ComboBox_LimitText(s_hAddrBarComboBox, 255);
+        }
+        else if (id == ID_STOP_REFRESH)
+        {
+            INT k = text.find(L'/');
+            if (k != std::wstring::npos)
+            {
+                s_strStop = text.substr(0, k);
+                s_strRefresh = text.substr(k + 1);
+            }
+            else
+            {
+                s_strStop = L"Stop";
+                s_strRefresh = L"Refresh";
+            }
+            DWORD style = WS_CHILD | WS_VISIBLE;
+            hCtrl = CreateWindowEx(0, s_szButton, s_strRefresh.c_str(), style, 0, 0, 0, 0,
+                                   hwnd, (HMENU)id, s_hInst, NULL);
+            SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
+        }
+        else if (id == ID_DOTS)
+        {
+            DWORD style = WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE;
+            hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
+                                   hwnd, (HMENU)id, s_hInst, NULL);
+            SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
+        }
+        else if (text.size())
+        {
+            DWORD style = WS_CHILD | WS_VISIBLE;
+            hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
+                                   hwnd, (HMENU)id, s_hInst, NULL);
+            SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
+        }
+        else
+        {
+            hCtrl = NULL;
+        }
+
+        s_hwnd2url[hCtrl] = fields[2];
+
+        hwnds.push_back(hCtrl);
+    }
+
+    return TRUE;
+}
+
+BOOL DoParseUpside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+{
+    std::wstring data;
+    if (!LoadDataFile2(hwnd, LoadStringDx(IDS_UPSIDE), data))
+    {
+        assert(0);
+        return FALSE;
+    }
+
+    s_upside_data = data;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, s_upside_data, L"\n");
+
+    DoParseLines(hwnd, lines, s_upside_hwnds, hButtonFont, hAddressFont);
+
+    return TRUE;
+}
+
+BOOL DoParseDownside(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+{
+    std::wstring data;
+    if (!LoadDataFile2(hwnd, LoadStringDx(IDS_DOWNSIDE), data))
+    {
+        assert(0);
+        return FALSE;
+    }
+
+    s_downside_data = data;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, s_downside_data, L"\n");
+
+    DoParseLines(hwnd, lines, s_downside_hwnds, hButtonFont, hAddressFont);
+
+    return TRUE;
+}
+
+BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont, HFONT hAddressFont)
+{
+    s_hwnd2url.clear();
+    DoDeleteButtons(hwnd);
+
+    DoParseUpside(hwnd, hButtonFont, hAddressFont);
+    DoParseDownside(hwnd, hButtonFont, hAddressFont);
+
+    if (GetDlgItem(hwnd, ID_ADDRESS_BAR) == NULL)
+    {
+        DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
+                      CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
+        CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
+                       style, 0, 0, 0, 0,
+                       hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
+        s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
+        SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
+        InitAddrBarComboBox();
+        ComboBox_LimitText(s_hAddrBarComboBox, 255);
+    }
+
+    PostMessage(hwnd, WM_SIZE, 0, 0);
+}
+
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 {
     s_hMainWnd = hwnd;
@@ -666,70 +920,14 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     s_hGUIFont = GetStockFont(DEFAULT_GUI_FONT);
 
-    INT x, y, cx, cy;
-    DWORD style = WS_CHILD | WS_VISIBLE;
-
-    x = y = 0;
-    cx = BTN_WIDTH;
-    cy = BTN_HEIGHT;
-    static const TCHAR s_szButton[] = TEXT("BUTTON");
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_BACK),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_BACK, s_hInst, NULL);
-    x += cx;
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_NEXT),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_NEXT, s_hInst, NULL);
-    x += cx;
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_REFRESH),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_STOP_REFRESH, s_hInst, NULL);
-    x += cx;
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_HOME),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_HOME, s_hInst, NULL);
-    x += cx;
-
     LOGFONT lf;
     GetObject(s_hGUIFont, sizeof(lf), &lf);
     lf.lfHeight = -(BTN_HEIGHT - 8);
     s_hAddressFont = CreateFontIndirect(&lf);
 
-    cx = 260;
-    style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
-            CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
-    CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
-                   style, x, y, cx, 300,
-                   hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
-    s_hAddrBarComboBox = GetDlgItem(hwnd, ID_ADDRESS_BAR);
-    ComboBox_LimitText(s_hAddrBarComboBox, 255);
-    x += cx;
+    DoReloadLayout(hwnd, s_hGUIFont, s_hAddressFont);
 
-    cx = BTN_WIDTH;
-    cy = BTN_HEIGHT;
-    style = WS_CHILD | WS_VISIBLE;
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_GO),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_GO, s_hInst, NULL);
-    x += cx;
-
-    cx = BTN_WIDTH;
-    cy = BTN_HEIGHT;
-    style = WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE;
-    CreateWindowEx(0, s_szButton, LoadStringDx(IDS_DOTS),
-                   style, x, y, cx, cy,
-                   hwnd, (HMENU) ID_DOTS, s_hInst, NULL);
-    x += cx;
-
-    // set font
-    SendDlgItemMessage(hwnd, ID_BACK, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_NEXT, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_STOP_REFRESH, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_HOME, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_ADDRESS_BAR, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
-    SendDlgItemMessage(hwnd, ID_GO, WM_SETFONT, (WPARAM)s_hGUIFont, TRUE);
-
-    style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
+    DWORD style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
     s_hStatusBar = CreateStatusWindow(style, LoadStringDx(IDS_LOADING), hwnd, stc1);
     if (!s_hStatusBar)
         return FALSE;
@@ -741,8 +939,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         s_pWebBrowser->AllowInsecure(FALSE);
     else
         s_pWebBrowser->AllowInsecure(TRUE);
-
-    InitAddrBarComboBox();
 
     int argc = 0;
     if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
@@ -813,6 +1009,82 @@ void OnMove(HWND hwnd, int x, int y)
     }
 }
 
+INT DoResizeUpDownSide(HWND hwnd, LPRECT prc, const std::vector<HWND>& hwnds,
+                       const std::wstring& data, BOOL bDown)
+{
+    RECT& rc = *prc;
+
+    std::vector<std::wstring> lines;
+    mstr_split(lines, data, L"\n");
+
+    if (lines.size() <= 1)
+    {
+        return 0;
+    }
+    if (hwnds.size() != lines.size() - 1)
+    {
+        return 0;
+    }
+
+    INT x, y, cx, cy;
+    cy = wcstoul(lines[0].c_str(), NULL, 10);
+    x = rc.left;
+    y = bDown ? rc.bottom - cy : rc.top;
+
+    size_t i = 1;
+    for (; i < lines.size(); ++i)
+    {
+        std::wstring str = lines[i];
+        std::vector<std::wstring> fields;
+        mstr_split(fields, str, L"|");
+        if (fields.size() < 3)
+            continue;
+        if (fields[1] == L"*")
+            break;
+
+        HWND hwndCtrl = hwnds[i - 1];
+
+        cx = wcstoul(fields[1].c_str(), NULL, 10);
+        if (hwndCtrl)
+            MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
+        x += cx;
+    }
+
+    INT x1 = x;
+    x = rc.right;
+    size_t k = i;
+
+    for (i = lines.size(); i-- > k; )
+    {
+        std::wstring str = lines[i];
+        std::vector<std::wstring> fields;
+        mstr_split(fields, str, L"|");
+        if (fields.size() < 3)
+            continue;
+
+        if (fields[1] == L"*")
+        {
+            cx = x - x1;
+            x -= cx;
+        }
+        else
+        {
+            cx = wcstoul(fields[1].c_str(), NULL, 10);
+            x -= cx;
+        }
+
+        HWND hwndCtrl = hwnds[i - 1];
+
+        if (hwndCtrl)
+            MoveWindow(hwndCtrl, x, y, cx, cy, TRUE);
+
+        if (fields[1] == L"*")
+            break;
+    }
+
+    return cy;
+}
+
 void OnSize(HWND hwnd, UINT state, int cx, int cy)
 {
     RECT rc;
@@ -826,64 +1098,16 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
 
     GetClientRect(hwnd, &rc);
 
-    INT x, y;
-
-    x = rc.left;
-    y = rc.top;
-    cx = BTN_WIDTH;
-    cy = BTN_HEIGHT;
-
-    cy = atoi(s_buttons[0].c_str());
-
-    size_t i = 1;
-    for (; i < s_buttons.size(); ++i)
-    {
-        std::string str = s_buttons[i];
-        std::vector<std::string> fields;
-        mstr_split(fields, str, "|");
-        if (fields.size() < 3)
-            continue;
-        INT id = atoi(fields[2].c_str());
-        if (fields[1] == "*")
-            break;
-        cx = atoi(fields[1].c_str());
-
-        MoveWindow(GetDlgItem(hwnd, id), x, y, cx, cy, TRUE);
-        x += cx;
-    }
-
-    INT x1 = x;
-    x = rc.right;
-
-    size_t k = i;
-    for (i = s_buttons.size(); i--; )
-    {
-        std::string str = s_buttons[i];
-        std::vector<std::string> fields;
-        mstr_split(fields, str, "|");
-        if (fields.size() < 3)
-            continue;
-        INT id = atoi(fields[2].c_str());
-        if (fields[1] == "*")
-        {
-            cx = x - x1;
-            x -= cx;
-        }
-        else
-        {
-            cx = atoi(fields[1].c_str());
-            x -= cx;
-        }
-        MoveWindow(GetDlgItem(hwnd, id), x, y, cx, cy, TRUE);
-    }
-
-    rc.top += cy;
-
     RECT rcStatus;
     SendMessage(s_hStatusBar, WM_SIZE, 0, 0);
     GetWindowRect(s_hStatusBar, &rcStatus);
-
     rc.bottom -= rcStatus.bottom - rcStatus.top;
+
+    INT cyUpSide = DoResizeUpDownSide(hwnd, &rc, s_upside_hwnds, s_upside_data, FALSE);
+    rc.top += cyUpSide;
+
+    INT cyDownSide = DoResizeUpDownSide(hwnd, &rc, s_downside_hwnds, s_downside_data, TRUE);
+    rc.bottom -= cyDownSide;
 
     s_pWebBrowser->MoveWindow(rc);
 }
@@ -1075,7 +1299,9 @@ void OnDots(HWND hwnd)
     else
     {
         if (SendDlgItemMessage(hwnd, ID_DOTS, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+        {
             return;
+        }
     }
 
     RECT rc;
@@ -1354,6 +1580,41 @@ void OnKioskOn(HWND hwnd)
     DoMakeItKiosk(hwnd, TRUE);
 }
 
+void OnGoURL(HWND hwnd, HWND hwndCtl)
+{
+    auto it = s_hwnd2url.find(hwndCtl);
+    if (it != s_hwnd2url.end())
+    {
+        DoNavigate(hwnd, it->second.c_str());
+    }
+}
+
+void OnExecuteCmd(HWND hwnd, HWND hwndCtl)
+{
+    auto it = s_hwnd2url.find(hwndCtl);
+    if (it != s_hwnd2url.end())
+    {
+        WCHAR szText[256];
+        StringCbCopyW(szText, sizeof(szText), it->second.c_str());
+
+        WCHAR szPath[MAX_PATH];
+        GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
+        *PathFindFileName(szPath) = 0;
+
+        STARTUPINFO si;
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+
+        PROCESS_INFORMATION pi;
+        ZeroMemory(&pi, sizeof(pi));
+
+        HANDLE hProcess;
+        CreateProcessW(NULL, szText, NULL, NULL, TRUE, 0, NULL, szPath, &si, &pi);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1448,6 +1709,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_KIOSK_ON:
         OnKioskOn(hwnd);
+        break;
+    case ID_GO_URL:
+        OnGoURL(hwnd, hwndCtl);
+        break;
+    case ID_EXECUTE_CMD:
+        OnExecuteCmd(hwnd, hwndCtl);
         break;
     }
 

@@ -146,6 +146,10 @@ STRINGTABLE
     IDS_TITLE_TEXT, "%s - SimpleBrowser"
     IDS_NONAME, "(Untitled)"
     IDS_ENTER_TEXT, "Enter the text."
+    IDS_UPSIDE, "Upside_en.txt"
+    IDS_DOWNSIDE, "Downside_en.txt"
+    IDS_LEFTSIDE, "LeftSide_en.txt"
+    IDS_RIGHTSIDE, "RightSide_en.txt"
 }
 
 //////////////////////////////////////////////////////////////////////////////

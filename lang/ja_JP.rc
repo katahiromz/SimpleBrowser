@@ -146,6 +146,10 @@ STRINGTABLE
     IDS_TITLE_TEXT, "%s - SimpleBrowser"
     IDS_NONAME, "(無題)"
     IDS_ENTER_TEXT, "テキストを入力して下さい。"
+    IDS_UPSIDE, "Upside_ja.txt"
+    IDS_DOWNSIDE, "Downside_ja.txt"
+    IDS_LEFTSIDE, "LeftSide_ja.txt"
+    IDS_RIGHTSIDE, "RightSide_ja.txt"
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -41,6 +41,10 @@
 #define IDS_NONAME                          122
 #define IDS_ADD_LINK                        123
 #define IDS_ENTER_TEXT                      124
+#define IDS_UPSIDE                          125
+#define IDS_DOWNSIDE                        126
+#define IDS_LEFTSIDE                        127
+#define IDS_RIGHTSIDE                       128
 
 #define ID_BACK                             101
 #define ID_NEXT                             102
@@ -70,6 +74,8 @@
 #define ID_KIOSK                            126
 #define ID_KIOSK_OFF                        127
 #define ID_KIOSK_ON                         128
+#define ID_GO_URL                           129
+#define ID_EXECUTE_CMD                      130
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
