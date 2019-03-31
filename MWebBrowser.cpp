@@ -4,7 +4,6 @@
 
 #include "MWebBrowser.hpp"
 #include <cstdio>
-#include <mshtml.h>
 #include <comdef.h>
 #include <cassert>
 
@@ -63,6 +62,17 @@ MWebBrowser::~MWebBrowser()
 IWebBrowser2 *MWebBrowser::GetIWebBrowser2()
 {
     return m_web_browser2;
+}
+
+IHTMLDocument2 *MWebBrowser::GetIHTMLDocument2()
+{
+    IDispatch *pDisp;
+    m_web_browser2->get_Document(&pDisp);
+    if (pDisp)
+    {
+        return static_cast<IHTMLDocument2 *>(pDisp);
+    }
+    return NULL;
 }
 
 HWND MWebBrowser::GetControlWindow()

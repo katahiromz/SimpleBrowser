@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <exdisp.h>
+#include <mshtml.h>
 
 class MWebBrowser :
     public IOleClientSite,
@@ -38,6 +39,7 @@ public:
     void Destroy();
     BOOL TranslateAccelerator(LPMSG pMsg);
     IWebBrowser2 *GetIWebBrowser2();
+    IHTMLDocument2 *GetIHTMLDocument2();
     void AllowInsecure(BOOL bAllow);
 
     HRESULT get_Application(IDispatch **ppApplication) const;

@@ -1875,6 +1875,42 @@ void OnCancelPrinting(HWND hwnd)
     DoExecute(hwnd, L"CancelPrinting.bat", SW_HIDE);
 }
 
+void OnUp(HWND hwnd)
+{
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
+    {
+        IHTMLWindow2 *pWindow = NULL;
+        pDocument->get_parentWindow(&pWindow);
+        if (pWindow)
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                pWindow->scrollBy(0, -40);
+            }
+            pWindow->Release();
+        }
+        pDocument->Release();
+    }
+}
+
+void OnDown(HWND hwnd)
+{
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
+    {
+        IHTMLWindow2 *pWindow = NULL;
+        pDocument->get_parentWindow(&pWindow);
+        if (pWindow)
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                pWindow->scrollBy(0, 40);
+            }
+            pWindow->Release();
+        }
+        pDocument->Release();
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -1978,6 +2014,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_CANCEL_PRINTING:
         OnCancelPrinting(hwnd);
+        break;
+    case ID_UP:
+        OnUp(hwnd);
+        break;
+    case ID_DOWN:
+        OnDown(hwnd);
         break;
     }
 
