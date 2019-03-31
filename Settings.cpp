@@ -105,10 +105,10 @@ BOOL SETTINGS::load()
         RegQueryValueEx(hApp, L"IgnoreErrors", NULL, NULL, (LPBYTE)&value, &cb);
         m_ignore_errors = !!value;
 
-        value = m_kiosk_mode;
-        cb = sizeof(value);
-        RegQueryValueEx(hApp, L"KioskMode", NULL, NULL, (LPBYTE)&value, &cb);
-        m_kiosk_mode = !!value;
+        //value = m_kiosk_mode;
+        //cb = sizeof(value);
+        //RegQueryValueEx(hApp, L"KioskMode", NULL, NULL, (LPBYTE)&value, &cb);
+        //m_kiosk_mode = !!value;
 
         value = m_emulation;
         cb = sizeof(value);
@@ -231,9 +231,9 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"IgnoreErrors", 0, REG_DWORD, (LPBYTE)&value, cb);
 
-                value = DWORD(m_kiosk_mode);
-                cb = DWORD(sizeof(value));
-                RegSetValueEx(hApp, L"KioskMode", 0, REG_DWORD, (LPBYTE)&value, cb);
+                //value = DWORD(m_kiosk_mode);
+                //cb = DWORD(sizeof(value));
+                //RegSetValueEx(hApp, L"KioskMode", 0, REG_DWORD, (LPBYTE)&value, cb);
 
                 value = DWORD(m_emulation);
                 cb = DWORD(sizeof(value));

@@ -1057,12 +1057,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
             {
                 g_settings.m_kiosk_mode = TRUE;
             }
-            else if (lstrcmpiW(wargv[1], L"-non-kiosk") == 0 ||
-                     lstrcmpiW(wargv[1], L"--non-kiosk") == 0 ||
-                     lstrcmpiW(wargv[1], L"/non-kiosk") == 0)
-            {
-                g_settings.m_kiosk_mode = FALSE;
-            }
             else
             {
                 DoNavigate(hwnd, wargv[1]);
@@ -2300,8 +2294,7 @@ WinMain(HINSTANCE   hInstance,
         LPSTR       lpCmdLine,
         INT         nCmdShow)
 {
-    if (strstr(lpCmdLine, "kiosk") != NULL &&
-        strstr(lpCmdLine, "non-kiosk") == NULL)
+    if (strstr(lpCmdLine, "kiosk") != NULL)
     {
         INT i = 0;
         while (HWND hwnd = FindWindow(s_szName, NULL))
