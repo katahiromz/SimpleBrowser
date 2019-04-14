@@ -795,7 +795,7 @@ STDMETHODIMP MWebBrowser::QueryService(
     REFIID riid,
     void **ppvObject)
 {
-    return QueryInterface(riid, ppvObject);
+    return QueryInterface(guidService, ppvObject);
 }
 
 // IWindowForBindingUI interface
