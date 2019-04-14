@@ -81,12 +81,13 @@
 #define ID_DOWN                             133
 #define ID_ZOOM_UP                          134
 #define ID_ZOOM_DOWN                        135
+#define ID_ZOOM_100                         136
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     136
+        #define _APS_NEXT_COMMAND_VALUE     137
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

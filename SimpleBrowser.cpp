@@ -1920,6 +1920,11 @@ void OnZoomDown(HWND hwnd)
     s_pWebBrowser->ZoomDown();
 }
 
+void OnZoom100(HWND hwnd)
+{
+    s_pWebBrowser->Zoom100();
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -2036,6 +2041,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case ID_ZOOM_DOWN:
         OnZoomDown(hwnd);
         break;
+    case ID_ZOOM_100:
+        OnZoom100(hwnd);
+        break;
     }
 
     --s_nLevel;
@@ -2113,6 +2121,7 @@ void OnTimer(HWND hwnd, UINT id)
         if (g_settings.m_kiosk_mode)
         {
             PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+            PostMessage(hwnd, WM_COMMAND, ID_ZOOM_100, 0);
             SetForegroundWindow(hwnd);
         }
         break;

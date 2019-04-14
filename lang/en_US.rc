@@ -17,6 +17,8 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "Zoom &Up", ID_ZOOM_UP
         MENUITEM "Z&oom Down", ID_ZOOM_DOWN
+        MENUITEM "Zoom &100%", ID_ZOOM_100
+        MENUITEM SEPARATOR
         MENUITEM "Page &Setup...", ID_PAGE_SETUP
         MENUITEM SEPARATOR
         MENUITEM "Print Pre&view", ID_PRINT_PREVIEW

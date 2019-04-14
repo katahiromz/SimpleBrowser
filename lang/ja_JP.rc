@@ -17,6 +17,7 @@ IDR_DOTSMENU MENU
         MENUITEM SEPARATOR
         MENUITEM "ズームアップ(&U)", ID_ZOOM_UP
         MENUITEM "ズームダウン(&O)", ID_ZOOM_DOWN
+        MENUITEM "ズーム &100%", ID_ZOOM_100
         MENUITEM SEPARATOR
         MENUITEM "ページ設定(&S)...", ID_PAGE_SETUP
         MENUITEM SEPARATOR

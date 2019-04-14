@@ -478,6 +478,11 @@ HRESULT MWebBrowser::ZoomDown()
     return ZoomPercents(percents);
 }
 
+HRESULT MWebBrowser::Zoom100()
+{
+    return ZoomPercents(100);
+}
+
 HRESULT MWebBrowser::ZoomPercents(LONG percents)
 {
     VARIANT zoom;

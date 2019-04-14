@@ -49,6 +49,7 @@ public:
     BOOL is_busy() const;
     HRESULT ZoomUp();
     HRESULT ZoomDown();
+    HRESULT Zoom100();
     HRESULT ZoomPercents(LONG percents);
 
     // IUnknown interface
