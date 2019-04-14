@@ -38,4 +38,3 @@ License: MIT
 - 2019.XX.YY ver. 0.9.1
     - Change main icon.
     - Fix "Save As".
-    - PDF support.
