@@ -1448,6 +1448,8 @@ void OnSave(HWND hwnd)
     else
         pch = bstrURL;
 
+    LPWSTR pchFileName = pch;
+
     pch = PathFindExtension(pch);
     char extension[64];
     ::WideCharToMultiByte(CP_ACP, 0, pch, -1, extension, 64, NULL, NULL);
@@ -1457,7 +1459,7 @@ void OnSave(HWND hwnd)
 
     //MessageBoxA(NULL, pszMime, NULL, 0);
 
-    TCHAR file[MAX_PATH] = L"*";
+    TCHAR file[MAX_PATH] = TEXT("*");
 
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(ofn));
@@ -1472,31 +1474,43 @@ void OnSave(HWND hwnd)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_TXTFILTER));
         ofn.lpstrDefExt = L"txt";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "text/html") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_HTMLFILTER));
         ofn.lpstrDefExt = L"html";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "image/jpeg") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"jpg";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "image/png") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"png";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "image/gif") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"gif";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "image/tiff") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_IMGFILTER));
         ofn.lpstrDefExt = L"tif";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else if (strcmp(pszMime, "image/bmp") == 0)
     {
@@ -1507,11 +1521,22 @@ void OnSave(HWND hwnd)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_PDFFILTER));
         ofn.lpstrDefExt = L"pdf";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
+    }
+    else if (*pch == 0)
+    {
+        ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_HTMLFILTER));
+        ofn.lpstrDefExt = L"html";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
     else
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_ALLFILTER));
         ofn.lpstrDefExt = NULL;
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
     }
 
     if (::GetSaveFileName(&ofn))
