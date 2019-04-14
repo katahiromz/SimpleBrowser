@@ -3,7 +3,7 @@
 // This file is public domain software.
 
 #ifndef MWEB_BROWSER_HPP_
-#define MWEB_BROWSER_HPP_   12   // Version 12
+#define MWEB_BROWSER_HPP_   13   // Version 13
 
 #define INITGUID
 #include <windows.h>
