@@ -30,7 +30,8 @@ MWebBrowser::MWebBrowser(HWND hwndParent) :
     m_ole_object(NULL),
     m_ole_inplace_object(NULL),
     m_hr(S_OK),
-    m_bAllowInsecure(FALSE)
+    m_bAllowInsecure(FALSE),
+    m_nZoomPercents(100)
 {
     ::SetRectEmpty(&m_rc);
 
@@ -267,28 +268,6 @@ void MWebBrowser::Navigate(const WCHAR *url)
     }
 }
 
-void MWebBrowser::Zoom(LONG iZoomFactor)
-{
-    if (!m_web_browser2)
-        return;
-
-    IDispatch *pDisp;
-    m_web_browser2->get_Document(&pDisp);
-    if (pDisp)
-    {
-        IOleCommandTarget *pCmdTarget = NULL;
-        pDisp->QueryInterface(&pCmdTarget);
-        if (pCmdTarget)
-        {
-            variant_t factor(iZoomFactor);
-            OLECMDEXECOPT option = OLECMDEXECOPT_DONTPROMPTUSER;
-            pCmdTarget->Exec(NULL, OLECMDID_ZOOM, option, &factor, NULL);
-            pCmdTarget->Release();
-        }
-        pDisp->Release();
-    }
-}
-
 void MWebBrowser::Print(BOOL bBang)
 {
     if (!m_web_browser2)
@@ -461,6 +440,58 @@ HRESULT MWebBrowser::put_Silent(VARIANT_BOOL bSilent)
     if (!m_web_browser2)
         return E_NOINTERFACE;
     return m_web_browser2->put_Silent(bSilent);
+}
+
+HRESULT MWebBrowser::ZoomUp()
+{
+    LONG percents = m_nZoomPercents;
+    if (percents >= 300)
+        return E_FAIL;
+
+    if (percents < 100)
+    {
+        percents += 10;
+    }
+    else
+    {
+        percents += 50;
+    }
+
+    return ZoomPercents(percents);
+}
+
+HRESULT MWebBrowser::ZoomDown()
+{
+    LONG percents = m_nZoomPercents;
+    if (percents <= 50)
+        return E_FAIL;
+
+    if (percents > 100)
+    {
+        percents -= 50;
+    }
+    else
+    {
+        percents -= 10;
+    }
+
+    return ZoomPercents(percents);
+}
+
+HRESULT MWebBrowser::ZoomPercents(LONG percents)
+{
+    VARIANT zoom;
+    VariantInit (&zoom);
+    V_VT(&zoom) = VT_I4;
+    V_I4(&zoom) = percents;
+
+    OLECMDEXECOPT option = OLECMDEXECOPT_DONTPROMPTUSER;
+    HRESULT hr = m_web_browser2->ExecWB(OLECMDID_OPTICAL_ZOOM, option, &zoom, NULL);
+    if (SUCCEEDED(hr))
+    {
+        m_nZoomPercents = percents;
+    }
+    return hr;
 }
 
 // IUnknown interface

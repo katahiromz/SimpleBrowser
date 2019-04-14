@@ -32,7 +32,6 @@ public:
     void StopDownload();
     void Refresh();
     void Navigate(const WCHAR *url = L"about:blank");
-    void Zoom(LONG iZoomFactor = 2);
     void Print(BOOL bBang = FALSE);
     void PrintPreview();
     void PageSetup();
@@ -48,6 +47,9 @@ public:
     HRESULT get_mimeType(BSTR *bstrMIME) const;
     HRESULT put_Silent(VARIANT_BOOL bSilent);
     BOOL is_busy() const;
+    HRESULT ZoomUp();
+    HRESULT ZoomDown();
+    HRESULT ZoomPercents(LONG percents);
 
     // IUnknown interface
     STDMETHODIMP QueryInterface(REFIID riid, void **ppvObj);
@@ -165,6 +167,7 @@ protected:
     RECT m_rc;
     HRESULT m_hr;
     BOOL m_bAllowInsecure;
+    LONG m_nZoomPercents;
 
     MWebBrowser(HWND hwndParent);
     virtual ~MWebBrowser();

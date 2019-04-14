@@ -15,6 +15,9 @@ IDR_DOTSMENU MENU
         MENUITEM "新しいウィンドウ(&N)\tCtrl+N", ID_NEW
         MENUITEM "ページを名前を付けて保存(&A)...\tCtrl+S", ID_SAVE
         MENUITEM SEPARATOR
+        MENUITEM "ズームアップ(&U)", ID_ZOOM_UP
+        MENUITEM "ズームダウン(&O)", ID_ZOOM_DOWN
+        MENUITEM SEPARATOR
         MENUITEM "ページ設定(&S)...", ID_PAGE_SETUP
         MENUITEM SEPARATOR
         MENUITEM "印刷プレビュー(&V)", ID_PRINT_PREVIEW

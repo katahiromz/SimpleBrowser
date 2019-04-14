@@ -12,3 +12,5 @@ Print Preview	60	#113
 Print...	60	#111
 Cancel Printing	60	#131
 ...	60	#117
+Zoom Up	60	#134
+Zoom Down	60	#135

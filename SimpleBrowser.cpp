@@ -324,7 +324,6 @@ struct MEventHandler : MEventSinkListener
             {
                 s_strURL = URL->bstrVal;
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strRefresh.c_str());
-                s_pWebBrowser->Zoom();
                 s_bLoadingPage = FALSE;
                 PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
             }
@@ -1911,6 +1910,16 @@ void OnDown(HWND hwnd)
     }
 }
 
+void OnZoomUp(HWND hwnd)
+{
+    s_pWebBrowser->ZoomUp();
+}
+
+void OnZoomDown(HWND hwnd)
+{
+    s_pWebBrowser->ZoomDown();
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -2020,6 +2029,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         break;
     case ID_DOWN:
         OnDown(hwnd);
+        break;
+    case ID_ZOOM_UP:
+        OnZoomUp(hwnd);
+        break;
+    case ID_ZOOM_DOWN:
+        OnZoomDown(hwnd);
         break;
     }
 
