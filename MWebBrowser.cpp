@@ -3,6 +3,7 @@
 // This file is public domain software.
 
 #include "MWebBrowser.hpp"
+#include "MBindStatusCallback.hpp"
 #include <cstdio>
 #include <comdef.h>
 #include <cassert>
@@ -372,6 +373,23 @@ HRESULT MWebBrowser::Save(LPCWSTR file)
             pPersistFile->Release();
         }
         pDisp->Release();
+    }
+
+    if (FAILED(hr))
+    {
+        BSTR bstrURL = NULL;
+        hr = get_LocationURL(&bstrURL);
+        if (SUCCEEDED(hr))
+        {
+            MBindStatusCallback *pCallback = MBindStatusCallback::Create();
+            hr = URLDownloadToFile(NULL, bstrURL, file, 0, pCallback);
+            while (!pCallback->IsCompleted())
+            {
+                Sleep(100);
+            }
+            ::SysFreeString(bstrURL);
+            pCallback->Release();
+        }
     }
 
     return hr;
