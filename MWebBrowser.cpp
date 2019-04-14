@@ -383,9 +383,13 @@ HRESULT MWebBrowser::Save(LPCWSTR file)
         {
             MBindStatusCallback *pCallback = MBindStatusCallback::Create();
             hr = URLDownloadToFile(NULL, bstrURL, file, 0, pCallback);
-            while (!pCallback->IsCompleted())
+            while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
             {
-                Sleep(100);
+                Sleep(80);
+            }
+            if (FAILED(hr))
+            {
+                DeleteFileW(file);
             }
             ::SysFreeString(bstrURL);
             pCallback->Release();
