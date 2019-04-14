@@ -4,9 +4,10 @@
 
 #include "MWebBrowser.hpp"
 #include "MBindStatusCallback.hpp"
+#include <shlwapi.h>
 #include <cstdio>
-#include <comdef.h>
 #include <cassert>
+#include <comdef.h>
 
 /*static*/ MWebBrowser *
 MWebBrowser::Create(HWND hwndParent)
@@ -483,6 +484,10 @@ STDMETHODIMP MWebBrowser::QueryInterface(REFIID riid, void **ppvObj)
     {
         *ppvObj = static_cast<IHttpSecurity *>(this);
     }
+    else if (riid == __uuidof(IDownloadManager))
+    {
+        *ppvObj = static_cast<IDownloadManager *>(this);
+    }
     else
     {
         return E_NOINTERFACE;
@@ -758,7 +763,7 @@ STDMETHODIMP MWebBrowser::QueryService(
     REFIID riid,
     void **ppvObject)
 {
-    return QueryInterface(guidService, ppvObject);
+    return QueryInterface(riid, ppvObject);
 }
 
 // IWindowForBindingUI interface
@@ -776,4 +781,43 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
     if (m_bAllowInsecure)
         return S_OK;
     return E_ABORT;
+}
+
+// IDownloadManager interface
+
+STDMETHODIMP MWebBrowser::Download(
+    IMoniker *pmk,
+    IBindCtx *pbc,
+    DWORD dwBindVerb,
+    LONG grfBINDF,
+    BINDINFO *pBindInfo,
+    LPCOLESTR pszHeaders,
+    LPCOLESTR pszRedir,
+    UINT uiCP)
+{
+    MessageBoxW(NULL, L"IDownloadManager::Download", NULL, 0);
+
+    LPOLESTR pszURL = NULL;
+    pmk->GetDisplayName(pbc, NULL, &pszURL);
+
+    if (pszURL && *pszURL)
+    {
+#if 0
+        MBindStatusCallback *pCallback = MBindStatusCallback::Create();
+        hr = URLDownloadToFile(NULL, pszURL, file, 0, pCallback);
+        while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
+        {
+            Sleep(80);
+        }
+        if (FAILED(hr))
+        {
+            DeleteFileW(file);
+        }
+        pCallback->Release();
+#endif
+
+        CoTaskMemFree(pszURL);
+        return S_OK;
+    }
+    return E_FAIL;
 }

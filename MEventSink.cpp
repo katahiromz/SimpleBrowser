@@ -180,7 +180,6 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].pboolVal);
         break;
     default:
-
         return DISP_E_MEMBERNOTFOUND;
     }
 
