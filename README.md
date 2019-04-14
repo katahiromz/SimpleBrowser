@@ -37,4 +37,4 @@ License: MIT
     - First release
 - 2019.XX.YY ver. 0.9.1
     - Change main icon.
-    - Fix "Save As".
+    - Fix and improve "Save As".

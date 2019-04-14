@@ -515,11 +515,6 @@ STDMETHODIMP MWebBrowser::QueryInterface(REFIID riid, void **ppvObj)
     {
         *ppvObj = static_cast<IServiceProvider *>(this);
     }
-    else if (riid == __uuidof(IWindowForBindingUI) ||
-             riid == __uuidof(IHttpSecurity))
-    {
-        *ppvObj = static_cast<IHttpSecurity *>(this);
-    }
     else
     {
         return E_NOINTERFACE;
@@ -795,7 +790,20 @@ STDMETHODIMP MWebBrowser::QueryService(
     REFIID riid,
     void **ppvObject)
 {
-    return QueryInterface(guidService, ppvObject);
+    *ppvObject = NULL;
+
+    if (riid == __uuidof(IWindowForBindingUI) ||
+        riid == __uuidof(IHttpSecurity))
+    {
+        *ppvObject = static_cast<IHttpSecurity *>(this);
+    }
+    else
+    {
+        return E_NOTIMPL;
+    }
+
+    AddRef();
+    return S_OK;
 }
 
 // IWindowForBindingUI interface
