@@ -29,3 +29,11 @@ On kiosk mode, the dots menu ("...") and print preview are
 not available for security reason.
 
 License: MIT
+
+## History
+
+- 2019.04.01 ver. 0.9
+    - First release
+- 2019.XX.YY ver. 0.9.1
+    - Change main icon.
+    - PDF support.
