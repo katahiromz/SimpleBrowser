@@ -361,7 +361,7 @@ HRESULT MWebBrowser::Save(LPCWSTR file)
         return E_FAIL;
 
     BSTR bstrURL = NULL;
-    hr = get_LocationURL(&bstrURL);
+    HRESULT hr = get_LocationURL(&bstrURL);
     if (SUCCEEDED(hr))
     {
         MBindStatusCallback *pCallback = MBindStatusCallback::Create();
