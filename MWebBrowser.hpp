@@ -5,18 +5,17 @@
 #ifndef MWEB_BROWSER_HPP_
 #define MWEB_BROWSER_HPP_   12   // Version 12
 
+#define INITGUID
 #include <windows.h>
 #include <exdisp.h>
 #include <mshtml.h>
-#include <downloadmgr.h>
 
 class MWebBrowser :
     public IOleClientSite,
     public IOleInPlaceSite,
     public IStorage,
     public IServiceProvider,
-    public IHttpSecurity,
-    public IDownloadManager
+    public IHttpSecurity
 {
 public:
     static MWebBrowser *Create(HWND hwndParent);
@@ -154,17 +153,6 @@ public:
 
     // IHttpSecurity interface
     STDMETHODIMP OnSecurityProblem(DWORD dwProblem);
-
-    // IDownloadManager
-    STDMETHODIMP Download(
-        IMoniker *pmk,
-        IBindCtx *pbc,
-        DWORD dwBindVerb,
-        LONG grfBINDF,
-        BINDINFO *pBindInfo,
-        LPCOLESTR pszHeaders,
-        LPCOLESTR pszRedir,
-        UINT uiCP);
 
 protected:
     LONG m_nRefCount;
