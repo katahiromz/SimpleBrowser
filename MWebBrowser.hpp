@@ -3,7 +3,7 @@
 // This file is public domain software.
 
 #ifndef MWEB_BROWSER_HPP_
-#define MWEB_BROWSER_HPP_   11   // Version 11
+#define MWEB_BROWSER_HPP_   12   // Version 12
 
 #include <windows.h>
 #include <exdisp.h>

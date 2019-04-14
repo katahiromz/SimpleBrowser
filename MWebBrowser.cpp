@@ -360,40 +360,22 @@ HRESULT MWebBrowser::Save(LPCWSTR file)
     if (!m_web_browser2)
         return E_FAIL;
 
-    HRESULT hr;
-    IDispatch *pDisp = NULL;
-    hr = m_web_browser2->get_Document(&pDisp);
-    if (pDisp)
+    BSTR bstrURL = NULL;
+    hr = get_LocationURL(&bstrURL);
+    if (SUCCEEDED(hr))
     {
-        IPersistFile *pPersistFile = NULL;
-        hr = pDisp->QueryInterface(&pPersistFile);
-        if (pPersistFile)
+        MBindStatusCallback *pCallback = MBindStatusCallback::Create();
+        hr = URLDownloadToFile(NULL, bstrURL, file, 0, pCallback);
+        while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
         {
-            hr = pPersistFile->Save(file, 0);
-            pPersistFile->Release();
+            Sleep(80);
         }
-        pDisp->Release();
-    }
-
-    if (FAILED(hr))
-    {
-        BSTR bstrURL = NULL;
-        hr = get_LocationURL(&bstrURL);
-        if (SUCCEEDED(hr))
+        if (FAILED(hr))
         {
-            MBindStatusCallback *pCallback = MBindStatusCallback::Create();
-            hr = URLDownloadToFile(NULL, bstrURL, file, 0, pCallback);
-            while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
-            {
-                Sleep(80);
-            }
-            if (FAILED(hr))
-            {
-                DeleteFileW(file);
-            }
-            ::SysFreeString(bstrURL);
-            pCallback->Release();
+            DeleteFileW(file);
         }
+        ::SysFreeString(bstrURL);
+        pCallback->Release();
     }
 
     return hr;
