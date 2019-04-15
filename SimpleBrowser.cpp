@@ -276,6 +276,8 @@ inline LPTSTR MakeFilterDx(LPTSTR psz)
     return psz;
 }
 
+void DoNavigate(HWND hwnd, const WCHAR *url);
+
 struct MEventHandler : MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
@@ -349,6 +351,8 @@ struct MEventHandler : MEventSinkListener
         {
             // prevent new window open
             *Cancel = VARIANT_TRUE;
+
+            DoNavigate(s_hMainWnd, bstrUrl);
         }
     }
 
