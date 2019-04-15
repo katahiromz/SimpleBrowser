@@ -43,6 +43,9 @@ struct MEventSinkListener
     virtual void OnFileDownload(
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel) = 0;
+    virtual void OnDocumentComplete(
+        IDispatch *pDisp,
+        BSTR bstrURL) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////

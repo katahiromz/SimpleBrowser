@@ -6,11 +6,19 @@
 #define MWEB_BROWSER_EX_HPP_   1   // Version 1
 
 #include "MWebBrowser.hpp"
+#include <downloadmgr.h>
 
-class MWebBrowserEx : public MWebBrowser
+class MWebBrowserEx :
+    public MWebBrowser,
+    public IDownloadManager
 {
 public:
     static MWebBrowserEx *Create(HWND hwndParent);
+
+    // IUnknown interface
+    STDMETHODIMP QueryInterface(REFIID riid, void **ppvObj);
+    STDMETHODIMP_(ULONG) AddRef();
+    STDMETHODIMP_(ULONG) Release();
 
     // IDocHostUIHandler interface
     STDMETHODIMP ShowContextMenu(
@@ -18,6 +26,17 @@ public:
         POINT *ppt,
         IUnknown *pcmdtReserved,
         IDispatch *pdispReserved);
+
+    // IDownloadManager interface
+    STDMETHODIMP Download(
+        IMoniker *pmk,
+        IBindCtx *pbc,
+        DWORD dwBindVerb,
+        LONG grfBINDF,
+        BINDINFO *pBindInfo,
+        LPCOLESTR pszHeaders,
+        LPCOLESTR pszRedir,
+        UINT uiCP);
 
 protected:
     MWebBrowserEx(HWND hwndParent);

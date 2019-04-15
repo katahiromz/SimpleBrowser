@@ -28,3 +28,44 @@ MWebBrowserEx::MWebBrowserEx(HWND hwndParent) : MWebBrowser(hwndParent)
 MWebBrowserEx::~MWebBrowserEx()
 {
 }
+
+// IUnknown interface
+STDMETHODIMP MWebBrowserEx::QueryInterface(REFIID riid, void **ppvObj)
+{
+    if (riid == __uuidof(IDownloadManager))
+    {
+        *ppvObj = static_cast<IDownloadManager *>(this);
+    }
+    else
+    {
+        return MWebBrowser::QueryInterface(riid, ppvObj);
+    }
+
+    AddRef();
+    return S_OK;
+}
+
+STDMETHODIMP_(ULONG) MWebBrowserEx::AddRef()
+{
+    return MWebBrowser::AddRef();
+}
+
+STDMETHODIMP_(ULONG) MWebBrowserEx::Release()
+{
+    return MWebBrowser::Release();
+}
+
+// IDownloadManager interface
+STDMETHODIMP MWebBrowserEx::Download(
+    IMoniker *pmk,
+    IBindCtx *pbc,
+    DWORD dwBindVerb,
+    LONG grfBINDF,
+    BINDINFO *pBindInfo,
+    LPCOLESTR pszHeaders,
+    LPCOLESTR pszRedir,
+    UINT uiCP)
+{
+    MessageBoxW(NULL, L"OK", NULL, 0);
+    return S_OK;
+}

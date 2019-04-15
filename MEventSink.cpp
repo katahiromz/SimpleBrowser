@@ -179,6 +179,11 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[1].boolVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
+    case DISPID_DOCUMENTCOMPLETE:
+        m_pListener->OnDocumentComplete(
+            pDispParams->rgvarg[1].pdispVal,
+            pDispParams->rgvarg[0].bstrVal);
+        break;
     default:
         return DISP_E_MEMBERNOTFOUND;
     }

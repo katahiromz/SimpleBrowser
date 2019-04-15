@@ -277,6 +277,7 @@ inline LPTSTR MakeFilterDx(LPTSTR psz)
 }
 
 void DoNavigate(HWND hwnd, const WCHAR *url);
+void OnNew(HWND hwnd, LPCWSTR url);
 
 struct MEventHandler : MEventSinkListener
 {
@@ -347,12 +348,17 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
+        // prevent new window open
+        *Cancel = VARIANT_TRUE;
+
+        std::wstring url = bstrUrl;
         if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
-            // prevent new window open
-            *Cancel = VARIANT_TRUE;
-
-            DoNavigate(s_hMainWnd, bstrUrl);
+            DoNavigate(s_hMainWnd, url.c_str());
+        }
+        else
+        {
+            OnNew(s_hMainWnd, url.c_str());
         }
     }
 
@@ -396,6 +402,13 @@ struct MEventHandler : MEventSinkListener
         {
             *Cancel = VARIANT_TRUE;
         }
+    }
+
+    virtual void OnDocumentComplete(
+        IDispatch *pDisp,
+        BSTR bstrURL)
+    {
+        
     }
 };
 MEventHandler s_listener;
@@ -1893,12 +1906,15 @@ void OnExit(HWND hwnd)
     DestroyWindow(hwnd);
 }
 
-void OnNew(HWND hwnd)
+void OnNew(HWND hwnd, LPCWSTR url)
 {
     TCHAR szPath[MAX_PATH];
     GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
 
-    ShellExecute(hwnd, NULL, szPath, g_settings.m_homepage.c_str(), NULL, SW_SHOWNORMAL);
+    if (url)
+        ShellExecute(hwnd, NULL, szPath, url, NULL, SW_SHOWNORMAL);
+    else
+        ShellExecute(hwnd, NULL, szPath, g_settings.m_homepage.c_str(), NULL, SW_SHOWNORMAL);
 }
 
 void OnKiosk(HWND hwnd)
@@ -2110,7 +2126,7 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             OnExit(hwnd);
             break;
         case ID_NEW:
-            OnNew(hwnd);
+            OnNew(hwnd, NULL);
             break;
         case ID_KIOSK:
             OnKiosk(hwnd);
@@ -2493,7 +2509,7 @@ STDMETHODIMP MWebBrowserEx::ShowContextMenu(
     IUnknown *pcmdtReserved,
     IDispatch *pdispReserved)
 {
-    if (g_settings.m_kiosk_mode || g_settings.m_dont_popup)
+    if (g_settings.m_kiosk_mode)
         return S_OK;
 
     std::wstring data;
