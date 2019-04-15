@@ -37,3 +37,4 @@ License: MIT
 - 2019.XX.YY ver. 0.9.1
     - Change main icon.
     - Fix and improve "Save As".
+    - Control popup menus.

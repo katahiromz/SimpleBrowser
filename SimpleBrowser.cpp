@@ -388,7 +388,7 @@ struct MEventHandler : MEventSinkListener
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel)
     {
-        if (g_settings.m_dont_r_click || g_settings.m_kiosk_mode)
+        if (g_settings.m_kiosk_mode)
         {
             *Cancel = VARIANT_TRUE;
         }
@@ -2531,12 +2531,14 @@ STDMETHODIMP MWebBrowserEx::ShowContextMenu(
     default:
         return S_OK;
     }
+
     if (hMenu)
     {
         DoPopupMenu(s_hMainWnd, hMenu, ppt);
         DestroyMenu(hMenu);
         return S_OK;
     }
+
     return S_FALSE;
 }
 
