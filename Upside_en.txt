@@ -1,10 +1,11 @@
 ﻿; <button-height>	<button-background-color>	<button-text-color>
-60	#EEEEEE	#000000
+50	#EEEEEE	#000000
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; <button-text>	<button-width>	<command-id-or-url-or-command-line>
 < Back	80	#20001
 Forward >	80	#20002
+Stop/Reload	80	#20003
 Address Bar	*	#20005
 Go >	80	#20006
