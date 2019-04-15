@@ -348,9 +348,7 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        // prevent new window open
         *Cancel = VARIANT_TRUE;
-
         std::wstring url = bstrUrl;
         if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
@@ -1912,9 +1910,13 @@ void OnNew(HWND hwnd, LPCWSTR url)
     GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath));
 
     if (url)
+    {
         ShellExecute(hwnd, NULL, szPath, url, NULL, SW_SHOWNORMAL);
+    }
     else
+    {
         ShellExecute(hwnd, NULL, szPath, g_settings.m_homepage.c_str(), NULL, SW_SHOWNORMAL);
+    }
 }
 
 void OnKiosk(HWND hwnd)

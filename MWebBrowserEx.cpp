@@ -32,17 +32,7 @@ MWebBrowserEx::~MWebBrowserEx()
 // IUnknown interface
 STDMETHODIMP MWebBrowserEx::QueryInterface(REFIID riid, void **ppvObj)
 {
-    if (riid == __uuidof(IDownloadManager))
-    {
-        *ppvObj = static_cast<IDownloadManager *>(this);
-    }
-    else
-    {
-        return MWebBrowser::QueryInterface(riid, ppvObj);
-    }
-
-    AddRef();
-    return S_OK;
+    return MWebBrowser::QueryInterface(riid, ppvObj);
 }
 
 STDMETHODIMP_(ULONG) MWebBrowserEx::AddRef()
@@ -53,6 +43,25 @@ STDMETHODIMP_(ULONG) MWebBrowserEx::AddRef()
 STDMETHODIMP_(ULONG) MWebBrowserEx::Release()
 {
     return MWebBrowser::Release();
+}
+
+// IServiceProvider interface
+STDMETHODIMP MWebBrowserEx::QueryService(
+    REFGUID guidService,
+    REFIID riid,
+    void **ppvObject)
+{
+    if (riid == __uuidof(IDownloadManager))
+    {
+        *ppvObject = static_cast<IDownloadManager *>(this);
+    }
+    else
+    {
+        return MWebBrowser::QueryService(guidService, riid, ppvObject);
+    }
+
+    AddRef();
+    return S_OK;
 }
 
 // IDownloadManager interface

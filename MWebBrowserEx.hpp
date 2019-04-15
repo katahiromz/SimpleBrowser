@@ -20,6 +20,12 @@ public:
     STDMETHODIMP_(ULONG) AddRef();
     STDMETHODIMP_(ULONG) Release();
 
+    // IServiceProvider interface
+    STDMETHODIMP QueryService(
+        REFGUID guidService,
+        REFIID riid,
+        void **ppvObject);
+
     // IDocHostUIHandler interface
     STDMETHODIMP ShowContextMenu(
         DWORD dwID,
