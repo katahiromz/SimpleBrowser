@@ -51,6 +51,8 @@
 #define IDS_TEXTMENU                        131
 #define IDS_ANCHORMENU                      132
 #define IDS_THREAT_FOUND                    133
+#define IDS_CLOSE                           134
+#define IDS_DL_COMPLETE                     135
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002

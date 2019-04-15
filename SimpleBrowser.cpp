@@ -1572,7 +1572,8 @@ static unsigned __stdcall downloading_proc(void *arg)
         Sleep(200);
     }
 
-    PostMessage(pDownloading->hDlg, WM_CLOSE, 0, 0);
+    SetDlgItemTextW(pDownloading->hDlg, IDCANCEL, LoadStringDx(IDS_CLOSE));
+    SetDlgItemTextW(pDownloading->hDlg, stc1, LoadStringDx(IDS_DL_COMPLETE));
 
     return 0;
 }
@@ -1620,9 +1621,15 @@ void Downloading_OnDestroy(HWND hwnd)
 {
     KillTimer(hwnd, 999);
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    pDownloading->pCallback->Release();
+
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
+    pCallback->SetCancelled();
+    Sleep(300);
+    pCallback->Release();
+
     CloseHandle(pDownloading->hThread);
     DoThreatScan(hwnd, pDownloading->strFilename.c_str());
+
     delete pDownloading;
     s_downloadings.erase(hwnd);
 }

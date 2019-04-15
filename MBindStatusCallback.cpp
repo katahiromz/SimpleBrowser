@@ -98,8 +98,16 @@ STDMETHODIMP MBindStatusCallback::OnProgress(
     if (ulProgress == ulProgressMax)
     {
         m_bCompleted = TRUE;
+        return S_OK;
     }
+    if (m_bCancelled)
+        return E_ABORT;
     return S_OK;
+}
+
+void MBindStatusCallback::SetCancelled()
+{
+    m_bCancelled = TRUE;
 }
 
 STDMETHODIMP MBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)

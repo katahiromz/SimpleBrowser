@@ -20,6 +20,7 @@ public:
     ULONG m_ulStatusCode;
     std::wstring m_strStatus;
 
+    void SetCancelled();
     BOOL IsCancelled() const;
     BOOL IsCompleted() const;
 

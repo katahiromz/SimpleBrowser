@@ -169,6 +169,8 @@ STRINGTABLE
     IDS_TEXTMENU, "MenuText_ja.txt"
     IDS_ANCHORMENU, "MenuAnchor_ja.txt"
     IDS_THREAT_FOUND, "エラー: 脅威が発見されました!!!"
+    IDS_CLOSE, "閉じる"
+    IDS_DL_COMPLETE, "ダウンロード完了。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

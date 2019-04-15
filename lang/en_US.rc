@@ -169,6 +169,8 @@ STRINGTABLE
     IDS_TEXTMENU, "MenuText_en.txt"
     IDS_ANCHORMENU, "MenuAnchor_en.txt"
     IDS_THREAT_FOUND, "ERROR: Threat is found!!!"
+    IDS_CLOSE, "Close"
+    IDS_DL_COMPLETE, "Download Complete."
 }
 
 //////////////////////////////////////////////////////////////////////////////
