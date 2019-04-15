@@ -1572,6 +1572,7 @@ static unsigned __stdcall downloading_proc(void *arg)
         Sleep(200);
     }
 
+    KillTimer(pDownloading->hDlg, 999);
     SetDlgItemTextW(pDownloading->hDlg, IDCANCEL, LoadStringDx(IDS_CLOSE));
     SetDlgItemTextW(pDownloading->hDlg, stc1, LoadStringDx(IDS_DL_COMPLETE));
 
