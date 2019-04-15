@@ -13,6 +13,7 @@
 #define IDD_ADDLINK                         102
 #define IDD_URLLIST                         103
 #define IDD_FORBIDDEN                       104
+#define IDD_DOWNLOADING                     105
 
 #define IDR_DOTSMENU                        100
 
@@ -49,6 +50,7 @@
 #define IDS_IMAGEMENU                       130
 #define IDS_TEXTMENU                        131
 #define IDS_ANCHORMENU                      132
+#define IDS_THREAT_FOUND                    133
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002

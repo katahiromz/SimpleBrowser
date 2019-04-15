@@ -7,3 +7,6 @@
 [submodule "color_value"]
 	path = color_value
 	url = https://github.com/katahiromz/color_value.git
+[submodule "AmsiScanner"]
+	path = AmsiScanner
+	url = https://github.com/katahiromz/AmsiScanner.git

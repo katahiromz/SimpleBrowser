@@ -59,19 +59,21 @@ endif()
 
 ##############################################################################
 
-include_directories(mime_info mstr color_value)
+include_directories(mime_info mstr color_value AmsiScanner)
 
 # executable
 add_executable(SimpleBrowser WIN32
-    SimpleBrowser.cpp
     AboutBox.cpp
     AddLinkDlg.cpp
+    AmsiScanner/AmsiScanner.cpp
+    AmsiScanner/ads.cpp
     BlackListDlg.cpp
     MBindStatusCallback.cpp
     MEventSink.cpp
     MWebBrowser.cpp
     MWebBrowserEx.cpp
     Settings.cpp
+    SimpleBrowser.cpp
     URLListDlg.cpp
     SimpleBrowser_res.rc)
 target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)

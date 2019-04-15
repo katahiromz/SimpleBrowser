@@ -4,6 +4,7 @@
 
 #include "MWebBrowserEx.hpp"
 #include "MBindStatusCallback.hpp"
+#include <commdlg.h>
 #include <cwchar>
 #include <comdef.h>
 #include <cstring>
@@ -30,6 +31,7 @@ MWebBrowserEx::~MWebBrowserEx()
 }
 
 // IUnknown interface
+
 STDMETHODIMP MWebBrowserEx::QueryInterface(REFIID riid, void **ppvObj)
 {
     return MWebBrowser::QueryInterface(riid, ppvObj);
@@ -46,6 +48,7 @@ STDMETHODIMP_(ULONG) MWebBrowserEx::Release()
 }
 
 // IServiceProvider interface
+
 STDMETHODIMP MWebBrowserEx::QueryService(
     REFGUID guidService,
     REFIID riid,
@@ -61,20 +64,5 @@ STDMETHODIMP MWebBrowserEx::QueryService(
     }
 
     AddRef();
-    return S_OK;
-}
-
-// IDownloadManager interface
-STDMETHODIMP MWebBrowserEx::Download(
-    IMoniker *pmk,
-    IBindCtx *pbc,
-    DWORD dwBindVerb,
-    LONG grfBINDF,
-    BINDINFO *pBindInfo,
-    LPCOLESTR pszHeaders,
-    LPCOLESTR pszRedir,
-    UINT uiCP)
-{
-    MessageBoxW(NULL, L"OK", NULL, 0);
     return S_OK;
 }

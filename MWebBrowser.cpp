@@ -351,32 +351,6 @@ void MWebBrowser::PageSetup()
     }
 }
 
-HRESULT MWebBrowser::Save(LPCWSTR file)
-{
-    if (!m_web_browser2)
-        return E_FAIL;
-
-    BSTR bstrURL = NULL;
-    HRESULT hr = get_LocationURL(&bstrURL);
-    if (SUCCEEDED(hr))
-    {
-        MBindStatusCallback *pCallback = MBindStatusCallback::Create();
-        hr = URLDownloadToFile(NULL, bstrURL, file, 0, pCallback);
-        while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
-        {
-            Sleep(80);
-        }
-        if (FAILED(hr))
-        {
-            DeleteFileW(file);
-        }
-        ::SysFreeString(bstrURL);
-        pCallback->Release();
-    }
-
-    return hr;
-}
-
 BOOL MWebBrowser::TranslateAccelerator(LPMSG pMsg)
 {
     if (!m_web_browser2)

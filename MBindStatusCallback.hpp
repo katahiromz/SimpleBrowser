@@ -9,11 +9,16 @@
     #include <windows.h>
 #endif
 #include <urlmon.h>
+#include <string>
 
 class MBindStatusCallback : public IBindStatusCallback
 {
 public:
     static MBindStatusCallback *Create();
+    ULONG m_ulProgress;
+    ULONG m_ulProgressMax;
+    ULONG m_ulStatusCode;
+    std::wstring m_strStatus;
 
     BOOL IsCancelled() const;
     BOOL IsCompleted() const;

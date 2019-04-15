@@ -11,9 +11,12 @@
 #include <shlwapi.h>
 #include <mshtml.h>
 #include <intshcut.h>
+#include <urlhist.h>
 #include <string>
-#include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <cassert>
+#include <process.h>
 #include "MWebBrowserEx.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
@@ -23,6 +26,7 @@
 #include "mime_info.h"
 #include "mstr.hpp"
 #include "color_value.h"
+#include "AmsiScanner.hpp"
 #include <strsafe.h>
 #include <comdef.h>
 #include "resource.h"
@@ -44,6 +48,7 @@ static HWND s_hMainWnd = NULL;
 static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
+static std::unordered_set<HWND> s_downloadings;
 static MWebBrowserEx *s_pWebBrowser = NULL;
 static HFONT s_hButtonFont = NULL;
 static HFONT s_hAddressFont = NULL;
@@ -58,9 +63,9 @@ static const TCHAR s_szButton[] = TEXT("BUTTON");
 
 static std::wstring s_strStop = L"Stop";
 static std::wstring s_strRefresh = L"Refresh";
-static std::map<HWND, std::wstring> s_hwnd2url;
-static std::map<HWND, COLORREF> s_hwnd2color;
-static std::map<HWND, COLORREF> s_hwnd2bgcolor;
+static std::unordered_map<HWND, std::wstring> s_hwnd2url;
+static std::unordered_map<HWND, COLORREF> s_hwnd2color;
+static std::unordered_map<HWND, COLORREF> s_hwnd2bgcolor;
 
 static DWORD s_bgcolor = RGB(255, 255, 255);
 static DWORD s_color = RGB(0, 0, 0);
@@ -81,6 +86,9 @@ static std::wstring s_popup_default_data;
 static std::wstring s_popup_image_data;
 static std::wstring s_popup_text_data;
 static std::wstring s_popup_anchor_data;
+
+static BOOL s_bEnableForward = FALSE;
+static BOOL s_bEnableBack = FALSE;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -364,19 +372,17 @@ struct MEventHandler : MEventSinkListener
         long Command,
         VARIANT_BOOL Enable)
     {
-        static BOOL bEnableForward = FALSE, bEnableBack = FALSE;
-
         if (Command == CSC_NAVIGATEFORWARD)
         {
-            bEnableForward = (Enable == VARIANT_TRUE);
+            s_bEnableForward = (Enable == VARIANT_TRUE);
         }
         else if (Command == CSC_NAVIGATEBACK)
         {
-            bEnableBack = (Enable == VARIANT_TRUE);
+            s_bEnableBack = (Enable == VARIANT_TRUE);
         }
 
-        ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_BACK), bEnableBack);
-        ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_NEXT), bEnableForward);
+        ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_BACK), s_bEnableBack);
+        ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_NEXT), s_bEnableForward);
     }
 
     virtual void OnStatusTextChange(BSTR Text)
@@ -1509,24 +1515,142 @@ void OnPageSetup(HWND hwnd)
     s_pWebBrowser->PageSetup();
 }
 
-void OnSave(HWND hwnd)
+BOOL DoThreatScan(HWND hwnd, LPCWSTR file)
 {
-    BSTR bstrURL = NULL;
-    if (FAILED(s_pWebBrowser->get_LocationURL(&bstrURL)))
+    AmsiScanner scanner(L"katahiromz's SimpleBrowser");
+    if (!scanner.IsLoaded())
     {
-        assert(0);
-        return;
+        return FALSE;
     }
 
-    LPWSTR pch = wcsrchr(bstrURL, L'?');
+    HAMSISESSION hSession;
+    HRESULT hr = scanner.OpenSession(&hSession);
+    if (FAILED(hr))
+    {
+        return FALSE;
+    }
+
+    AmsiResult result;
+    hr = scanner.DoScanFile(hSession, file, result);
+
+    scanner.CloseSession(&hSession);
+
+    if (result.is_malware)
+    {
+        MessageBoxW(hwnd, LoadStringDx(IDS_THREAT_FOUND), NULL, MB_ICONERROR);
+    }
+
+    return SUCCEEDED(hr);
+}
+
+struct DOWNLOADING
+{
+    std::wstring strURL;
+    std::wstring strFilename;
+    MBindStatusCallback *pCallback;
+    HANDLE hThread;
+    HWND hDlg;
+};
+
+static unsigned __stdcall downloading_proc(void *arg)
+{
+    DOWNLOADING *pDownloading = (DOWNLOADING *)arg;
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
+
+    HRESULT hr = URLDownloadToFile(NULL,
+        pDownloading->strURL.c_str(),
+        pDownloading->strFilename.c_str(),
+        0,
+        pDownloading->pCallback);
+    if (FAILED(hr))
+    {
+        return 1;
+    }
+
+    while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
+    {
+        Sleep(200);
+    }
+
+    PostMessage(pDownloading->hDlg, WM_CLOSE, 0, 0);
+
+    return 0;
+}
+
+BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
+{
+    DOWNLOADING *pDownloading = (DOWNLOADING *)lParam;
+    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDownloading);
+    SetDlgItemTextW(hwnd, stc1, pDownloading->strFilename.c_str());
+    pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
+    if (pDownloading->hThread == NULL)
+    {
+        DestroyWindow(hwnd);
+        return FALSE;
+    }
+
+    SetTimer(hwnd, 999, 200, NULL);
+    return TRUE;
+}
+
+void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
+{
+    switch (id)
+    {
+    case IDOK:
+    case IDCANCEL:
+        DestroyWindow(hwnd);
+        break;
+    }
+}
+
+void Downloading_OnTimer(HWND hwnd, UINT id)
+{
+    DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
+    if (id == 999)
+    {
+        SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
+        SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
+        SetDlgItemTextW(hwnd, stc1, pCallback->m_strStatus.c_str());
+    }
+}
+
+void Downloading_OnDestroy(HWND hwnd)
+{
+    KillTimer(hwnd, 999);
+    DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    pDownloading->pCallback->Release();
+    CloseHandle(pDownloading->hThread);
+    DoThreatScan(hwnd, pDownloading->strFilename.c_str());
+    delete pDownloading;
+    s_downloadings.erase(hwnd);
+}
+
+INT_PTR CALLBACK
+DownloadingDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+        HANDLE_MSG(hwnd, WM_INITDIALOG, Downloading_OnInitDialog);
+        HANDLE_MSG(hwnd, WM_COMMAND, Downloading_OnCommand);
+        HANDLE_MSG(hwnd, WM_TIMER, Downloading_OnTimer);
+        HANDLE_MSG(hwnd, WM_DESTROY, Downloading_OnDestroy);
+    }
+    return 0;
+}
+
+BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
+{
+    LPWSTR pch = wcsrchr(pszURL, L'?');
     if (pch)
         *pch = 0;
 
-    pch = wcsrchr(bstrURL, L'/');
+    pch = wcsrchr(pszURL, L'/');
     if (pch)
         ++pch;
     else
-        pch = bstrURL;
+        pch = pszURL;
 
     LPWSTR pchFileName = pch;
 
@@ -1539,11 +1663,11 @@ void OnSave(HWND hwnd)
 
     //MessageBoxA(NULL, pszMime, NULL, 0);
 
-    TCHAR file[MAX_PATH] = TEXT("*");
+    WCHAR file[MAX_PATH] = L"*";
 
-    OPENFILENAME ofn;
+    OPENFILENAMEW ofn;
     ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
+    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
     ofn.hwndOwner = hwnd;
     ofn.lpstrFile = file;
     ofn.nMaxFile = ARRAYSIZE(file);
@@ -1621,10 +1745,30 @@ void OnSave(HWND hwnd)
 
     if (::GetSaveFileName(&ofn))
     {
-        s_pWebBrowser->Save(file);
-    }
+        DOWNLOADING *pDownloading = new DOWNLOADING;
+        pDownloading->strURL = pszURL;
+        pDownloading->strFilename = file;
+        pDownloading->pCallback = MBindStatusCallback::Create();
+        assert(pDownloading->pCallback);
 
-    ::SysFreeString(bstrURL);
+        HWND hDlg = CreateDialogParam(s_hInst, MAKEINTRESOURCE(IDD_DOWNLOADING),
+                                      hwnd, DownloadingDlgProc, (LPARAM)pDownloading);
+        pDownloading->hDlg = hDlg;
+        ShowWindow(hDlg, SW_SHOWNORMAL);
+        UpdateWindow(hDlg);
+        s_downloadings.insert(hDlg);
+    }
+}
+
+void OnSave(HWND hwnd)
+{
+    BSTR bstrURL = NULL;
+    if (SUCCEEDED(s_pWebBrowser->get_LocationURL(&bstrURL)))
+    {
+        DoSaveURL(hwnd, bstrURL);
+
+        ::SysFreeString(bstrURL);
+    }
 }
 
 void OnViewSourceDone(HWND hwnd)
@@ -2229,6 +2373,17 @@ void OnDestroy(HWND hwnd)
     PostQuitMessage(0);
 }
 
+void OnResetKiosk(HWND hwnd)
+{
+    SendMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+    SendMessage(hwnd, WM_COMMAND, ID_ZOOM_100, 0);
+
+    s_bEnableForward = s_bEnableBack = FALSE;
+    ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_BACK), s_bEnableBack);
+    ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_NEXT), s_bEnableForward);
+    SetForegroundWindow(hwnd);
+}
+
 void OnTimer(HWND hwnd, UINT id)
 {
     switch (id)
@@ -2240,9 +2395,7 @@ void OnTimer(HWND hwnd, UINT id)
     case REFRESH_TIMER:
         if (g_settings.m_kiosk_mode)
         {
-            PostMessage(hwnd, WM_COMMAND, ID_HOME, 0);
-            PostMessage(hwnd, WM_COMMAND, ID_ZOOM_100, 0);
-            SetForegroundWindow(hwnd);
+            OnResetKiosk(hwnd);
         }
         break;
     }
@@ -2505,6 +2658,26 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     return FALSE;
 }
 
+STDMETHODIMP MWebBrowserEx::Download(
+    IMoniker *pmk,
+    IBindCtx *pbc,
+    DWORD dwBindVerb,
+    LONG grfBINDF,
+    BINDINFO *pBindInfo,
+    LPCOLESTR pszHeaders,
+    LPCOLESTR pszRedir,
+    UINT uiCP)
+{
+    LPOLESTR pszURL = NULL;
+    pmk->GetDisplayName(pbc, NULL, &pszURL);
+    if (pszURL)
+    {
+        DoSaveURL(s_hMainWnd, pszURL);
+        CoTaskMemFree(pszURL);
+    }
+    return S_OK;
+}
+
 STDMETHODIMP MWebBrowserEx::ShowContextMenu(
     DWORD dwID,
     POINT *ppt,
@@ -2623,6 +2796,18 @@ WinMain(HINSTANCE   hInstance,
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        BOOL bFound = FALSE;
+        for (auto& item : s_downloadings)
+        {
+            if (IsWindow(item) && IsDialogMessage(item, &msg))
+            {
+                bFound = TRUE;
+                break;
+            }
+        }
+        if (bFound)
+            continue;
+
         if ((WM_KEYFIRST <= msg.message && msg.message <= WM_KEYLAST) ||
             (WM_MOUSEFIRST <= msg.message && msg.message <= WM_MOUSELAST))
         {

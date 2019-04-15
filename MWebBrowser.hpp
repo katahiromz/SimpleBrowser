@@ -37,7 +37,6 @@ public:
     void Print(BOOL bBang = FALSE);
     void PrintPreview();
     void PageSetup();
-    HRESULT Save(LPCWSTR file);
     void Destroy();
     BOOL TranslateAccelerator(LPMSG pMsg);
     IWebBrowser2 *GetIWebBrowser2();

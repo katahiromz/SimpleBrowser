@@ -90,6 +90,11 @@ STDMETHODIMP MBindStatusCallback::OnProgress(
     ULONG ulStatusCode,
     LPCWSTR szStatusText)
 {
+    m_ulProgress = ulProgress;
+    m_ulProgressMax = ulProgressMax;
+    m_ulStatusCode = ulStatusCode;
+    if (szStatusText)
+        m_strStatus = szStatusText;
     if (ulProgress == ulProgressMax)
     {
         m_bCompleted = TRUE;
