@@ -4,13 +4,13 @@
 ; Buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; <button-text>	<button-height>	<command-id-or-url-or-command-line>
-Home	60	#104
-Move Up	60	#132
-Move Down	60	#133
-Stop/Reload	60	#103
-Print Preview	60	#113
-Print...	60	#111
-Cancel Printing	60	#131
-...	60	#117
-Zoom Up	60	#134
-Zoom Down	60	#135
+Home	60	#20004
+Move Up	60	#20032
+Move Down	60	#20033
+Stop/Reload	60	#20003
+Print Preview	60	#20013
+Print...	60	#20011
+Cancel Printing	60	#20031
+...	60	#20017
+Zoom Up	60	#20034
+Zoom Down	60	#20035

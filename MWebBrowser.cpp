@@ -4,10 +4,13 @@
 
 #include "MWebBrowser.hpp"
 #include "MBindStatusCallback.hpp"
+#include <cwchar>
+#include <comdef.h>
 #include <shlwapi.h>
 #include <cstdio>
+#include <cstring>
 #include <cassert>
-#include <comdef.h>
+#include <mshtmhst.h>
 
 /*static*/ MWebBrowser *
 MWebBrowser::Create(HWND hwndParent)
@@ -29,6 +32,7 @@ MWebBrowser::MWebBrowser(HWND hwndParent) :
     m_web_browser2(NULL),
     m_ole_object(NULL),
     m_ole_inplace_object(NULL),
+    m_pDocHostUIHandler(NULL),
     m_hr(S_OK),
     m_bAllowInsecure(FALSE),
     m_nZoomPercents(100)
@@ -45,6 +49,11 @@ BOOL MWebBrowser::IsCreated() const
 
 MWebBrowser::~MWebBrowser()
 {
+    if (m_pDocHostUIHandler)
+    {
+        m_pDocHostUIHandler->Release();
+        m_pDocHostUIHandler = NULL;
+    }
     if (m_ole_object)
     {
         m_ole_object->Release();
@@ -123,6 +132,13 @@ HRESULT MWebBrowser::CreateBrowser(HWND hwndParent)
         assert(0);
         return hr;
     }
+
+    if (m_pDocHostUIHandler)
+    {
+        m_pDocHostUIHandler->Release();
+        m_pDocHostUIHandler = NULL;
+    }
+    m_ole_object->QueryInterface(&m_pDocHostUIHandler);
 
     hr = m_ole_object->SetClientSite(this);
     if (FAILED(hr))
@@ -515,6 +531,10 @@ STDMETHODIMP MWebBrowser::QueryInterface(REFIID riid, void **ppvObj)
     {
         *ppvObj = static_cast<IServiceProvider *>(this);
     }
+    else if (riid == __uuidof(IDocHostUIHandler))
+    {
+        *ppvObj = static_cast<IDocHostUIHandler *>(this);
+    }
     else
     {
         return E_NOINTERFACE;
@@ -821,4 +841,121 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
     if (m_bAllowInsecure)
         return S_OK;
     return E_ABORT;
+}
+
+// IDocHostUIHandler interface
+
+STDMETHODIMP MWebBrowser::ShowContextMenu(
+    DWORD dwID,
+    POINT *ppt,
+    IUnknown *pcmdtReserved,
+    IDispatch *pdispReserved)
+{
+    return S_FALSE;
+}
+
+STDMETHODIMP MWebBrowser::GetHostInfo(DOCHOSTUIINFO *pInfo)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->GetHostInfo(pInfo);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::ShowUI(
+    DWORD dwID,
+    IOleInPlaceActiveObject *pActiveObject,
+    IOleCommandTarget *pCommandTarget,
+    IOleInPlaceFrame *pFrame,
+    IOleInPlaceUIWindow *pDoc)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->ShowUI(dwID, pActiveObject, pCommandTarget, pFrame, pDoc);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::HideUI()
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->HideUI();
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::UpdateUI()
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->UpdateUI();
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::EnableModeless(WINBOOL fEnable)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->EnableModeless(fEnable);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::OnDocWindowActivate(WINBOOL fActivate)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->OnDocWindowActivate(fActivate);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::OnFrameWindowActivate(WINBOOL fActivate)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->OnFrameWindowActivate(fActivate);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::ResizeBorder(
+    LPCRECT prcBorder,
+    IOleInPlaceUIWindow *pUIWindow,
+    WINBOOL fRameWindow)
+{
+    if (m_pDocHostUIHandler)
+        return m_pDocHostUIHandler->ResizeBorder(prcBorder, pUIWindow, fRameWindow);
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::TranslateAccelerator(
+    LPMSG lpMsg,
+    const GUID *pguidCmdGroup,
+    DWORD nCmdID)
+{
+    return S_FALSE;
+}
+
+STDMETHODIMP MWebBrowser::GetOptionKeyPath(LPOLESTR *pchKey, DWORD dw)
+{
+    return S_FALSE;
+}
+
+STDMETHODIMP MWebBrowser::GetDropTarget(
+    IDropTarget *pDropTarget,
+    IDropTarget **ppDropTarget)
+{
+    *ppDropTarget = NULL;
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::GetExternal(IDispatch **ppDispatch)
+{
+    *ppDispatch = NULL;
+    return E_NOTIMPL;
+}
+
+STDMETHODIMP MWebBrowser::TranslateUrl(
+    DWORD dwTranslate,
+    OLECHAR *pchURLIn,
+    OLECHAR **ppchURLOut)
+{
+    *ppchURLOut = NULL;
+    return S_FALSE;
+}
+
+STDMETHODIMP MWebBrowser::FilterDataObject(IDataObject *pDO, IDataObject **ppDORet)
+{
+    *ppDORet = NULL;
+    return S_FALSE;
 }

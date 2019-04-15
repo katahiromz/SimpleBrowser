@@ -154,6 +154,10 @@ STRINGTABLE
     IDS_DOWNSIDE, "Downside_en.txt"
     IDS_LEFTSIDE, "LeftSide_en.txt"
     IDS_RIGHTSIDE, "RightSide_en.txt"
+    IDS_DEFAULTMENU, "MenuDefault_en.txt"
+    IDS_IMAGEMENU, "MenuImage_en.txt"
+    IDS_TEXTMENU, "MenuText_en.txt"
+    IDS_ANCHORMENU, "MenuAnchor_en.txt"
 }
 
 //////////////////////////////////////////////////////////////////////////////

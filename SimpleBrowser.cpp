@@ -14,7 +14,7 @@
 #include <string>
 #include <map>
 #include <cassert>
-#include "MWebBrowser.hpp"
+#include "MWebBrowserEx.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
 #include "AddLinkDlg.hpp"
@@ -35,6 +35,8 @@
 #define SOURCE_DONE_TIMER      999
 #define REFRESH_TIMER   888
 
+#define MIN_COMMAND_ID 20000
+
 static const TCHAR s_szName[] = TEXT("SimpleBrowser");
 static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
@@ -42,7 +44,7 @@ static HWND s_hMainWnd = NULL;
 static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
-static MWebBrowser *s_pWebBrowser = NULL;
+static MWebBrowserEx *s_pWebBrowser = NULL;
 static HFONT s_hButtonFont = NULL;
 static HFONT s_hAddressFont = NULL;
 static MEventSink *s_pEventSink = MEventSink::Create();
@@ -74,6 +76,11 @@ static std::vector<HWND> s_leftside_hwnds;
 
 static std::wstring s_rightside_data;
 static std::vector<HWND> s_rightside_hwnds;
+
+static std::wstring s_popup_default_data;
+static std::wstring s_popup_image_data;
+static std::wstring s_popup_text_data;
+static std::wstring s_popup_anchor_data;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -729,7 +736,7 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
         StrTrimW(szText, L" \t\n\r\f\v");
 
         mstr_split(fields, szText, L"\t");
-        if (fields.size() < 3)
+        if (fields.size() < 2)
             continue;
 
         for (size_t i = 0; i < fields.size(); ++i)
@@ -989,6 +996,64 @@ BOOL DoParseRightSide(HWND hwnd, HFONT hButtonFont)
     return TRUE;
 }
 
+BOOL DoLoadMenu(HWND hwnd, UINT id, std::wstring& data)
+{
+    if (!LoadDataFile2(hwnd, LoadStringDx(id), data))
+    {
+        assert(0);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
+{
+    std::vector<std::wstring> lines;
+    mstr_split(lines, data, L"\n");
+    if (lines.empty())
+        return NULL;
+
+    HMENU hMenu = CreatePopupMenu();
+    if (hMenu == NULL)
+        return NULL;
+
+    size_t count = 0;
+    for (size_t i = 0; i < lines.size(); ++i)
+    {
+        std::wstring& line = lines[i];
+        if (line.c_str()[0] == L';')
+            continue;
+
+        std::vector<std::wstring> fields;
+        mstr_split(fields, line, L"\t");
+
+        if (fields.size() >= 2)
+        {
+            INT id = _wtoi(fields[0].c_str());
+            AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
+            ++count;
+        }
+    }
+
+    if (count == 0)
+    {
+        DestroyMenu(hMenu);
+        hMenu = NULL;
+    }
+    return hMenu;
+}
+
+void DoPopupMenu(HWND hwnd, HMENU hMenu, POINT *ppt)
+{
+    SetForegroundWindow(hwnd);
+
+    UINT uFlags = TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD;
+    UINT id = TrackPopupMenu(hMenu, uFlags, ppt->x, ppt->y, 0, hwnd, NULL);
+
+    PostMessage(hwnd, WM_COMMAND, id, 0);
+    PostMessage(hwnd, WM_NULL, 0, 0);
+}
+
 BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
 {
     s_hwnd2url.clear();
@@ -1041,7 +1106,7 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     DoSetBrowserEmulation(g_settings.m_emulation);
 
-    s_pWebBrowser = MWebBrowser::Create(hwnd);
+    s_pWebBrowser = MWebBrowserEx::Create(hwnd);
     if (!s_pWebBrowser)
         return FALSE;
 
@@ -1962,113 +2027,121 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     }
     s_nLevel++;
 
-    switch (id)
+    if (id < MIN_COMMAND_ID)
     {
-    case ID_BACK:
-        OnBack(hwnd);
-        break;
-    case ID_NEXT:
-        OnNext(hwnd);
-        break;
-    case ID_STOP_REFRESH:
-        OnStopRefresh(hwnd);
-        break;
-    case ID_GO:
-        OnGo(hwnd);
-        break;
-    case ID_HOME:
-        OnHome(hwnd);
-        break;
-    case ID_ADDRESS_BAR:
-        OnAddressBar(hwnd, hwndCtl, codeNotify);
-        break;
-    case ID_REFRESH:
-        OnRefresh(hwnd);
-        break;
-    case ID_STOP:
-        OnStop(hwnd);
-        break;
-    case ID_GO_TO_ADDRESS_BAR:
-        OnGoToAddressBar(hwnd);
-        break;
-    case ID_PRINT:
-        OnPrint(hwnd);
-        break;
-    case ID_PRINT_BANG:
-        OnPrintBang(hwnd);
-        break;
-    case ID_PRINT_PREVIEW:
-        OnPrintPreview(hwnd);
-        break;
-    case ID_PAGE_SETUP:
-        OnPageSetup(hwnd);
-        break;
-    case ID_SAVE:
-        OnSave(hwnd);
-        break;
-    case ID_VIEW_SOURCE_DONE:
-        OnViewSourceDone(hwnd);
-        break;
-    case ID_DOTS:
-        OnDots(hwnd);
-        break;
-    case ID_VIEW_SOURCE:
-        OnViewSource(hwnd);
-        break;
-    case ID_ABOUT:
-        OnAbout(hwnd);
-        break;
-    case ID_CREATE_SHORTCUT:
-        OnCreateShortcut(hwnd);
-        break;
-    case ID_SETTINGS:
-        OnSettings(hwnd);
-        break;
-    case ID_ADD_TO_COMBOBOX:
-        OnAddToComboBox(hwnd);
-        break;
-    case ID_DOCUMENT_COMPLETE:
-        OnDocumentComplete(hwnd);
-        break;
-    case ID_EXIT:
-        OnExit(hwnd);
-        break;
-    case ID_NEW:
-        OnNew(hwnd);
-        break;
-    case ID_KIOSK:
-        OnKiosk(hwnd);
-        break;
-    case ID_KIOSK_OFF:
-        OnKioskOff(hwnd);
-        break;
-    case ID_KIOSK_ON:
-        OnKioskOn(hwnd);
-        break;
-    case ID_GO_URL:
-        OnGoURL(hwnd, hwndCtl);
-        break;
-    case ID_EXECUTE_CMD:
-        OnExecuteCmd(hwnd, hwndCtl);
-        break;
-    case ID_CANCEL_PRINTING:
-        OnCancelPrinting(hwnd);
-        break;
-    case ID_UP:
-        OnUp(hwnd);
-        break;
-    case ID_DOWN:
-        OnDown(hwnd);
-        break;
-    case ID_ZOOM_UP:
-        OnZoomUp(hwnd);
-        break;
-    case ID_ZOOM_DOWN:
-        OnZoomDown(hwnd);
-        break;
-    case ID_ZOOM_100:
-        OnZoom100(hwnd);
-        break;
+        HWND hwndIE = s_pWebBrowser->GetIEServerWindow();
+        PostMessage(hwndIE, WM_COMMAND, id, 0);
+    }
+    else
+    {
+        switch (id)
+        {
+        case ID_BACK:
+            OnBack(hwnd);
+            break;
+        case ID_NEXT:
+            OnNext(hwnd);
+            break;
+        case ID_STOP_REFRESH:
+            OnStopRefresh(hwnd);
+            break;
+        case ID_GO:
+            OnGo(hwnd);
+            break;
+        case ID_HOME:
+            OnHome(hwnd);
+            break;
+        case ID_ADDRESS_BAR:
+            OnAddressBar(hwnd, hwndCtl, codeNotify);
+            break;
+        case ID_REFRESH:
+            OnRefresh(hwnd);
+            break;
+        case ID_STOP:
+            OnStop(hwnd);
+            break;
+        case ID_GO_TO_ADDRESS_BAR:
+            OnGoToAddressBar(hwnd);
+            break;
+        case ID_PRINT:
+            OnPrint(hwnd);
+            break;
+        case ID_PRINT_BANG:
+            OnPrintBang(hwnd);
+            break;
+        case ID_PRINT_PREVIEW:
+            OnPrintPreview(hwnd);
+            break;
+        case ID_PAGE_SETUP:
+            OnPageSetup(hwnd);
+            break;
+        case ID_SAVE:
+            OnSave(hwnd);
+            break;
+        case ID_VIEW_SOURCE_DONE:
+            OnViewSourceDone(hwnd);
+            break;
+        case ID_DOTS:
+            OnDots(hwnd);
+            break;
+        case ID_VIEW_SOURCE:
+            OnViewSource(hwnd);
+            break;
+        case ID_ABOUT:
+            OnAbout(hwnd);
+            break;
+        case ID_CREATE_SHORTCUT:
+            OnCreateShortcut(hwnd);
+            break;
+        case ID_SETTINGS:
+            OnSettings(hwnd);
+            break;
+        case ID_ADD_TO_COMBOBOX:
+            OnAddToComboBox(hwnd);
+            break;
+        case ID_DOCUMENT_COMPLETE:
+            OnDocumentComplete(hwnd);
+            break;
+        case ID_EXIT:
+            OnExit(hwnd);
+            break;
+        case ID_NEW:
+            OnNew(hwnd);
+            break;
+        case ID_KIOSK:
+            OnKiosk(hwnd);
+            break;
+        case ID_KIOSK_OFF:
+            OnKioskOff(hwnd);
+            break;
+        case ID_KIOSK_ON:
+            OnKioskOn(hwnd);
+            break;
+        case ID_GO_URL:
+            OnGoURL(hwnd, hwndCtl);
+            break;
+        case ID_EXECUTE_CMD:
+            OnExecuteCmd(hwnd, hwndCtl);
+            break;
+        case ID_CANCEL_PRINTING:
+            OnCancelPrinting(hwnd);
+            break;
+        case ID_UP:
+            OnUp(hwnd);
+            break;
+        case ID_DOWN:
+            OnDown(hwnd);
+            break;
+        case ID_ZOOM_UP:
+            OnZoomUp(hwnd);
+            break;
+        case ID_ZOOM_DOWN:
+            OnZoomDown(hwnd);
+            break;
+        case ID_ZOOM_100:
+            OnZoom100(hwnd);
+            break;
+        }
     }
 
     --s_nLevel;
@@ -2408,6 +2481,63 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     }
 
     return FALSE;
+}
+
+STDMETHODIMP MWebBrowserEx::ShowContextMenu(
+    DWORD dwID,
+    POINT *ppt,
+    IUnknown *pcmdtReserved,
+    IDispatch *pdispReserved)
+{
+    if (g_settings.m_kiosk_mode || g_settings.m_dont_popup)
+        return S_OK;
+
+    std::wstring data;
+    HMENU hMenu = NULL;
+    switch (dwID)
+    {
+    case CONTEXT_MENU_DEFAULT:
+        if (DoLoadMenu(s_hMainWnd, IDS_DEFAULTMENU, data))
+        {
+            hMenu = DoCreateMenu(s_hMainWnd, data);
+        }
+        break;
+    case CONTEXT_MENU_IMAGE:
+        if (DoLoadMenu(s_hMainWnd, IDS_IMAGEMENU, data))
+        {
+            hMenu = DoCreateMenu(s_hMainWnd, data);
+        }
+        break;
+    case CONTEXT_MENU_CONTROL:
+        return S_FALSE;
+    case CONTEXT_MENU_TABLE:
+        return S_FALSE;
+    case CONTEXT_MENU_TEXTSELECT:
+        if (DoLoadMenu(s_hMainWnd, IDS_TEXTMENU, data))
+        {
+            hMenu = DoCreateMenu(s_hMainWnd, data);
+        }
+        break;
+    case CONTEXT_MENU_ANCHOR:
+        if (DoLoadMenu(s_hMainWnd, IDS_ANCHORMENU, data))
+        {
+            hMenu = DoCreateMenu(s_hMainWnd, data);
+        }
+        break;
+    case CONTEXT_MENU_UNKNOWN:
+        return S_FALSE;
+    case CONTEXT_MENU_VSCROLL:
+    case CONTEXT_MENU_HSCROLL:
+    default:
+        return S_OK;
+    }
+    if (hMenu)
+    {
+        DoPopupMenu(s_hMainWnd, hMenu, ppt);
+        DestroyMenu(hMenu);
+        return S_OK;
+    }
+    return S_FALSE;
 }
 
 INT WINAPI

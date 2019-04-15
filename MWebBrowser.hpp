@@ -9,13 +9,15 @@
 #include <windows.h>
 #include <exdisp.h>
 #include <mshtml.h>
+#include <mshtmhst.h>
 
 class MWebBrowser :
     public IOleClientSite,
     public IOleInPlaceSite,
     public IStorage,
     public IServiceProvider,
-    public IHttpSecurity
+    public IHttpSecurity,
+    public IDocHostUIHandler
 {
 public:
     static MWebBrowser *Create(HWND hwndParent);
@@ -157,6 +159,43 @@ public:
     // IHttpSecurity interface
     STDMETHODIMP OnSecurityProblem(DWORD dwProblem);
 
+    // IDocHostUIHandler interface
+    STDMETHODIMP ShowContextMenu(
+        DWORD dwID,
+        POINT *ppt,
+        IUnknown *pcmdtReserved,
+        IDispatch *pdispReserved);
+    STDMETHODIMP GetHostInfo(DOCHOSTUIINFO *pInfo);
+    STDMETHODIMP ShowUI(
+        DWORD dwID,
+        IOleInPlaceActiveObject *pActiveObject,
+        IOleCommandTarget *pCommandTarget,
+        IOleInPlaceFrame *pFrame,
+        IOleInPlaceUIWindow *pDoc);
+    STDMETHODIMP HideUI();
+    STDMETHODIMP UpdateUI();
+    STDMETHODIMP EnableModeless(WINBOOL fEnable);
+    STDMETHODIMP OnDocWindowActivate(WINBOOL fActivate);
+    STDMETHODIMP OnFrameWindowActivate(WINBOOL fActivate);
+    STDMETHODIMP ResizeBorder(
+        LPCRECT prcBorder,
+        IOleInPlaceUIWindow *pUIWindow,
+        WINBOOL fRameWindow);
+    STDMETHODIMP TranslateAccelerator(
+        LPMSG lpMsg,
+        const GUID *pguidCmdGroup,
+        DWORD nCmdID);
+    STDMETHODIMP GetOptionKeyPath(LPOLESTR *pchKey, DWORD dw);
+    STDMETHODIMP GetDropTarget(
+        IDropTarget *pDropTarget,
+        IDropTarget **ppDropTarget);
+    STDMETHODIMP GetExternal(IDispatch **ppDispatch);
+    STDMETHODIMP TranslateUrl(
+        DWORD dwTranslate,
+        OLECHAR *pchURLIn,
+        OLECHAR **ppchURLOut);
+    STDMETHODIMP FilterDataObject(IDataObject *pDO, IDataObject **ppDORet);
+
 protected:
     LONG m_nRefCount;
     HWND m_hwndParent;
@@ -165,6 +204,7 @@ protected:
     IWebBrowser2 *m_web_browser2;
     IOleObject *m_ole_object;
     IOleInPlaceObject *m_ole_inplace_object;
+    IDocHostUIHandler *m_pDocHostUIHandler;
     RECT m_rc;
     HRESULT m_hr;
     BOOL m_bAllowInsecure;

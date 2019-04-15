@@ -4,7 +4,7 @@
 ; Buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; <button-text>	<button-width>	<command-id-or-url-or-command-line>
-< Back	80	#101
-Forward >	80	#102
-Address Bar	*	#105
-Go >	80	#106
+< Back	80	#20001
+Forward >	80	#20002
+Address Bar	*	#20005
+Go >	80	#20006

@@ -29,7 +29,7 @@ void SETTINGS::reset()
     m_secure = TRUE;
     m_dont_r_click = FALSE;
     m_local_file_access = TRUE;
-    m_dont_popup = TRUE;
+    m_dont_popup = FALSE;
     m_ignore_errors = FALSE;
     m_kiosk_mode = FALSE;
     m_emulation = 11001;
