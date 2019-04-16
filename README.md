@@ -4,7 +4,7 @@ SimpleBrowser is a super-quick Web browser for Windows.
 
 ## Features
 
-- Very quick.
+- Very quick and super small.
 - Fully able to customize menus and buttons.
 - Downloaded files are automatically scanned (for Windows 10 only).
 - Kiosk mode supported.
