@@ -1697,6 +1697,60 @@ DownloadingDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+std::string URL_decode(const std::string& str)
+{
+    std::string ret;
+    char buf[3];
+    buf[2] = 0;
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (str[i] == '+')
+        {
+            ret += ' ';
+        }
+        else if (str[i] == '%' && i + 2 < str.size())
+        {
+            buf[0] = str[i + 1];
+            buf[1] = str[i + 2];
+            if (std::isxdigit(buf[0]) && std::isxdigit(buf[1]))
+            {
+                i += 2;
+                ret += (char)std::strtoul(buf, NULL, 16);
+            }
+            else
+            {
+                ret += '%';
+            }
+        }
+        else
+        {
+            ret += str[i];
+        }
+    }
+    return ret;
+}
+
+void TranslateFileName(LPWSTR file, size_t cchMax)
+{
+    char buf[256];
+    WideCharToMultiByte(CP_UTF8, 0, file, -1, buf, ARRAYSIZE(buf), NULL, NULL);
+
+    WCHAR sz[256];
+    std::string str = URL_decode(buf);
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, sz, ARRAYSIZE(sz));
+
+    StringCbCopyW(file, cchMax, sz);
+
+    while (*file)
+    {
+        if (wcschr(L"\\/:*?\"<>|", *file) != NULL)
+        {
+            *file = L'_';
+        }
+        ++file;
+    }
+}
+
 BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
 {
     LPWSTR pch = wcsrchr(pszURL, L'?');
@@ -1719,6 +1773,8 @@ BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
         pszMime = "application/octet-stream";
 
     //MessageBoxA(NULL, pszMime, NULL, 0);
+    //MessageBoxW(NULL, pch, L"extension", 0);
+    //MessageBoxW(NULL, pchFileName, L"filename", 0);
 
     WCHAR file[MAX_PATH] = L"*";
 
@@ -1813,6 +1869,8 @@ BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
         if (*pchFileName && pchFileName != pch)
             StringCbCopy(file, sizeof(file), pchFileName);
     }
+
+    TranslateFileName(file, ARRAYSIZE(file));
 
     if (::GetSaveFileName(&ofn))
     {
