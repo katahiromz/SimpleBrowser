@@ -893,7 +893,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
                                    hwnd, (HMENU)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
-        else if (text.size())
+        else if (text.size() && id != 0)
         {
             DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
             hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
@@ -1065,7 +1065,7 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                 {
                     continue;
                 }
-                if (!bstrHREF && id == ID_SAVE_TARGET_AS)
+                if (0 && !bstrHREF && id == ID_SAVE_TARGET_AS)
                 {
                     continue;
                 }
@@ -1074,7 +1074,14 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                     continue;
                 }
 
-                AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
+                if (id == 0)
+                {
+                    AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+                }
+                else
+                {
+                    AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
+                }
                 ++count;
             }
         }
@@ -2534,6 +2541,10 @@ void OnSaveTargetAs(HWND hwnd)
     {
         DoSaveURL(hwnd, bstrURL);
         SysFreeString(bstrURL);
+    }
+    else
+    {
+        OnSave(hwnd);
     }
 }
 

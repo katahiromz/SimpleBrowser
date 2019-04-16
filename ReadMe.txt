@@ -1,8 +1,13 @@
 # SimpleBrowser by katahiromz
 
-SimpleBrowser is a simple Web browser for Win32.
+SimpleBrowser is a super-quick Web browser for Windows.
 
-It can browse Web pages.
+## Features
+
+- Very quick.
+- Able to customize menus and buttons.
+- Downloaded files are automatically scanned (for Windows 10 only).
+- Kiosk mode supported.
 
 Supported Platforms: Windows XP/Vista/7/10
 

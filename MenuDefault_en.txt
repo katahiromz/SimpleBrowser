@@ -1,3 +1,13 @@
+﻿;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Menu Items
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; <command-id>	<menu-item-text>
 #31	Select All
 #27	Print...
-#71	Save As...
+#2003	Print Preview...
+#20038	Save As...
+#0	(Separator)
+#2266	Create shortcut
+#20018	View source
+#0	(Separator)
+#2300	Refresh

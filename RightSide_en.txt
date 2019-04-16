@@ -6,8 +6,10 @@
 ; <button-text>	<button-height>	<command-id-or-url-or-command-line>
 Move Up	50	#20032
 Move Down	50	#20033
+(Separator)	20	#0
 Print Preview	50	#20013
 Print...	50	#20011
 Cancel Printing	50	#20031
+(Separator)	20	#0
 Zoom Up (+)	50	#20034
 Zoom Down (-)	50	#20035

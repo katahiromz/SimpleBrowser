@@ -1,8 +1,13 @@
 ﻿# SimpleBrowser by 片山博文MZ
 
-SimpleBrowserは、Windows用のシンプルなウェブブラウザです。
+SimpleBrowserは、Windows用の超速いウェブブラウザです。
 
-Webページを閲覧できます。
+## 特徴
+
+- すごく速い。
+- メニューとボタンをカスタマイズ可能。
+- ダウンロードしたファイルは自動的にスキャンされる (Windows10 のみ).
+- キオスクモードのサポート。
 
 対応環境: Windows XP/Vista/7/10
 
