@@ -171,14 +171,14 @@ STRINGTABLE
     IDS_IMAGEMENU, "MenuImage_en.txt"
     IDS_TEXTMENU, "MenuText_en.txt"
     IDS_ANCHORMENU, "MenuAnchor_en.txt"
-    IDS_THREAT_FOUND, "ERROR: Threat is found!!!"
+    IDS_VIRUS_FOUND, "Virus is found."
     IDS_CLOSE, "Close"
     IDS_DL_COMPLETE, "Download Complete."
     IDS_EXEFILTER, "EXE Files (*.exe)|*.exe|All Files (*.*)|*.*|"
     IDS_DLLFILTER, "DLL Files (*.dll)|*.dll|All Files (*.*)|*.*|"
-    IDS_THREAT_NOT_FOUND, "Threat not found in this download."
     IDS_NO_VIRUS, "No virus detected."
     IDS_CANT_SCAN_VIRUS, "Unable to scan virus."
+    IDS_VIRUS_FOUND_DELETED, "Virus is found. Deleted."
 }
 
 //////////////////////////////////////////////////////////////////////////////

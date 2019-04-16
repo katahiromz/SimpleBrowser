@@ -171,14 +171,14 @@ STRINGTABLE
     IDS_IMAGEMENU, "MenuImage_ja.txt"
     IDS_TEXTMENU, "MenuText_ja.txt"
     IDS_ANCHORMENU, "MenuAnchor_ja.txt"
-    IDS_THREAT_FOUND, "エラー: 脅威が発見されました!!!"
+    IDS_VIRUS_FOUND, "ウイルスが検出されました。"
     IDS_CLOSE, "閉じる"
     IDS_DL_COMPLETE, "ダウンロード完了。"
     IDS_EXEFILTER, "EXE ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*|"
     IDS_DLLFILTER, "DLL ファイル (*.dll)|*.dll|すべてのファイル (*.*)|*.*|"
-    IDS_THREAT_NOT_FOUND, "ダウンロードに脅威は見つかりませんでした。"
     IDS_NO_VIRUS, "ウイルスは検出されませんでした。"
     IDS_CANT_SCAN_VIRUS, "ウイルスを検索できませんでした。"
+    IDS_VIRUS_FOUND_DELETED, "ウイルスが検出されましたので、削除しました。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -1638,8 +1638,14 @@ static unsigned __stdcall downloading_proc(void *arg)
     {
         if (result.is_malware)
         {
-            DeleteFileW(file);
-            SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_THREAT_FOUND));
+            if (DeleteFileW(file))
+            {
+                SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
+            }
+            else
+            {
+                SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_VIRUS_FOUND));
+            }
         }
         else
         {

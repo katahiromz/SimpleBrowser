@@ -50,14 +50,14 @@
 #define IDS_IMAGEMENU                       130
 #define IDS_TEXTMENU                        131
 #define IDS_ANCHORMENU                      132
-#define IDS_THREAT_FOUND                    133
+#define IDS_VIRUS_FOUND                     133
 #define IDS_CLOSE                           134
 #define IDS_DL_COMPLETE                     135
 #define IDS_EXEFILTER                       136
 #define IDS_DLLFILTER                       137
-#define IDS_THREAT_NOT_FOUND                138
-#define IDS_NO_VIRUS                        139
-#define IDS_CANT_SCAN_VIRUS                 140
+#define IDS_NO_VIRUS                        138
+#define IDS_CANT_SCAN_VIRUS                 139
+#define IDS_VIRUS_FOUND_DELETED             140
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002
