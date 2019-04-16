@@ -779,23 +779,27 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
         for (size_t i = 0; i < lines.size(); ++i)
         {
             mstr_split(fields, lines[i], L"\t");
-            assert(fields.size() >= 3);
-
-            if (fields[2] == L"#117")   // dots menu
+            if (fields.size() >= 3 && fields[2].c_str()[0] == L'#')
             {
-                lines.erase(lines.begin() + i);
-                break;
+                INT n = _wtoi(&fields[2][1]);
+                if (n == ID_DOTS)   // dots menu
+                {
+                    lines.erase(lines.begin() + i);
+                    break;
+                }
             }
         }
         for (size_t i = 0; i < lines.size(); ++i)
         {
             mstr_split(fields, lines[i], L"\t");
-            assert(fields.size() >= 3);
-
-            if (fields[2] == L"#113")   // print preview
+            if (fields.size() >= 3 && fields[2].c_str()[0] == L'#')
             {
-                lines.erase(lines.begin() + i);
-                break;
+                INT n = _wtoi(&fields[2][1]);
+                if (n == ID_PRINT_PREVIEW)   // print preview
+                {
+                    lines.erase(lines.begin() + i);
+                    break;
+                }
             }
         }
     }
