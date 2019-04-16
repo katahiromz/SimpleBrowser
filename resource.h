@@ -107,12 +107,18 @@
 #define ID_CUSTOM_LINK_08                   20046
 #define ID_CUSTOM_LINK_09                   20047
 #define ID_CUSTOM_LINK_10                   20048
+#define ID_CUSTOM_LINK_11                   20049
+#define ID_CUSTOM_LINK_12                   20050
+#define ID_CUSTOM_LINK_13                   20051
+#define ID_CUSTOM_LINK_14                   20052
+#define ID_CUSTOM_LINK_15                   20053
+#define ID_CUSTOM_LINK_16                   20054
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     20049
+        #define _APS_NEXT_COMMAND_VALUE     20055
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

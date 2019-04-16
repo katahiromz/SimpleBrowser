@@ -1086,7 +1086,7 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
 
                 s_menu_links.push_back(fields[1].c_str());
                 id = LinkID++;
-                if (LinkID > ID_CUSTOM_LINK_10)
+                if (LinkID > ID_CUSTOM_LINK_16)
                     --LinkID;
             }
 
@@ -2704,34 +2704,22 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             OnSaveTargetAs(hwnd);
             break;
         case ID_CUSTOM_LINK_01:
-            OnCustomLink(hwnd, 0);
-            break;
         case ID_CUSTOM_LINK_02:
-            OnCustomLink(hwnd, 1);
-            break;
         case ID_CUSTOM_LINK_03:
-            OnCustomLink(hwnd, 2);
-            break;
         case ID_CUSTOM_LINK_04:
-            OnCustomLink(hwnd, 3);
-            break;
         case ID_CUSTOM_LINK_05:
-            OnCustomLink(hwnd, 4);
-            break;
         case ID_CUSTOM_LINK_06:
-            OnCustomLink(hwnd, 5);
-            break;
         case ID_CUSTOM_LINK_07:
-            OnCustomLink(hwnd, 6);
-            break;
         case ID_CUSTOM_LINK_08:
-            OnCustomLink(hwnd, 7);
-            break;
         case ID_CUSTOM_LINK_09:
-            OnCustomLink(hwnd, 8);
-            break;
         case ID_CUSTOM_LINK_10:
-            OnCustomLink(hwnd, 9);
+        case ID_CUSTOM_LINK_11:
+        case ID_CUSTOM_LINK_12:
+        case ID_CUSTOM_LINK_13:
+        case ID_CUSTOM_LINK_14:
+        case ID_CUSTOM_LINK_15:
+        case ID_CUSTOM_LINK_16:
+            OnCustomLink(hwnd, id - ID_CUSTOM_LINK_01);
             break;
         }
     }
