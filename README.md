@@ -1,4 +1,4 @@
-# <img src="SB.png" alt="" /> SimpleBrowser by katahiromz
+# <img src="icon.png" alt="" /> SimpleBrowser by katahiromz
 
 SimpleBrowser is a super-quick Web browser for Windows.
 
