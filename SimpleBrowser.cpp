@@ -1069,9 +1069,10 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                 {
                     continue;
                 }
-                if (!bstrHREF && (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN))
+                if (!bstrHREF)
                 {
-                    continue;
+                    if (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN || id == IDM_COPYSHORTCUT)
+                        continue;
                 }
 
                 if (id == 0)
