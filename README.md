@@ -43,3 +43,5 @@ License: MIT
     - Change main icon.
     - Fix and improve "Save As".
     - Control popup menus.
+    - Add download manager.
+    - Virus scan.
