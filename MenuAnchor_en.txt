@@ -1,8 +1,8 @@
 ﻿;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Menu Items
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; <command-id>	<menu-item-text>
-#2137	Open link
-#20037	Save this image as...
-#20038	Save this target as...
-#2262	Copy this link
+; <menu-item-text><TAB><command-id-or-url>
+Open link	#2137
+Save this image as...	#20037
+Save this target as...	#20038
+Copy this link	#2262

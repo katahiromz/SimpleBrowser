@@ -97,12 +97,22 @@
 #define ID_ZOOM_100                         20036
 #define ID_SAVE_IMAGE_AS                    20037
 #define ID_SAVE_TARGET_AS                   20038
+#define ID_CUSTOM_LINK_01                   20039
+#define ID_CUSTOM_LINK_02                   20040
+#define ID_CUSTOM_LINK_03                   20041
+#define ID_CUSTOM_LINK_04                   20042
+#define ID_CUSTOM_LINK_05                   20043
+#define ID_CUSTOM_LINK_06                   20044
+#define ID_CUSTOM_LINK_07                   20045
+#define ID_CUSTOM_LINK_08                   20046
+#define ID_CUSTOM_LINK_09                   20047
+#define ID_CUSTOM_LINK_10                   20048
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     20039
+        #define _APS_NEXT_COMMAND_VALUE     20049
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

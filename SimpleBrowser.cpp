@@ -90,6 +90,7 @@ static std::wstring s_popup_anchor_data;
 
 static BOOL s_bEnableForward = FALSE;
 static BOOL s_bEnableBack = FALSE;
+static std::vector<std::wstring> s_menu_links;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -1046,6 +1047,8 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
     BSTR bstrHREF = GetActiveHREF(hwnd);
 
     size_t count = 0;
+    INT LinkID = ID_CUSTOM_LINK_01;
+    s_menu_links.clear();
     for (size_t i = 0; i < lines.size(); ++i)
     {
         std::wstring& line = lines[i];
@@ -1057,9 +1060,10 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
 
         if (fields.size() >= 2)
         {
-            if (fields[0].c_str()[0] == L'#')
+            INT id = 0;
+            if (fields[1].c_str()[0] == L'#')
             {
-                INT id = _wtoi(fields[0].c_str() + 1);
+                id = _wtoi(fields[1].c_str() + 1);
 
                 if (!bstrImgSrc && id == ID_SAVE_IMAGE_AS)
                 {
@@ -1074,17 +1078,27 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                     if (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN || id == IDM_COPYSHORTCUT)
                         continue;
                 }
-
-                if (id == 0 || fields[1].empty())
-                {
-                    AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
-                }
-                else
-                {
-                    AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
-                }
-                ++count;
             }
+            else
+            {
+                if (!IsURL(fields[1].c_str()))
+                    continue;
+
+                s_menu_links.push_back(fields[1].c_str());
+                id = LinkID++;
+                if (LinkID > ID_CUSTOM_LINK_10)
+                    --LinkID;
+            }
+
+            if (id == 0 || fields[0].empty())
+            {
+                AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
+            }
+            else
+            {
+                AppendMenu(hMenu, MF_STRING, id, fields[0].c_str());
+            }
+            ++count;
         }
     }
 
@@ -2549,6 +2563,14 @@ void OnSaveTargetAs(HWND hwnd)
     }
 }
 
+void OnCustomLink(HWND hwnd, UINT nIndex)
+{
+    if (nIndex < s_menu_links.size())
+    {
+        DoNavigate(hwnd, s_menu_links[nIndex].c_str());
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -2680,6 +2702,36 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             break;
         case ID_SAVE_TARGET_AS:
             OnSaveTargetAs(hwnd);
+            break;
+        case ID_CUSTOM_LINK_01:
+            OnCustomLink(hwnd, 0);
+            break;
+        case ID_CUSTOM_LINK_02:
+            OnCustomLink(hwnd, 1);
+            break;
+        case ID_CUSTOM_LINK_03:
+            OnCustomLink(hwnd, 2);
+            break;
+        case ID_CUSTOM_LINK_04:
+            OnCustomLink(hwnd, 3);
+            break;
+        case ID_CUSTOM_LINK_05:
+            OnCustomLink(hwnd, 4);
+            break;
+        case ID_CUSTOM_LINK_06:
+            OnCustomLink(hwnd, 5);
+            break;
+        case ID_CUSTOM_LINK_07:
+            OnCustomLink(hwnd, 6);
+            break;
+        case ID_CUSTOM_LINK_08:
+            OnCustomLink(hwnd, 7);
+            break;
+        case ID_CUSTOM_LINK_09:
+            OnCustomLink(hwnd, 8);
+            break;
+        case ID_CUSTOM_LINK_10:
+            OnCustomLink(hwnd, 9);
             break;
         }
     }

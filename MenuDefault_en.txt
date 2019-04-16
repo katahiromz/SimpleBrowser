@@ -1,13 +1,13 @@
 ﻿;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Menu Items
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; <command-id>	<menu-item-text>
-#31	Select All
-#27	Print...
-#2003	Print Preview...
-#20015	Save As...
-#0	(Separator)
-#2266	Create shortcut
-#20018	View source
-#0	(Separator)
-#2300	Refresh
+; <menu-item-text><TAB><command-id-or-url>
+Select All	#31
+Print...	#27
+Print Preview...	#2003
+Save As...	#20015
+(Separator)	#0
+Create shortcut	#2266
+View source	#20018
+(Separator)	#0
+Refresh	#2300
