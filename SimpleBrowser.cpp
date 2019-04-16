@@ -1065,7 +1065,7 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                 {
                     continue;
                 }
-                if (0 && !bstrHREF && id == ID_SAVE_TARGET_AS)
+                if (!bstrHREF && id == ID_SAVE_TARGET_AS)
                 {
                     continue;
                 }
