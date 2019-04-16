@@ -1,9 +1,9 @@
-﻿; <button-height>	<button-background-color>	<button-text-color>
+﻿; <button-height><TAB><button-background-color><TAB><button-text-color>
 50	#EEEEEE	#000000
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; <button-text>	<button-width>	<command-id-or-url-or-command-line>
+; <button-text><TAB><button-width><TAB><command-id-or-url-or-command-line>
 < Back	80	#20001
 Forward >	80	#20002
 (Separator)	20	#0
