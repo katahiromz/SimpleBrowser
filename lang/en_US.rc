@@ -171,6 +171,9 @@ STRINGTABLE
     IDS_THREAT_FOUND, "ERROR: Threat is found!!!"
     IDS_CLOSE, "Close"
     IDS_DL_COMPLETE, "Download Complete."
+    IDS_EXEFILTER, "EXE Files (*.exe)|*.exe|All Files (*.*)|*.*|"
+    IDS_DLLFILTER, "DLL Files (*.dll)|*.dll|All Files (*.*)|*.*|"
+    IDS_THREAT_NOT_FOUND, "Threat not found in this download."
 }
 
 //////////////////////////////////////////////////////////////////////////////

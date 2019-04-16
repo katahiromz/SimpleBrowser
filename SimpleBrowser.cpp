@@ -17,6 +17,9 @@
 #include <unordered_set>
 #include <cassert>
 #include <process.h>
+#include <strsafe.h>
+#include <comdef.h>
+#include <mshtmcid.h>
 #include "MWebBrowserEx.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
@@ -27,8 +30,6 @@
 #include "mstr.hpp"
 #include "color_value.h"
 #include "AmsiScanner.hpp"
-#include <strsafe.h>
-#include <comdef.h>
 #include "resource.h"
 
 // button size
@@ -1027,6 +1028,9 @@ BOOL DoLoadMenu(HWND hwnd, UINT id, std::wstring& data)
     return TRUE;
 }
 
+BSTR GetActiveImgSrc(HWND hwnd);
+BSTR GetActiveHREF(HWND hwnd);
+
 HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
 {
     std::vector<std::wstring> lines;
@@ -1037,6 +1041,9 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
     HMENU hMenu = CreatePopupMenu();
     if (hMenu == NULL)
         return NULL;
+
+    BSTR bstrImgSrc = GetActiveImgSrc(hwnd);
+    BSTR bstrHREF = GetActiveHREF(hwnd);
 
     size_t count = 0;
     for (size_t i = 0; i < lines.size(); ++i)
@@ -1050,11 +1057,34 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
 
         if (fields.size() >= 2)
         {
-            INT id = _wtoi(fields[0].c_str());
-            AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
-            ++count;
+            if (fields[0].c_str()[0] == L'#')
+            {
+                INT id = _wtoi(fields[0].c_str() + 1);
+
+                if (!bstrImgSrc && id == ID_SAVE_IMAGE_AS)
+                {
+                    continue;
+                }
+                if (!bstrHREF && id == ID_SAVE_TARGET_AS)
+                {
+                    continue;
+                }
+                if (!bstrHREF && (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN))
+                {
+                    continue;
+                }
+
+                AppendMenu(hMenu, MF_STRING, id, fields[1].c_str());
+                ++count;
+            }
         }
     }
+
+    if (bstrImgSrc)
+        SysFreeString(bstrImgSrc);
+
+    if (bstrHREF)
+        SysFreeString(bstrHREF);
 
     if (count == 0)
     {
@@ -1575,6 +1605,8 @@ static unsigned __stdcall downloading_proc(void *arg)
     KillTimer(pDownloading->hDlg, 999);
     SetDlgItemTextW(pDownloading->hDlg, IDCANCEL, LoadStringDx(IDS_CLOSE));
     SetDlgItemTextW(pDownloading->hDlg, stc1, LoadStringDx(IDS_DL_COMPLETE));
+    SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETRANGE32, 0, 100);
+    SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETPOS, 100, 0);
 
     return 0;
 }
@@ -1682,7 +1714,21 @@ BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
     ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_PATHMUSTEXIST |
                 OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-    if (strcmp(pszMime, "text/plain") == 0)
+    if (lstrcmpiA(extension, ".exe") == 0)
+    {
+        ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_EXEFILTER));
+        ofn.lpstrDefExt = L"exe";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
+    }
+    else if (lstrcmpiA(extension, ".dll") == 0)
+    {
+        ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_DLLFILTER));
+        ofn.lpstrDefExt = L"dll";
+        if (*pchFileName && pchFileName != pch)
+            StringCbCopy(file, sizeof(file), pchFileName);
+    }
+    else if (strcmp(pszMime, "text/plain") == 0)
     {
         ofn.lpstrFilter = MakeFilterDx(LoadStringDx(IDS_TXTFILTER));
         ofn.lpstrDefExt = L"txt";
@@ -2189,6 +2235,233 @@ void OnZoom100(HWND hwnd)
     s_pWebBrowser->Zoom100();
 }
 
+BSTR DoGetImageSrcFromImg(IHTMLElement *pElement)
+{
+    if (BSTR bstrSRC = SysAllocString(L"src"))
+    {
+        VARIANT var;
+        VariantInit(&var);
+        // IHTMLElement::getAttribute
+        pElement->getAttribute(bstrSRC, 2 | 4, &var);
+        SysFreeString(bstrSRC);
+        return var.bstrVal;
+    }
+    return NULL;
+}
+
+BSTR DoGetHrefFromATag(IHTMLElement *pElement)
+{
+    if (BSTR bstrHREF = SysAllocString(L"href"))
+    {
+        VARIANT var;
+        VariantInit(&var);
+        // IHTMLElement::getAttribute
+        pElement->getAttribute(bstrHREF, 2 | 4, &var);
+        SysFreeString(bstrHREF);
+        return var.bstrVal;
+    }
+    return NULL;
+}
+
+BSTR DoGetImageSrcFromElement(IHTMLElement *pElement)
+{
+    BSTR bstrTag;
+    pElement->get_tagName(&bstrTag);
+    if (!bstrTag)
+        return NULL;
+
+    BSTR bstrSRC = NULL;
+    if (lstrcmpiW(bstrTag, L"img") == 0)
+    {
+        bstrSRC = DoGetImageSrcFromImg(pElement);
+        return bstrSRC;
+    }
+
+    IDispatch *pdisp = NULL;
+    pElement->get_children(&pdisp);
+    if (pdisp)
+    {
+        IHTMLElementCollection *pColl = NULL;
+        pdisp->QueryInterface(&pColl);
+        if (pColl)
+        {
+            long n = 0;
+            pColl->get_length(&n);
+            if (n)
+            {
+                // IHTMLElementCollection::item
+                VARIANT varName, varIndex;
+                for (long i = 0; i < n; ++i)
+                {
+                    VariantInit(&varName);
+                    varName.vt = VT_I4;
+                    varName.lVal = i;
+
+                    VariantInit(&varIndex);
+                    varIndex.vt = VT_I4;
+                    varIndex.lVal = 0;
+
+                    IDispatch *pDispatch = NULL;
+                    pColl->item(varName, varIndex, &pDispatch);
+                    if (pDispatch)
+                    {
+                        IHTMLElement *pElement = NULL;
+                        pDispatch->QueryInterface(&pElement);
+                        if (pElement)
+                        {
+                            bstrSRC = DoGetImageSrcFromImg(pElement);
+                            pElement->Release();
+                        }
+
+                        pDispatch->Release();
+                    }
+
+                    if (bstrSRC)
+                        break;
+                }
+            }
+            pColl->Release();
+        }
+        pdisp->Release();
+    }
+
+    return bstrSRC;
+}
+
+BSTR DoGetHyperlinkHrefFromElement(IHTMLElement *pElement)
+{
+    BSTR bstrTag;
+    pElement->get_tagName(&bstrTag);
+    if (!bstrTag)
+        return NULL;
+
+    BSTR bstrHREF = NULL;
+    if (lstrcmpiW(bstrTag, L"a") == 0)
+    {
+        bstrHREF = DoGetHrefFromATag(pElement);
+        return bstrHREF;
+    }
+
+    IDispatch *pdisp = NULL;
+    pElement->get_children(&pdisp);
+    if (pdisp)
+    {
+        IHTMLElementCollection *pColl = NULL;
+        pdisp->QueryInterface(&pColl);
+        if (pColl)
+        {
+            long n = 0;
+            pColl->get_length(&n);
+            if (n)
+            {
+                // IHTMLElementCollection::item
+                VARIANT varName, varIndex;
+                for (long i = 0; i < n; ++i)
+                {
+                    VariantInit(&varName);
+                    varName.vt = VT_I4;
+                    varName.lVal = i;
+
+                    VariantInit(&varIndex);
+                    varIndex.vt = VT_I4;
+                    varIndex.lVal = 0;
+
+                    IDispatch *pDispatch = NULL;
+                    pColl->item(varName, varIndex, &pDispatch);
+                    if (pDispatch)
+                    {
+                        IHTMLElement *pElement = NULL;
+                        pDispatch->QueryInterface(&pElement);
+                        if (pElement)
+                        {
+                            bstrHREF = DoGetHrefFromATag(pElement);
+                            pElement->Release();
+                        }
+
+                        pDispatch->Release();
+                    }
+
+                    if (bstrHREF)
+                        break;
+                }
+            }
+            pColl->Release();
+        }
+        pdisp->Release();
+    }
+
+    return bstrHREF;
+}
+
+BSTR GetActiveImgSrc(HWND hwnd)
+{
+    BSTR ret = NULL;
+    IDispatch *pDisp = NULL;
+    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+    if (pDisp)
+    {
+        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        {
+            IHTMLElement *pElement = NULL;
+            pDocument->get_activeElement(&pElement);
+            if (pElement)
+            {
+                if (BSTR bstrURL = DoGetImageSrcFromElement(pElement))
+                {
+                    ret = bstrURL;
+                }
+                pElement->Release();
+            }
+        }
+        pDisp->Release();
+    }
+    return ret;
+}
+
+BSTR GetActiveHREF(HWND hwnd)
+{
+    BSTR ret = NULL;
+    IDispatch *pDisp = NULL;
+    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+    if (pDisp)
+    {
+        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        {
+            IHTMLElement *pElement = NULL;
+            pDocument->get_activeElement(&pElement);
+            if (pElement)
+            {
+                if (BSTR bstrURL = DoGetHyperlinkHrefFromElement(pElement))
+                {
+                    ret = bstrURL;
+                }
+                pElement->Release();
+            }
+        }
+        pDisp->Release();
+    }
+
+    return ret;
+}
+
+void OnSaveImageAs(HWND hwnd)
+{
+    if (BSTR bstrURL = GetActiveImgSrc(hwnd))
+    {
+        DoSaveURL(hwnd, bstrURL);
+        SysFreeString(bstrURL);
+    }
+}
+
+void OnSaveTargetAs(HWND hwnd)
+{
+    if (BSTR bstrURL = GetActiveHREF(hwnd))
+    {
+        DoSaveURL(hwnd, bstrURL);
+        SysFreeString(bstrURL);
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -2314,6 +2587,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             break;
         case ID_ZOOM_100:
             OnZoom100(hwnd);
+            break;
+        case ID_SAVE_IMAGE_AS:
+            OnSaveImageAs(hwnd);
+            break;
+        case ID_SAVE_TARGET_AS:
+            OnSaveTargetAs(hwnd);
             break;
         }
     }

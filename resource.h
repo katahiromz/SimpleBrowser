@@ -53,6 +53,9 @@
 #define IDS_THREAT_FOUND                    133
 #define IDS_CLOSE                           134
 #define IDS_DL_COMPLETE                     135
+#define IDS_EXEFILTER                       136
+#define IDS_DLLFILTER                       137
+#define IDS_THREAT_NOT_FOUND                138
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002
@@ -90,12 +93,14 @@
 #define ID_ZOOM_UP                          20034
 #define ID_ZOOM_DOWN                        20035
 #define ID_ZOOM_100                         20036
+#define ID_SAVE_IMAGE_AS                    20037
+#define ID_SAVE_TARGET_AS                   20038
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     20037
+        #define _APS_NEXT_COMMAND_VALUE     20039
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

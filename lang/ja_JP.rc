@@ -171,6 +171,9 @@ STRINGTABLE
     IDS_THREAT_FOUND, "エラー: 脅威が発見されました!!!"
     IDS_CLOSE, "閉じる"
     IDS_DL_COMPLETE, "ダウンロード完了。"
+    IDS_EXEFILTER, "EXE ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*|"
+    IDS_DLLFILTER, "DLL ファイル (*.dll)|*.dll|すべてのファイル (*.*)|*.*|"
+    IDS_THREAT_NOT_FOUND, "ダウンロードに脅威は見つかりませんでした。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

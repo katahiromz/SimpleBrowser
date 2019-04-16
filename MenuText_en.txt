@@ -1,2 +1,2 @@
-﻿31	Select All
-15	Copy
+﻿#31	Select All
+#15	Copy
