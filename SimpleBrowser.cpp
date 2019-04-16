@@ -1545,7 +1545,7 @@ void OnPageSetup(HWND hwnd)
     s_pWebBrowser->PageSetup();
 }
 
-BOOL DoThreatScan(HWND hwnd, LPCWSTR file)
+BOOL DoThreatScan(HWND hwnd, LPCWSTR file, AmsiResult& result)
 {
     AmsiScanner scanner(L"katahiromz's SimpleBrowser");
     if (!scanner.IsLoaded())
@@ -1560,15 +1560,9 @@ BOOL DoThreatScan(HWND hwnd, LPCWSTR file)
         return FALSE;
     }
 
-    AmsiResult result;
     hr = scanner.DoScanFile(hSession, file, result);
 
     scanner.CloseSession(&hSession);
-
-    if (result.is_malware)
-    {
-        MessageBoxW(hwnd, LoadStringDx(IDS_THREAT_FOUND), NULL, MB_ICONERROR);
-    }
 
     return SUCCEEDED(hr);
 }
@@ -1604,9 +1598,30 @@ static unsigned __stdcall downloading_proc(void *arg)
 
     KillTimer(pDownloading->hDlg, 999);
     SetDlgItemTextW(pDownloading->hDlg, IDCANCEL, LoadStringDx(IDS_CLOSE));
-    SetDlgItemTextW(pDownloading->hDlg, stc1, LoadStringDx(IDS_DL_COMPLETE));
+    SetDlgItemTextW(pDownloading->hDlg, stc3, LoadStringDx(IDS_DL_COMPLETE));
+    SetWindowTextW(pDownloading->hDlg, LoadStringDx(IDS_DL_COMPLETE));
     SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETRANGE32, 0, 100);
     SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETPOS, 100, 0);
+
+    AmsiResult result;
+
+    LPCWSTR file = pDownloading->strFilename.c_str();
+    if (DoThreatScan(pDownloading->hDlg, file, result))
+    {
+        if (result.is_malware)
+        {
+            DeleteFileW(file);
+            SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_THREAT_FOUND));
+        }
+        else
+        {
+            SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_NO_VIRUS));
+        }
+    }
+    else
+    {
+        SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
+    }
 
     return 0;
 }
@@ -1615,7 +1630,10 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
     DOWNLOADING *pDownloading = (DOWNLOADING *)lParam;
     SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDownloading);
-    SetDlgItemTextW(hwnd, stc1, pDownloading->strFilename.c_str());
+
+    SetDlgItemTextW(hwnd, stc1, pDownloading->strURL.c_str());
+    SetDlgItemTextW(hwnd, stc2, pDownloading->strFilename.c_str());
+
     pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
     if (pDownloading->hThread == NULL)
     {
@@ -1646,7 +1664,7 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
     {
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
-        SetDlgItemTextW(hwnd, stc1, pCallback->m_strStatus.c_str());
+        SetDlgItemTextW(hwnd, stc3, pCallback->m_strStatus.c_str());
     }
 }
 
@@ -1661,7 +1679,6 @@ void Downloading_OnDestroy(HWND hwnd)
     pCallback->Release();
 
     CloseHandle(pDownloading->hThread);
-    DoThreatScan(hwnd, pDownloading->strFilename.c_str());
 
     delete pDownloading;
     s_downloadings.erase(hwnd);

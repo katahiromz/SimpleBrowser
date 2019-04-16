@@ -121,14 +121,17 @@ FONT 9, "MS UI Gothic"
     PUSHBUTTON "キャンセル", IDCANCEL, 130, 150, 60, 14
 }
 
-IDD_DOWNLOADING DIALOG 0, 0, 200, 65
+IDD_DOWNLOADING DIALOG 0, 0, 200, 105
 CAPTION "ダウンロード中..."
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "MS UI Gothic"
 {
-    LTEXT "ファイルをダウンロードしています...", stc1, 5, 5, 190, 12, SS_PATHELLIPSIS
-    CONTROL "", ctl1, "msctls_progress32", 0, 5, 25, 190, 12
-    PUSHBUTTON "キャンセル", IDCANCEL, 70, 45, 60, 14
+    LTEXT "", stc1, 5, 5, 190, 12, SS_PATHELLIPSIS
+    LTEXT "", stc2, 5, 20, 190, 12, SS_PATHELLIPSIS
+    CONTROL "", ctl1, "msctls_progress32", 0, 5, 35, 190, 12
+    LTEXT "ファイルをダウンロードしています...", stc3, 5, 50, 190, 12, SS_PATHELLIPSIS
+    LTEXT "", stc4, 5, 70, 190, 12, SS_PATHELLIPSIS
+    PUSHBUTTON "キャンセル", IDCANCEL, 70, 85, 60, 14
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -174,6 +177,8 @@ STRINGTABLE
     IDS_EXEFILTER, "EXE ファイル (*.exe)|*.exe|すべてのファイル (*.*)|*.*|"
     IDS_DLLFILTER, "DLL ファイル (*.dll)|*.dll|すべてのファイル (*.*)|*.*|"
     IDS_THREAT_NOT_FOUND, "ダウンロードに脅威は見つかりませんでした。"
+    IDS_NO_VIRUS, "ウイルスは検出されませんでした。"
+    IDS_CANT_SCAN_VIRUS, "ウイルスを検索できませんでした。"
 }
 
 //////////////////////////////////////////////////////////////////////////////
