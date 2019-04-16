@@ -10,3 +10,4 @@ Stop/Reload	80	#20003
 Home	80	#20004
 Address Bar	*	#20005
 Go >	80	#20006
+...	80	#20017

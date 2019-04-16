@@ -4,7 +4,6 @@
 ; Buttons
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; <button-text>	<button-height>	<command-id-or-url-or-command-line>
-...	50	#20017
 Move Up	50	#20032
 Move Down	50	#20033
 Print Preview	50	#20013

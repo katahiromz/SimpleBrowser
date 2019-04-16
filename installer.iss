@@ -66,6 +66,7 @@ Source: "RightSide_en.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "RightSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "mshtmcid.h"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
