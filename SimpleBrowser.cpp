@@ -1075,7 +1075,7 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                         continue;
                 }
 
-                if (id == 0)
+                if (id == 0 || fields[1].empty())
                 {
                     AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
                 }
