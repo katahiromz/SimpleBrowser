@@ -781,8 +781,8 @@ BOOL LoadDataFile(HWND hwnd, const WCHAR *path, std::wstring& data)
             mstr_split(fields, lines[i], L"\t");
             if (fields.size() >= 3 && fields[2].c_str()[0] == L'#')
             {
-                INT n = _wtoi(&fields[2][1]);
-                if (n == ID_DOTS)   // dots menu
+                INT id = _wtoi(&fields[2][1]);
+                if (id == ID_DOTS)   // dots menu
                 {
                     lines.erase(lines.begin() + i);
                     break;
