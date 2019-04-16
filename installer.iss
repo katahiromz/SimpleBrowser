@@ -49,15 +49,23 @@ Source: "README.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "READMEJP.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SimpleBrowser.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Upside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Downside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "LeftSide_en.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "RightSide_en.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Upside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Downside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "LeftSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "RightSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "CancelPrinting.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Downside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Downside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LeftSide_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "LeftSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuAnchor_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuAnchor_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuDefault_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuDefault_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuImage_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuImage_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuText_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "MenuText_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "RightSide_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "RightSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Upside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Upside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
