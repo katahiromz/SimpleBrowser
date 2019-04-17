@@ -14,7 +14,6 @@ MBindStatusCallback::MBindStatusCallback() :
     m_bCompleted(FALSE),
     m_bCancelled(FALSE)
 {
-    m_dwTick = ::GetTickCount();
 }
 
 MBindStatusCallback::~MBindStatusCallback()

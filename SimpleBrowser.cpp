@@ -1719,6 +1719,7 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     printf("strFilename: %ls\n", pDownloading->strFilename.c_str());
     fflush(stdout);
 
+    pCallback->m_dwTick = GetTickCount();
     pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
     if (!pDownloading->hThread)
     {
