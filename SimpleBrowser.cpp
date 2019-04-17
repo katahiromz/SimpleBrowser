@@ -1902,11 +1902,16 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
         float secs = remainder / 1000 + 1;
 
         static float s_old_secs[16] = { 0 };
-        for (size_t i = 1; i < ARRAYSIZE(s_old_secs); ++i)
+        for (size_t i = 1; i < ARRAYSIZE(s_old_secs) - 1; ++i)
         {
             s_old_secs[i - 1] = s_old_secs[i];
         }
-        s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs;
+        s_old_secs[ARRAYSIZE(s_old_secs) - 2] = secs;
+
+        static float s_old_progress = 0;
+        float speed = (progress - s_old_progress) / DOWNLOAD_TIMER_INTERVAL;
+        float secs2 = progressMax / (speed ? speed : 1) / 1000 + 1;
+        s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs2;
 
         if (s_old_secs[0] != 0)
         {
@@ -1915,7 +1920,7 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
             {
                 sum += s_old_secs[i];
             }
-            secs = sum / (ARRAYSIZE(s_old_secs) + 1);
+            secs = sum / ARRAYSIZE(s_old_secs);
         }
 
         WCHAR szText[128];
