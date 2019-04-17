@@ -42,6 +42,8 @@
 #define SOURCE_DONE_TIMER      999
 #define REFRESH_TIMER   888
 
+#define DOWNLOAD_TIMER_INTERVAL 500
+
 #define MIN_COMMAND_ID 20000
 
 static const TCHAR s_szName[] = TEXT("SimpleBrowser");
@@ -1854,7 +1856,7 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     }
 
     printf("Downloading_OnInitDialog: end\n");
-    SetTimer(hwnd, 999, 500, NULL);
+    SetTimer(hwnd, 999, DOWNLOAD_TIMER_INTERVAL, NULL);
     return TRUE;
 }
 
@@ -1892,40 +1894,34 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
         DWORD dwTick1 = pCallback->m_dwTick;
         DWORD dwTick2 = GetTickCount();
         DWORD amount = dwTick2 - dwTick1;
-        if ((LONG)amount >= 0)
+        float progress = pCallback->m_ulProgress;
+        float progressMax = pCallback->m_ulProgressMax;
+        // progress : progressMax == amount : totalAmount.
+        float totalAmount = amount * progressMax / (progress ? progress : 1);
+        float remainder = totalAmount - amount;
+        float secs = remainder / 1000 + 1;
+
+        static float s_old_secs[16] = { 0 };
+        for (size_t i = 1; i < ARRAYSIZE(s_old_secs); ++i)
         {
-            static float s_old_secs[10] = { 0 };
-            float progress = pCallback->m_ulProgress;
-            float progressMax = pCallback->m_ulProgressMax;
-            float total = float(amount) * progressMax / (progress ? progress : 1);
-            float remainder = total - amount;
-            float secs = remainder / 1000 + 1;
-
-            for (size_t i = 1; i < ARRAYSIZE(s_old_secs); ++i)
-            {
-                s_old_secs[i - 1] = s_old_secs[i];
-            }
-            s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs;
-
-            if (s_old_secs[0] != 0)
-            {
-                float sum = 0;
-                for (size_t i = 0; i < ARRAYSIZE(s_old_secs); ++i)
-                {
-                    sum += s_old_secs[i];
-                }
-                secs = sum / ARRAYSIZE(s_old_secs);
-            }
-
-            WCHAR szText[128];
-            StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS),
-                (ULONG)progress, (ULONG)progressMax, (ULONG)secs);
-            SetDlgItemTextW(hwnd, stc4, szText);
+            s_old_secs[i - 1] = s_old_secs[i];
         }
-        else
+        s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs;
+
+        if (s_old_secs[0] != 0)
         {
-            SetDlgItemTextW(hwnd, stc4, NULL);
+            float sum = 0;
+            for (size_t i = 0; i < ARRAYSIZE(s_old_secs); ++i)
+            {
+                sum += s_old_secs[i];
+            }
+            secs = sum / (ARRAYSIZE(s_old_secs) + 1);
         }
+
+        WCHAR szText[128];
+        StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS),
+            (ULONG)progress, (ULONG)progressMax, (ULONG)secs);
+        SetDlgItemTextW(hwnd, stc4, szText);
     }
 }
 
