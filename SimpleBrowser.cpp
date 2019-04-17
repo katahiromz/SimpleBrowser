@@ -1664,17 +1664,20 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
         if (pCallback->IsCompleted())
         {
+            // update dialog info
             SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
             SetDlgItemTextW(hwnd, stc3, LoadStringDx(IDS_DL_COMPLETE));
             SetWindowTextW(hwnd, LoadStringDx(IDS_DL_COMPLETE));
             SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
             SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
 
+            // alternate data stream (ADS)
             ADS_ENTRY entry;
             entry.name = L":Zone.Identifier";
             std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
             ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
 
+            // virus scan
             AmsiResult result;
             LPCWSTR file = pDownloading->strFilename.c_str();
             if (DoThreatScan(hwnd, file, result))
