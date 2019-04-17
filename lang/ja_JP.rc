@@ -128,7 +128,7 @@ FONT 9, "MS UI Gothic"
 {
     LTEXT "", stc1, 5, 5, 190, 12, SS_PATHELLIPSIS
     LTEXT "", stc2, 5, 20, 190, 12, SS_PATHELLIPSIS
-    CONTROL "", ctl1, "msctls_progress32", 0, 5, 35, 190, 12
+    CONTROL "", ctl1, "msctls_progress32", PBS_SMOOTH, 5, 35, 190, 12
     LTEXT "ファイルをダウンロードしています...", stc3, 5, 50, 190, 12, SS_PATHELLIPSIS
     LTEXT "", stc4, 5, 70, 190, 12, SS_PATHELLIPSIS
     PUSHBUTTON "キャンセル", IDCANCEL, 70, 85, 60, 14
@@ -179,6 +179,7 @@ STRINGTABLE
     IDS_NO_VIRUS, "ウイルスは検出されませんでした。"
     IDS_CANT_SCAN_VIRUS, "ウイルスを検索できませんでした。"
     IDS_VIRUS_FOUND_DELETED, "ウイルスが検出されましたので、削除しました。"
+    IDS_FAILED_TO_DL, "ダウンロードに失敗しました。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

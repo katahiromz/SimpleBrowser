@@ -128,7 +128,7 @@ FONT 9, "Tahoma"
 {
     LTEXT "", stc1, 5, 5, 190, 12, SS_PATHELLIPSIS
     LTEXT "", stc2, 5, 20, 190, 12, SS_PATHELLIPSIS
-    CONTROL "", ctl1, "msctls_progress32", 0, 5, 35, 190, 12
+    CONTROL "", ctl1, "msctls_progress32", PBS_SMOOTH, 5, 35, 190, 12
     LTEXT "Downloading file...", stc3, 5, 50, 190, 12, SS_PATHELLIPSIS
     LTEXT "", stc4, 5, 70, 190, 12, SS_PATHELLIPSIS
     PUSHBUTTON "Cancel", IDCANCEL, 70, 85, 60, 14
@@ -179,6 +179,7 @@ STRINGTABLE
     IDS_NO_VIRUS, "No virus detected."
     IDS_CANT_SCAN_VIRUS, "Unable to scan virus."
     IDS_VIRUS_FOUND_DELETED, "Virus is found. Deleted."
+    IDS_FAILED_TO_DL, "Failed to download."
 }
 
 //////////////////////////////////////////////////////////////////////////////

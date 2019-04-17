@@ -19,6 +19,7 @@
 #include <strsafe.h>
 #include <comdef.h>
 #include <mshtmcid.h>
+#include <process.h>
 #include "MWebBrowserEx.hpp"
 #include "MEventSink.hpp"
 #include "MBindStatusCallback.hpp"
@@ -369,13 +370,13 @@ struct MEventHandler : MEventSinkListener
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
         *ppDisp = pApp;
 
+        std::wstring url = bstrUrl;
         if (dwFlags & 2)
         {
-            DoSaveURL(s_hMainWnd, bstrUrl);
+            DoSaveURL(s_hMainWnd, url.c_str());
             return;
         }
 
-        std::wstring url = bstrUrl;
         if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
             DoNavigate(s_hMainWnd, url.c_str());
@@ -1625,12 +1626,86 @@ struct DOWNLOADING
     std::wstring strFilename;
     MBindStatusCallback *pCallback;
     HWND hDlg;
+    HANDLE hThread;
 };
+
+unsigned __stdcall downloading_proc(void *arg)
+{
+    DOWNLOADING *pDownloading = (DOWNLOADING *)arg;
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
+    HWND hwnd = pDownloading->hDlg;
+
+    HRESULT hr = URLDownloadToFile(NULL,
+        pDownloading->strURL.c_str(),
+        pDownloading->strFilename.c_str(), 0, pCallback);
+    if (FAILED(hr))
+    {
+        MessageBoxW(hwnd, LoadStringDx(IDS_FAILED_TO_DL), NULL, MB_ICONERROR);
+        return 1;
+    }
+
+    while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
+    {
+        Sleep(500);
+    }
+
+    KillTimer(hwnd, 999);
+    if (pCallback->IsCompleted())
+    {
+        // update dialog info
+        SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
+        SetDlgItemTextW(hwnd, stc3, LoadStringDx(IDS_DL_COMPLETE));
+        SetWindowTextW(hwnd, LoadStringDx(IDS_DL_COMPLETE));
+        SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
+        SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
+
+        // alternate data stream (ADS)
+        ADS_ENTRY entry;
+        entry.name = L":Zone.Identifier";
+        std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
+        ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
+
+        // virus scan
+        AmsiResult result;
+        LPCWSTR file = pDownloading->strFilename.c_str();
+        if (DoThreatScan(hwnd, file, result))
+        {
+            if (result.is_malware)
+            {
+                if (DeleteFileW(file))
+                {
+                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
+                }
+                else
+                {
+                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND));
+                }
+            }
+            else
+            {
+                SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_NO_VIRUS));
+            }
+        }
+        else
+        {
+            SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
+        }
+    }
+    else
+    {
+        PostMessage(hwnd, WM_COMMAND, IDCANCEL, 0);
+    }
+
+    return 0;
+}
 
 BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
+    printf("Downloading_OnInitDialog\n");
     DOWNLOADING *pDownloading = (DOWNLOADING *)lParam;
     MBindStatusCallback *pCallback = pDownloading->pCallback;
+    assert(pCallback);
+    pDownloading->hDlg = hwnd;
     SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDownloading);
 
     SetDlgItemTextW(hwnd, stc1, pDownloading->strURL.c_str());
@@ -1638,18 +1713,20 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
     printf("strURL: %ls\n", pDownloading->strURL.c_str());
     printf("strFilename: %ls\n", pDownloading->strFilename.c_str());
-    HRESULT hr = URLDownloadToFile(NULL,
-                                   pDownloading->strURL.c_str(),
-                                   pDownloading->strFilename.c_str(),
-                                   0,
-                                   pDownloading->pCallback);
-    if (FAILED(hr))
+    fflush(stdout);
+
+    pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
+    if (!pDownloading->hThread)
     {
+        printf("FAILED\n");
+        MessageBoxW(hwnd, L"FAILED", NULL, MB_ICONERROR);
+        pCallback->SetCancelled();
         DestroyWindow(hwnd);
         return TRUE;
     }
 
-    SetTimer(hwnd, 999, 200, NULL);
+    printf("Downloading_OnInitDialog: end\n");
+    SetTimer(hwnd, 999, 500, NULL);
     return TRUE;
 }
 
@@ -1660,51 +1737,11 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     switch (id)
     {
     case IDOK:
+        printf("IDOK\n");
         KillTimer(hwnd, 999);
-
-        if (pCallback->IsCompleted())
-        {
-            // update dialog info
-            SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
-            SetDlgItemTextW(hwnd, stc3, LoadStringDx(IDS_DL_COMPLETE));
-            SetWindowTextW(hwnd, LoadStringDx(IDS_DL_COMPLETE));
-            SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
-            SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
-
-            // alternate data stream (ADS)
-            ADS_ENTRY entry;
-            entry.name = L":Zone.Identifier";
-            std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
-            ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
-
-            // virus scan
-            AmsiResult result;
-            LPCWSTR file = pDownloading->strFilename.c_str();
-            if (DoThreatScan(hwnd, file, result))
-            {
-                if (result.is_malware)
-                {
-                    if (DeleteFileW(file))
-                    {
-                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
-                    }
-                    else
-                    {
-                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND));
-                    }
-                }
-                else
-                {
-                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_NO_VIRUS));
-                }
-            }
-            else
-            {
-                SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
-            }
-        }
         break;
     case IDCANCEL:
+        printf("IDCANCEL\n");
         KillTimer(hwnd, 999);
         if (!pCallback->IsCompleted())
         {
@@ -1717,25 +1754,24 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void Downloading_OnTimer(HWND hwnd, UINT id)
 {
+    printf("Downloading_OnTimer\n");
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     MBindStatusCallback *pCallback = pDownloading->pCallback;
     if (id == 999)
     {
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
-        SetDlgItemTextW(hwnd, stc3, pCallback->m_strStatus.c_str());
-
-        if (pCallback->IsCompleted())
-            PostMessage(hwnd, WM_COMMAND, IDOK, 0);
-        else if (pCallback->IsCancelled())
-            PostMessage(hwnd, WM_COMMAND, IDCANCEL, 0);
     }
 }
 
 void Downloading_OnDestroy(HWND hwnd)
 {
+    printf("Downloading_OnDestroy\n");
     KillTimer(hwnd, 999);
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+    CloseHandle(pDownloading->hThread);
+    pDownloading->hThread = NULL;
 
     MBindStatusCallback *pCallback = pDownloading->pCallback;
     pCallback->Release();
@@ -1945,7 +1981,6 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
 
         HWND hDlg = CreateDialogParam(s_hInst, MAKEINTRESOURCE(IDD_DOWNLOADING),
                                       hwnd, DownloadingDlgProc, (LPARAM)pDownloading);
-        pDownloading->hDlg = hDlg;
         ShowWindow(hDlg, SW_SHOWNORMAL);
         UpdateWindow(hDlg);
         s_downloadings.insert(hDlg);

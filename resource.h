@@ -58,6 +58,7 @@
 #define IDS_NO_VIRUS                        138
 #define IDS_CANT_SCAN_VIRUS                 139
 #define IDS_VIRUS_FOUND_DELETED             140
+#define IDS_FAILED_TO_DL                    141
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002

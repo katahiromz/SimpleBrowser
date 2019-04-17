@@ -42,6 +42,10 @@ STDMETHODIMP MBindStatusCallback::QueryInterface(REFIID riid, void **ppvObj)
     {
         *ppvObj = static_cast<IBindStatusCallback *>(this);
     }
+    else if (riid == __uuidof(IAuthenticate))
+    {
+        *ppvObj = static_cast<IAuthenticate *>(this);
+    }
     else
     {
         return E_NOINTERFACE;
@@ -54,6 +58,7 @@ STDMETHODIMP MBindStatusCallback::QueryInterface(REFIID riid, void **ppvObj)
 
 STDMETHODIMP_(ULONG) MBindStatusCallback::AddRef()
 {
+    printf("MBindStatusCallback::AddRef\n");
     return ++m_nRefCount;
 }
 
@@ -62,6 +67,7 @@ STDMETHODIMP_(ULONG) MBindStatusCallback::Release()
     --m_nRefCount;
     if (m_nRefCount == 0)
     {
+        printf("MBindStatusCallback::Release\n");
         delete this;
         return 0;
     }
@@ -71,7 +77,7 @@ STDMETHODIMP_(ULONG) MBindStatusCallback::Release()
 // IBindStatusCallback interface
 STDMETHODIMP MBindStatusCallback::OnStartBinding(DWORD dwReserved, IBinding *pib)
 {
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 STDMETHODIMP MBindStatusCallback::GetPriority(LONG *pnPriority)
@@ -81,7 +87,7 @@ STDMETHODIMP MBindStatusCallback::GetPriority(LONG *pnPriority)
 
 STDMETHODIMP MBindStatusCallback::OnLowResource(DWORD reserved)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::OnProgress(
@@ -90,6 +96,7 @@ STDMETHODIMP MBindStatusCallback::OnProgress(
     ULONG ulStatusCode,
     LPCWSTR szStatusText)
 {
+    printf("%lu / %lu\n", ulProgress, ulProgressMax);
     m_ulProgress = ulProgress;
     m_ulProgressMax = ulProgressMax;
     m_ulStatusCode = ulStatusCode;
@@ -116,14 +123,12 @@ void MBindStatusCallback::SetCancelled()
 
 STDMETHODIMP MBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)
 {
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 STDMETHODIMP MBindStatusCallback::GetBindInfo(DWORD *grfBINDF, BINDINFO *pbindinfo)
 {
-    *grfBINDF = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE |
-                BINDF_GETNEWESTVERSION | BINDF_NOWRITECACHE;
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 STDMETHODIMP MBindStatusCallback::OnDataAvailable(
@@ -132,10 +137,16 @@ STDMETHODIMP MBindStatusCallback::OnDataAvailable(
     FORMATETC *pformatetc,
     STGMEDIUM *pstgmed)
 {
-    return S_OK;
+    return E_NOTIMPL;
 }
 
 STDMETHODIMP MBindStatusCallback::OnObjectAvailable(REFIID riid, IUnknown *punk)
 {
-    return S_OK;
+    return E_NOTIMPL;
+}
+
+// IAuthenticate interface
+STDMETHODIMP MBindStatusCallback::Authenticate(HWND *phwnd, LPWSTR *pszUsername, LPWSTR *pszPassword)
+{
+    return E_NOTIMPL;
 }

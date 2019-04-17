@@ -11,7 +11,9 @@
 #include <urlmon.h>
 #include <string>
 
-class MBindStatusCallback : public IBindStatusCallback
+class MBindStatusCallback :
+    public IBindStatusCallback,
+    public IAuthenticate
 {
 public:
     static MBindStatusCallback *Create();
@@ -46,6 +48,9 @@ public:
         FORMATETC *pformatetc,
         STGMEDIUM *pstgmed);
     STDMETHODIMP OnObjectAvailable(REFIID riid, IUnknown *punk);
+
+    // IAuthenticate interface
+    STDMETHODIMP Authenticate(HWND *phwnd, LPWSTR *pszUsername, LPWSTR *pszPassword);
 
 protected:
     LONG m_nRefCount;
