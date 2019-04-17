@@ -36,6 +36,8 @@
 #define BTN_WIDTH 120
 #define BTN_HEIGHT 60
 
+#define DROPDOWN_HEIGHT 500
+
 // timer IDs
 #define SOURCE_DONE_TIMER      999
 #define REFRESH_TIMER   888
@@ -892,7 +894,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
             DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
                           CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
             hCtrl = CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL,
-                                   style, 0, 0, 0, 0,
+                                   style, 0, 0, 0, DROPDOWN_HEIGHT,
                                    hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
         }
         else if (id == ID_STOP_REFRESH)
@@ -1167,7 +1169,7 @@ BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
     {
         DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | CBS_AUTOHSCROLL |
                       CBS_DROPDOWN | CBS_HASSTRINGS | CBS_NOINTEGRALHEIGHT;
-        CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL, style, 0, 0, 0, 0,
+        CreateWindowEx(WS_EX_CLIENTEDGE, L"COMBOBOX", NULL, style, 0, 0, 0, DROPDOWN_HEIGHT,
                        hwnd, (HMENU)ID_ADDRESS_BAR, s_hInst, NULL);
     }
 
@@ -2273,8 +2275,9 @@ void OnAddToComboBox(HWND hwnd)
     str.resize(cch);
 
     ComboBox_GetText(s_hAddrBarComboBox, &str[0], cch + 1);
+    printf("OnAddToComboBox: %ls\n", str.c_str());
 
-    std::wstring url = s_strURL;
+    std::wstring url = str.c_str();
     INT iItem = ComboBox_FindStringExact(s_hAddrBarComboBox, -1, (LPARAM)url.c_str());
     if (iItem != CB_ERR)
     {

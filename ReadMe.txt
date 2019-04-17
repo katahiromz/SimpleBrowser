@@ -50,3 +50,4 @@ License: MIT
     - Fix downloading with query.
     - Zone.Identifier support.
     - Fix and improve downloading.
+    - Enable dropdown of ComboBox.
