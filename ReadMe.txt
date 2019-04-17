@@ -39,9 +39,10 @@ License: MIT
 
 - 2019.04.01 ver. 0.9
     - First release
-- 2019.XX.YY ver. 0.9.1
+- 2019.04.17 ver. 0.9.1
     - Change main icon.
     - Fix and improve "Save As".
     - Control popup menus.
     - Add download manager.
     - Virus scan.
+    - Many bug fixes and improvements.
