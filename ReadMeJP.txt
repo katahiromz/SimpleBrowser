@@ -48,3 +48,4 @@ SimpleBrowserは、Windows用の超速いウェブブラウザです。
     - 多数のバグ修正と改良。
 - 2019.XX.YY ver. 0.9.2
     - クエリ付きのダウンロードを修正。
+    - Zone.Identifier サポート。

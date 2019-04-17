@@ -48,3 +48,4 @@ License: MIT
     - Many bug fixes and improvements.
 - 2019.XX.YY ver. 0.9.2
     - Fix downloading with query.
+    - Zone.Identifier support.

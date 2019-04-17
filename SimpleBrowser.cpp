@@ -1670,6 +1670,11 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
             SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
 
+            ADS_ENTRY entry;
+            entry.name = L":Zone.Identifier";
+            std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
+            ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
+
             AmsiResult result;
             LPCWSTR file = pDownloading->strFilename.c_str();
             if (DoThreatScan(hwnd, file, result))
