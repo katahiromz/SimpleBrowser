@@ -1646,7 +1646,7 @@ unsigned __stdcall downloading_proc(void *arg)
 
     while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
     {
-        Sleep(500);
+        Sleep(200);
     }
 
     s_downloadings[hwnd] = FALSE;
@@ -1768,11 +1768,28 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
         DWORD amount = dwTick2 - dwTick1;
         if ((LONG)amount >= 0)
         {
+            static float s_old_secs[10] = { 0 };
             float progress = pCallback->m_ulProgress;
             float progressMax = pCallback->m_ulProgressMax;
             float total = float(amount) * progressMax / (progress ? progress : 1);
             float remainder = total - amount;
             float secs = remainder / 1000 + 1;
+
+            for (size_t i = 1; i < ARRAYSIZE(s_old_secs); ++i)
+            {
+                s_old_secs[i - 1] = s_old_secs[i];
+            }
+            s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs;
+
+            if (s_old_secs[0] != 0)
+            {
+                float sum = 0;
+                for (size_t i = 0; i < ARRAYSIZE(s_old_secs); ++i)
+                {
+                    sum += s_old_secs[i];
+                }
+                secs = sum / ARRAYSIZE(s_old_secs);
+            }
 
             WCHAR szText[128];
             StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS),
@@ -3049,12 +3066,14 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 void OnClose(HWND hwnd)
 {
     BOOL bFound = FALSE;
+    HWND hDlg = NULL;
     for (auto& pair : s_downloadings)
     {
         if (GetWindow(pair.first, GW_OWNER) == hwnd)
         {
             if (pair.second)
             {
+                hDlg = pair.first;
                 bFound = TRUE;
                 break;
             }
@@ -3072,6 +3091,8 @@ void OnClose(HWND hwnd)
             return;
         }
     }
+    PostMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
+    Sleep(300);
     DestroyWindow(hwnd);
 }
 
