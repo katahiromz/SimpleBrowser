@@ -17,7 +17,6 @@ class MBindStatusCallback :
 {
 public:
     static MBindStatusCallback *Create();
-    DWORD m_dwTick;
     ULONG m_ulProgress;
     ULONG m_ulProgressMax;
     ULONG m_ulStatusCode;

@@ -1356,25 +1356,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     else
         s_pWebBrowser->AllowInsecure(TRUE);
 
-    int argc = 0;
-    if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
-    {
-        if (argc >= 2)
-        {
-            if (lstrcmpiW(wargv[1], L"-kiosk") == 0 ||
-                lstrcmpiW(wargv[1], L"--kiosk") == 0 ||
-                lstrcmpiW(wargv[1], L"/kiosk") == 0)
-            {
-                g_settings.m_kiosk_mode = TRUE;
-            }
-            else
-            {
-                DoNavigate(hwnd, wargv[1]);
-            }
-        }
-        LocalFree(wargv);
-    }
-
     if (!g_settings.m_kiosk_mode)
     {
         if (g_settings.m_x != CW_USEDEFAULT)
@@ -1399,16 +1380,12 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
         DoMakeItKiosk(hwnd, TRUE);
     }
 
-    if (argc <= 1 || g_settings.m_kiosk_mode)
-    {
-        DoNavigate(hwnd, g_settings.m_homepage.c_str());
-    }
-
     WNDPROC fn = SubclassWindow(s_hAddrBarEdit, AddressBarEditWndProc);
     SetWindowLongPtr(s_hAddrBarEdit, GWLP_USERDATA, (LONG_PTR)fn);
 
     PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
+    PostMessage(hwnd, WM_COMMAND, ID_PARSE_CMDLINE, 0);
 
     return TRUE;
 }
@@ -1747,12 +1724,13 @@ BOOL DoThreatScan(HWND hwnd, LPCWSTR file, AmsiResult& result)
 
 struct DOWNLOADING
 {
+    HWND hDlg;
     std::wstring strURL;
     std::wstring strFilename;
     MBindStatusCallback *pCallback;
-    HWND hDlg;
-    HANDLE hThread;
-    BOOL bDone;
+    double progressOld;
+    double speeds[32];
+    DWORD dwTick;
 };
 
 unsigned __stdcall downloading_proc(void *arg)
@@ -1760,6 +1738,7 @@ unsigned __stdcall downloading_proc(void *arg)
     DOWNLOADING *pDownloading = (DOWNLOADING *)arg;
     MBindStatusCallback *pCallback = pDownloading->pCallback;
     HWND hwnd = pDownloading->hDlg;
+    pDownloading->dwTick = GetTickCount();
 
     HRESULT hr = URLDownloadToFile(NULL,
         pDownloading->strURL.c_str(),
@@ -1767,7 +1746,6 @@ unsigned __stdcall downloading_proc(void *arg)
     if (FAILED(hr))
     {
         pCallback->SetCancelled();
-        pDownloading->bDone = TRUE;
         return 1;
     }
 
@@ -1777,7 +1755,6 @@ unsigned __stdcall downloading_proc(void *arg)
     }
 
     s_downloadings[hwnd] = FALSE;
-    pDownloading->bDone = TRUE;
 
     KillTimer(hwnd, 999);
 
@@ -1824,6 +1801,16 @@ unsigned __stdcall downloading_proc(void *arg)
         }
     }
 
+    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)0);
+
+    if (!pCallback->IsCompleted() || pCallback->IsCancelled())
+    {
+        DeleteFileW(pDownloading->strFilename.c_str());
+    }
+
+    pCallback->Release();
+    delete pDownloading;
+
     return 0;
 }
 
@@ -1843,17 +1830,16 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     printf("strFilename: %ls\n", pDownloading->strFilename.c_str());
     fflush(stdout);
 
-    pCallback->m_dwTick = GetTickCount();
-    pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
-    if (!pDownloading->hThread)
+    HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
+    if (!hThread)
     {
         pCallback->SetCancelled();
-        pDownloading->bDone = TRUE;
         printf("FAILED\n");
         MessageBoxW(hwnd, L"FAILED", NULL, MB_ICONERROR);
         pCallback->SetCancelled();
         return TRUE;
     }
+    CloseHandle(hThread);
 
     printf("Downloading_OnInitDialog: end\n");
     SetTimer(hwnd, 999, DOWNLOAD_TIMER_INTERVAL, NULL);
@@ -1863,7 +1849,7 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    MBindStatusCallback *pCallback = pDownloading->pCallback;
+    MBindStatusCallback *pCallback = (pDownloading ? pDownloading->pCallback: NULL);
     switch (id)
     {
     case IDOK:
@@ -1873,9 +1859,12 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     case IDCANCEL:
         printf("IDCANCEL\n");
         KillTimer(hwnd, 999);
-        if (!pCallback->IsCompleted())
+        if (pDownloading)
         {
-            pCallback->SetCancelled();
+            if (pCallback && !pCallback->IsCompleted())
+            {
+                pCallback->SetCancelled();
+            }
         }
         DestroyWindow(hwnd);
         break;
@@ -1891,42 +1880,63 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
 
-        DWORD dwTick1 = pCallback->m_dwTick;
+        DWORD dwTick1 = pDownloading->dwTick;
         DWORD dwTick2 = GetTickCount();
-        DWORD amount = dwTick2 - dwTick1;
-        float progress = pCallback->m_ulProgress;
-        float progressMax = pCallback->m_ulProgressMax;
-        // progress : progressMax == amount : totalAmount.
-        float totalAmount = amount * progressMax / (progress ? progress : 1);
-        float remainder = totalAmount - amount;
-        float secs = remainder / 1000 + 1;
+        double timeSpan = (dwTick2 - dwTick1) / 1000.0;
+        double progress = pCallback->m_ulProgress;
+        double progressMax = pCallback->m_ulProgressMax;
+        double speed = (progress - pDownloading->progressOld) / timeSpan;
 
-        static float s_old_secs[16] = { 0 };
-        for (size_t i = 1; i < ARRAYSIZE(s_old_secs) - 1; ++i)
+        for (size_t i = 1; i < ARRAYSIZE(pDownloading->speeds); ++i)
         {
-            s_old_secs[i - 1] = s_old_secs[i];
+            pDownloading->speeds[i - 1] = pDownloading->speeds[i];
         }
-        s_old_secs[ARRAYSIZE(s_old_secs) - 2] = secs;
+        pDownloading->speeds[ARRAYSIZE(pDownloading->speeds) - 1] = speed;
 
-        static float s_old_progress = 0;
-        float speed = (progress - s_old_progress) / DOWNLOAD_TIMER_INTERVAL;
-        float secs2 = progressMax / (speed ? speed : 1) / 1000 + 1;
-        s_old_secs[ARRAYSIZE(s_old_secs) - 1] = secs2;
+        pDownloading->progressOld = progress;
+        pDownloading->dwTick = GetTickCount();
 
-        if (s_old_secs[0] != 0)
+        if (pDownloading->speeds[0] != 0)
         {
-            float sum = 0;
-            for (size_t i = 0; i < ARRAYSIZE(s_old_secs); ++i)
+            double sum = 0;
+            for (size_t i = 0; i < ARRAYSIZE(pDownloading->speeds); ++i)
             {
-                sum += s_old_secs[i];
+                sum += pDownloading->speeds[i];
             }
-            secs = sum / ARRAYSIZE(s_old_secs);
-        }
+            speed = sum / ARRAYSIZE(pDownloading->speeds);
 
-        WCHAR szText[128];
-        StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS),
-            (ULONG)progress, (ULONG)progressMax, (ULONG)secs);
-        SetDlgItemTextW(hwnd, stc4, szText);
+            DWORD dwSECS = DWORD((progressMax - progress) / speed) + 10;
+            DWORD dwMIN = (dwSECS / 60) % 60;
+            DWORD dwHRS = dwSECS / (60 * 60);
+            dwSECS %= 60;
+
+            WCHAR szText[128];
+            if (dwHRS > 0)
+            {
+                StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS_3),
+                    (ULONG)progress, (ULONG)progressMax, dwHRS, dwMIN);
+            }
+            else if (dwMIN > 3)
+            {
+                StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS_2),
+                    (ULONG)progress, (ULONG)progressMax, dwMIN);
+            }
+            else if (dwMIN > 0)
+            {
+                StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS_1),
+                    (ULONG)progress, (ULONG)progressMax, dwMIN, dwSECS);
+            }
+            else
+            {
+                StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS_0),
+                    (ULONG)progress, (ULONG)progressMax, dwSECS);
+            }
+            SetDlgItemTextW(hwnd, stc4, szText);
+        }
+        else
+        {
+            SetDlgItemTextW(hwnd, stc4, NULL);
+        }
     }
 }
 
@@ -1934,34 +1944,21 @@ void Downloading_OnDestroy(HWND hwnd)
 {
     printf("Downloading_OnDestroy\n");
     KillTimer(hwnd, 999);
+
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    MBindStatusCallback *pCallback = pDownloading->pCallback;
-
-    if (!pCallback->IsCompleted())
+    if (pDownloading)
     {
-        if (!pCallback->IsCancelled())
-            pCallback->SetCancelled();
+        MBindStatusCallback *pCallback = pDownloading->pCallback;
+
+        if (!pCallback->IsCompleted())
+        {
+            if (!pCallback->IsCancelled())
+                pCallback->SetCancelled();
+        }
     }
-
-    CloseHandle(pDownloading->hThread);
-    pDownloading->hThread = NULL;
-
-    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)0);
-
-    while (!pDownloading->bDone)
-    {
-        Sleep(200);
-    }
-
-    if (!pCallback->IsCompleted() || pCallback->IsCancelled())
-    {
-        DeleteFileW(pDownloading->strFilename.c_str());
-    }
-
-    pCallback->Release();
-    delete pDownloading;
 
     s_downloadings.erase(hwnd);
+
     printf("Downloading_OnDestroy: end\n");
 }
 
@@ -2130,7 +2127,11 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
         pDownloading->strFilename = file;
         pDownloading->pCallback = MBindStatusCallback::Create();
         assert(pDownloading->pCallback);
-        pDownloading->bDone = FALSE;
+
+        for (size_t i = 0; i < ARRAYSIZE(pDownloading->speeds); ++i)
+        {
+            pDownloading->speeds[i] = 0;
+        }
 
         HWND hDlg = CreateDialogParam(s_hInst, MAKEINTRESOURCE(IDD_DOWNLOADING),
                                       hwnd, DownloadingDlgProc, (LPARAM)pDownloading);
@@ -2815,6 +2816,40 @@ void OnCustomLink(HWND hwnd, UINT nIndex)
     }
 }
 
+void OnParseCmdLien(HWND hwnd)
+{
+    int argc = 0;
+    if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
+    {
+        std::wstring url;
+
+        for (int i = 1; i < argc; ++i)
+        {
+            if (lstrcmpiW(wargv[i], L"-kiosk") == 0 ||
+                lstrcmpiW(wargv[i], L"--kiosk") == 0 ||
+                lstrcmpiW(wargv[i], L"/kiosk") == 0)
+            {
+                OnKioskOn(hwnd);
+            }
+            else
+            {
+                url = wargv[i];
+            }
+        }
+
+        if (url.size())
+        {
+            DoNavigate(hwnd, url.c_str());
+        }
+        else
+        {
+            DoNavigate(hwnd, g_settings.m_homepage.c_str());
+        }
+
+        LocalFree(wargv);
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -2964,6 +2999,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
         case ID_CUSTOM_LINK_15:
         case ID_CUSTOM_LINK_16:
             OnCustomLink(hwnd, id - ID_CUSTOM_LINK_01);
+            break;
+        case ID_PARSE_CMDLINE:
+            OnParseCmdLien(hwnd);
             break;
         }
     }
@@ -3211,7 +3249,7 @@ void OnClose(HWND hwnd)
             pair.second = FALSE;
         }
     }
-    Sleep(300);
+    Sleep(250);
     DestroyWindow(hwnd);
 }
 

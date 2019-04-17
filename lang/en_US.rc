@@ -180,10 +180,13 @@ STRINGTABLE
     IDS_CANT_SCAN_VIRUS, "Unable to scan virus."
     IDS_VIRUS_FOUND_DELETED, "Virus is found. Deleted."
     IDS_FAILED_TO_DL, "Failed to download."
-    IDS_DOWNLOAD_PROGRESS, "%lu of %lu bytes (%lu seconds remaining)"
     IDS_WAIT_SCAN_PLEASE, "Please wait for virus scan..."
     IDS_DL_QUIT_QUESTION, "Now downloading. Do you want to close and exit?"
     IDS_QUERY_URL, "https://www.google.com/search?hl=en&gl=en&q="
+    IDS_DOWNLOAD_PROGRESS_0, "%lu / %lu bytes (estimated remaining %lu secs)"
+    IDS_DOWNLOAD_PROGRESS_1, "%lu / %lu bytes (estimated remaining %lu min %lu secs)"
+    IDS_DOWNLOAD_PROGRESS_2, "%lu / %lu bytes (estimated remaining %lu min)"
+    IDS_DOWNLOAD_PROGRESS_3, "%lu / %lu bytes (estimated remaining %lu hrs %lu min)"
 }
 
 //////////////////////////////////////////////////////////////////////////////

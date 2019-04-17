@@ -59,10 +59,13 @@
 #define IDS_CANT_SCAN_VIRUS                 139
 #define IDS_VIRUS_FOUND_DELETED             140
 #define IDS_FAILED_TO_DL                    141
-#define IDS_DOWNLOAD_PROGRESS               142
-#define IDS_WAIT_SCAN_PLEASE                143
-#define IDS_DL_QUIT_QUESTION                144
-#define IDS_QUERY_URL                       145
+#define IDS_WAIT_SCAN_PLEASE                142
+#define IDS_DL_QUIT_QUESTION                143
+#define IDS_QUERY_URL                       144
+#define IDS_DOWNLOAD_PROGRESS_0             145
+#define IDS_DOWNLOAD_PROGRESS_1             146
+#define IDS_DOWNLOAD_PROGRESS_2             147
+#define IDS_DOWNLOAD_PROGRESS_3             148
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002
@@ -118,12 +121,13 @@
 #define ID_CUSTOM_LINK_14                   20052
 #define ID_CUSTOM_LINK_15                   20053
 #define ID_CUSTOM_LINK_16                   20054
+#define ID_PARSE_CMDLINE                    20055
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     20055
+        #define _APS_NEXT_COMMAND_VALUE     20056
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

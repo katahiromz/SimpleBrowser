@@ -96,7 +96,7 @@ STDMETHODIMP MBindStatusCallback::OnProgress(
     ULONG ulStatusCode,
     LPCWSTR szStatusText)
 {
-    printf("%lu / %lu\n", ulProgress, ulProgressMax);
+    //printf("%lu / %lu\n", ulProgress, ulProgressMax);
     m_ulProgress = ulProgress;
     m_ulProgressMax = ulProgressMax;
     m_ulStatusCode = ulStatusCode;
