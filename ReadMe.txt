@@ -37,16 +37,16 @@ License: MIT
 
 ## History
 
-- 2019.04.01 ver. 0.9
+- 2019.04.01 ver.0.9
     - First release
-- 2019.04.17 ver. 0.9.1
+- 2019.04.17 ver.0.9.1
     - Change main icon.
     - Fix and improve "Save As".
     - Control popup menus.
     - Add download manager.
     - Virus scan.
     - Many bug fixes and improvements.
-- 2019.XX.YY ver. 0.9.2
+- 2019.04.18 ver.0.9.2
     - Fix downloading with query.
     - Zone.Identifier support.
     - Fix and improve downloading.
