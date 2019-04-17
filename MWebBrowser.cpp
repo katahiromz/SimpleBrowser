@@ -814,6 +814,7 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
 {
     if (m_bAllowInsecure)
         return S_OK;
+    printf("MWebBrowser::OnSecurityProblem\n");
     return E_ABORT;
 }
 

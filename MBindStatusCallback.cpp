@@ -71,7 +71,7 @@ STDMETHODIMP_(ULONG) MBindStatusCallback::Release()
 // IBindStatusCallback interface
 STDMETHODIMP MBindStatusCallback::OnStartBinding(DWORD dwReserved, IBinding *pib)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::GetPriority(LONG *pnPriority)
@@ -95,13 +95,17 @@ STDMETHODIMP MBindStatusCallback::OnProgress(
     m_ulStatusCode = ulStatusCode;
     if (szStatusText)
         m_strStatus = szStatusText;
-    if (ulProgress == ulProgressMax)
+    if (ulStatusCode == BINDSTATUS_ENDDOWNLOADDATA ||
+        ulStatusCode == BINDSTATUS_ENDDOWNLOADCOMPONENTS)
     {
         m_bCompleted = TRUE;
         return S_OK;
     }
     if (m_bCancelled)
+    {
+        printf("Cancelled\n");
         return E_ABORT;
+    }
     return S_OK;
 }
 
@@ -112,14 +116,14 @@ void MBindStatusCallback::SetCancelled()
 
 STDMETHODIMP MBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError)
 {
-    if (!m_bCompleted)
-        m_bCancelled = TRUE;
     return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::GetBindInfo(DWORD *grfBINDF, BINDINFO *pbindinfo)
 {
-    return E_NOTIMPL;
+    *grfBINDF = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE |
+                BINDF_GETNEWESTVERSION | BINDF_NOWRITECACHE;
+    return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::OnDataAvailable(
@@ -128,10 +132,10 @@ STDMETHODIMP MBindStatusCallback::OnDataAvailable(
     FORMATETC *pformatetc,
     STGMEDIUM *pstgmed)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::OnObjectAvailable(REFIID riid, IUnknown *punk)
 {
-    return E_NOTIMPL;
+    return S_OK;
 }

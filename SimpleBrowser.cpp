@@ -16,7 +16,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cassert>
-#include <process.h>
 #include <strsafe.h>
 #include <comdef.h>
 #include <mshtmcid.h>
@@ -218,7 +217,8 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
     if (protocol == L"http" ||
         protocol == L"https" ||
         protocol == L"view-source" ||
-        protocol == L"about")
+        protocol == L"about" ||
+        protocol == L"res")
     {
         return TRUE;
     }
@@ -288,6 +288,7 @@ inline LPTSTR MakeFilterDx(LPTSTR psz)
 
 void DoNavigate(HWND hwnd, const WCHAR *url);
 void OnNew(HWND hwnd, LPCWSTR url);
+BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL);
 
 struct MEventHandler : MEventSinkListener
 {
@@ -302,12 +303,14 @@ struct MEventHandler : MEventSinkListener
     {
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+        printf("%p: %ls\n", pApp, url->bstrVal);
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
             {
                 if (UrlInBlackList(url->bstrVal))
                 {
+                    printf("in black list: %ls\n", url->bstrVal);
                     s_strURL = url->bstrVal;
                     SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
                     *Cancel = VARIANT_TRUE;
@@ -316,6 +319,7 @@ struct MEventHandler : MEventSinkListener
                 }
                 if (!IsAccessible(url->bstrVal))
                 {
+                    printf("inaccessible: %ls\n", url->bstrVal);
                     s_strURL = url->bstrVal;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                     *Cancel = VARIANT_TRUE;
@@ -358,7 +362,19 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        *Cancel = VARIANT_TRUE;
+        printf("OnNewWindow3: '%ls', '%ls', 0x%08lX\n", bstrUrl, bstrUrlContext, dwFlags);
+        //*Cancel = VARIANT_TRUE;
+
+        IDispatch *pApp = NULL;
+        HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+        *ppDisp = pApp;
+
+        if (dwFlags & 2)
+        {
+            DoSaveURL(s_hMainWnd, bstrUrl);
+            return;
+        }
+
         std::wstring url = bstrUrl;
         if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
@@ -414,7 +430,6 @@ struct MEventHandler : MEventSinkListener
         IDispatch *pDisp,
         BSTR bstrURL)
     {
-        
     }
 };
 MEventHandler s_listener;
@@ -633,8 +648,12 @@ AddressBarEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void InitAddrBarComboBox(void)
 {
-    TCHAR szText[256];
-    GetWindowText(s_hAddrBarComboBox, szText, ARRAYSIZE(szText));
+    INT cch = GetWindowTextLengthW(s_hAddrBarComboBox);
+
+    std::wstring str;
+    str.resize(cch);
+
+    GetWindowText(s_hAddrBarComboBox, &str[0], cch + 1);
 
     ComboBox_ResetContent(s_hAddrBarComboBox);
     for (auto& url : g_settings.m_url_list)
@@ -642,7 +661,7 @@ void InitAddrBarComboBox(void)
         ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
     }
 
-    SetWindowText(s_hAddrBarComboBox, szText);
+    SetWindowText(s_hAddrBarComboBox, str.c_str());
 }
 
 void OnRefresh(HWND hwnd);
@@ -1537,15 +1556,20 @@ void OnGoToAddressBar(HWND hwnd)
 
 void OnGo(HWND hwnd)
 {
-    WCHAR szURL[256];
-    GetWindowTextW(s_hAddrBarEdit, szURL, 256);
+    INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
 
-    StrTrimW(szURL, L" \t\n\r\f\v");
+    std::wstring str;
+    str.resize(cch);
 
-    if (szURL[0] == 0)
-        StringCbCopyW(szURL, sizeof(szURL), L"about:blank");
+    GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
 
-    DoNavigate(hwnd, szURL);
+    StrTrimW(&str[0], L" \t\n\r\f\v");
+    str.resize(wcslen(str.c_str()));
+
+    if (str.empty())
+        DoNavigate(hwnd, L"about:blank");
+    else
+        DoNavigate(hwnd, str.c_str());
 }
 
 void OnHome(HWND hwnd)
@@ -1600,79 +1624,29 @@ struct DOWNLOADING
     std::wstring strURL;
     std::wstring strFilename;
     MBindStatusCallback *pCallback;
-    HANDLE hThread;
     HWND hDlg;
 };
-
-static unsigned __stdcall downloading_proc(void *arg)
-{
-    DOWNLOADING *pDownloading = (DOWNLOADING *)arg;
-    MBindStatusCallback *pCallback = pDownloading->pCallback;
-
-    HRESULT hr = URLDownloadToFile(NULL,
-        pDownloading->strURL.c_str(),
-        pDownloading->strFilename.c_str(),
-        0,
-        pDownloading->pCallback);
-    if (FAILED(hr))
-    {
-        return 1;
-    }
-
-    while (!pCallback->IsCompleted() && !pCallback->IsCancelled())
-    {
-        Sleep(200);
-    }
-
-    KillTimer(pDownloading->hDlg, 999);
-    SetDlgItemTextW(pDownloading->hDlg, IDCANCEL, LoadStringDx(IDS_CLOSE));
-    SetDlgItemTextW(pDownloading->hDlg, stc3, LoadStringDx(IDS_DL_COMPLETE));
-    SetWindowTextW(pDownloading->hDlg, LoadStringDx(IDS_DL_COMPLETE));
-    SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETRANGE32, 0, 100);
-    SendDlgItemMessage(pDownloading->hDlg, ctl1, PBM_SETPOS, 100, 0);
-
-    AmsiResult result;
-
-    LPCWSTR file = pDownloading->strFilename.c_str();
-    if (DoThreatScan(pDownloading->hDlg, file, result))
-    {
-        if (result.is_malware)
-        {
-            if (DeleteFileW(file))
-            {
-                SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
-            }
-            else
-            {
-                SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_VIRUS_FOUND));
-            }
-        }
-        else
-        {
-            SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_NO_VIRUS));
-        }
-    }
-    else
-    {
-        SetDlgItemTextW(pDownloading->hDlg, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
-    }
-
-    return 0;
-}
 
 BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
     DOWNLOADING *pDownloading = (DOWNLOADING *)lParam;
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
     SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pDownloading);
 
     SetDlgItemTextW(hwnd, stc1, pDownloading->strURL.c_str());
     SetDlgItemTextW(hwnd, stc2, pDownloading->strFilename.c_str());
 
-    pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
-    if (pDownloading->hThread == NULL)
+    printf("strURL: %ls\n", pDownloading->strURL.c_str());
+    printf("strFilename: %ls\n", pDownloading->strFilename.c_str());
+    HRESULT hr = URLDownloadToFile(NULL,
+                                   pDownloading->strURL.c_str(),
+                                   pDownloading->strFilename.c_str(),
+                                   0,
+                                   pDownloading->pCallback);
+    if (FAILED(hr))
     {
         DestroyWindow(hwnd);
-        return FALSE;
+        return TRUE;
     }
 
     SetTimer(hwnd, 999, 200, NULL);
@@ -1681,10 +1655,53 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 
 void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
+    DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
     switch (id)
     {
     case IDOK:
+        KillTimer(hwnd, 999);
+
+        if (pCallback->IsCompleted())
+        {
+            SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
+            SetDlgItemTextW(hwnd, stc3, LoadStringDx(IDS_DL_COMPLETE));
+            SetWindowTextW(hwnd, LoadStringDx(IDS_DL_COMPLETE));
+            SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
+            SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
+
+            AmsiResult result;
+            LPCWSTR file = pDownloading->strFilename.c_str();
+            if (DoThreatScan(hwnd, file, result))
+            {
+                if (result.is_malware)
+                {
+                    if (DeleteFileW(file))
+                    {
+                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
+                    }
+                    else
+                    {
+                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND));
+                    }
+                }
+                else
+                {
+                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_NO_VIRUS));
+                }
+            }
+            else
+            {
+                SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
+            }
+        }
+        break;
     case IDCANCEL:
+        KillTimer(hwnd, 999);
+        if (!pCallback->IsCompleted())
+        {
+            pCallback->SetCancelled();
+        }
         DestroyWindow(hwnd);
         break;
     }
@@ -1699,6 +1716,11 @@ void Downloading_OnTimer(HWND hwnd, UINT id)
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
         SetDlgItemTextW(hwnd, stc3, pCallback->m_strStatus.c_str());
+
+        if (pCallback->IsCompleted())
+            PostMessage(hwnd, WM_COMMAND, IDOK, 0);
+        else if (pCallback->IsCancelled())
+            PostMessage(hwnd, WM_COMMAND, IDCANCEL, 0);
     }
 }
 
@@ -1708,11 +1730,7 @@ void Downloading_OnDestroy(HWND hwnd)
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
     MBindStatusCallback *pCallback = pDownloading->pCallback;
-    pCallback->SetCancelled();
-    Sleep(300);
     pCallback->Release();
-
-    CloseHandle(pDownloading->hThread);
 
     delete pDownloading;
     s_downloadings.erase(hwnd);
@@ -1785,17 +1803,20 @@ void TranslateFileName(LPWSTR file, size_t cchMax)
     }
 }
 
-BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
+BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
 {
-    LPWSTR pch = wcsrchr(pszURL, L'?');
+    printf("DoSaveURL: %ls\n", pszURL);
+    LPWSTR url = wcsdup(pszURL);
+
+    LPWSTR pch = wcsrchr(url, L'?');
     if (pch)
         *pch = 0;
 
-    pch = wcsrchr(pszURL, L'/');
+    pch = wcsrchr(url, L'/');
     if (pch)
         ++pch;
     else
-        pch = pszURL;
+        pch = url;
 
     LPWSTR pchFileName = pch;
 
@@ -1921,6 +1942,8 @@ BOOL DoSaveURL(HWND hwnd, LPWSTR pszURL)
         UpdateWindow(hDlg);
         s_downloadings.insert(hDlg);
     }
+
+    std::free(url);
 }
 
 void OnSave(HWND hwnd)
@@ -2003,11 +2026,15 @@ void OnDots(HWND hwnd)
 
 void OnViewSource(HWND hwnd)
 {
-    WCHAR szURL[256];
-    GetWindowTextW(s_hAddrBarEdit, szURL, ARRAYSIZE(szURL));
-    StrTrimW(szURL, L" \t\n\r\f\v");
+    INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
 
-    std::wstring url = szURL;
+    std::wstring str;
+    str.resize(cch);
+
+    GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
+    StrTrimW(&str[0], L" \t\n\r\f\v");
+
+    std::wstring url = str.c_str();
     if (url.find(L"view-source:") == 0)
     {
         url.erase(0, wcslen(L"view-source:"));
@@ -2158,8 +2185,12 @@ void OnSettings(HWND hwnd)
 
 void OnAddToComboBox(HWND hwnd)
 {
-    WCHAR szText[256];
-    ComboBox_GetText(s_hAddrBarComboBox, szText, ARRAYSIZE(szText));
+    INT cch = ComboBox_GetTextLength(s_hAddrBarComboBox);
+
+    std::wstring str;
+    str.resize(cch);
+
+    ComboBox_GetText(s_hAddrBarComboBox, &str[0], cch + 1);
 
     std::wstring url = s_strURL;
     INT iItem = ComboBox_FindStringExact(s_hAddrBarComboBox, -1, (LPARAM)url.c_str());
@@ -2180,7 +2211,7 @@ void OnAddToComboBox(HWND hwnd)
     ComboBox_InsertString(s_hAddrBarComboBox, 0, url.c_str());
     g_settings.m_url_list.insert(g_settings.m_url_list.begin(), url);
 
-    ComboBox_SetText(s_hAddrBarComboBox, szText);
+    ComboBox_SetText(s_hAddrBarComboBox, str.c_str());
 }
 
 void OnDocumentComplete(HWND hwnd)
@@ -2197,9 +2228,13 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
             INT iItem = (INT)ComboBox_GetCurSel(s_hAddrBarComboBox);
             if (iItem != CB_ERR)
             {
-                WCHAR szText[256];
-                ComboBox_GetLBText(s_hAddrBarComboBox, iItem, szText);
-                DoNavigate(hwnd, szText);
+                INT cch = ComboBox_GetLBTextLen(s_hAddrBarComboBox, iItem);
+
+                std::wstring str;
+                str.resize(cch);
+
+                ComboBox_GetLBText(s_hAddrBarComboBox, iItem, &str[0]);
+                DoNavigate(hwnd, str.c_str());
             }
         }
         break;
@@ -3065,11 +3100,15 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                 pMsg->hwnd == s_pWebBrowser->GetIEServerWindow() ||
                 pMsg->hwnd == s_hMainWnd)
             {
-                WCHAR szURL[256];
-                GetWindowTextW(s_hAddrBarEdit, szURL, ARRAYSIZE(szURL));
-                StrTrimW(szURL, L" \t\n\r\f\v");
+                INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
 
-                std::wstring url = szURL;
+                std::wstring str;
+                str.resize(cch);
+
+                GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
+                StrTrimW(&str[0], L" \t\n\r\f\v");
+
+                std::wstring url = str.c_str();
                 if (url.find(L"view-source:") == 0)
                 {
                     url.erase(0, wcslen(L"view-source:"));
@@ -3084,6 +3123,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     return FALSE;
 }
 
+// IDownloadManager::Download
 STDMETHODIMP MWebBrowserEx::Download(
     IMoniker *pmk,
     IBindCtx *pbc,
@@ -3096,12 +3136,14 @@ STDMETHODIMP MWebBrowserEx::Download(
 {
     LPOLESTR pszURL = NULL;
     pmk->GetDisplayName(pbc, NULL, &pszURL);
+    printf("IDownloadManager::Download: %ls\n", pszURL);
     if (pszURL)
     {
         DoSaveURL(s_hMainWnd, pszURL);
         CoTaskMemFree(pszURL);
+        return S_OK;
     }
-    return S_OK;
+    return E_FAIL;
 }
 
 STDMETHODIMP MWebBrowserEx::ShowContextMenu(
