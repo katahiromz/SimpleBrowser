@@ -1802,6 +1802,7 @@ unsigned __stdcall downloading_proc(void *arg)
     }
 
     SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)0);
+    Sleep(100);
 
     if (!pCallback->IsCompleted() || pCallback->IsCancelled())
     {
@@ -1852,10 +1853,6 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
     MBindStatusCallback *pCallback = (pDownloading ? pDownloading->pCallback: NULL);
     switch (id)
     {
-    case IDOK:
-        printf("IDOK\n");
-        KillTimer(hwnd, 999);
-        break;
     case IDCANCEL:
         printf("IDCANCEL\n");
         KillTimer(hwnd, 999);
