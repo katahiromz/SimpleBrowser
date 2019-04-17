@@ -1629,6 +1629,7 @@ struct DOWNLOADING
     MBindStatusCallback *pCallback;
     HWND hDlg;
     HANDLE hThread;
+    BOOL bDone;
 };
 
 unsigned __stdcall downloading_proc(void *arg)
@@ -1642,7 +1643,8 @@ unsigned __stdcall downloading_proc(void *arg)
         pDownloading->strFilename.c_str(), 0, pCallback);
     if (FAILED(hr))
     {
-        MessageBoxW(hwnd, LoadStringDx(IDS_FAILED_TO_DL), NULL, MB_ICONERROR);
+        pCallback->SetCancelled();
+        pDownloading->bDone = TRUE;
         return 1;
     }
 
@@ -1652,8 +1654,11 @@ unsigned __stdcall downloading_proc(void *arg)
     }
 
     s_downloadings[hwnd] = FALSE;
+    pDownloading->bDone = TRUE;
+
     KillTimer(hwnd, 999);
-    if (pCallback->IsCompleted())
+
+    if (pCallback->IsCompleted() && !pCallback->IsCancelled())
     {
         // update dialog info
         SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
@@ -1695,10 +1700,6 @@ unsigned __stdcall downloading_proc(void *arg)
             SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
         }
     }
-    else
-    {
-        PostMessage(hwnd, WM_COMMAND, IDCANCEL, 0);
-    }
 
     return 0;
 }
@@ -1723,10 +1724,11 @@ BOOL Downloading_OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
     pDownloading->hThread = (HANDLE)_beginthreadex(NULL, 0, downloading_proc, pDownloading, 0, NULL);
     if (!pDownloading->hThread)
     {
+        pCallback->SetCancelled();
+        pDownloading->bDone = TRUE;
         printf("FAILED\n");
         MessageBoxW(hwnd, L"FAILED", NULL, MB_ICONERROR);
         pCallback->SetCancelled();
-        DestroyWindow(hwnd);
         return TRUE;
     }
 
@@ -1811,15 +1813,34 @@ void Downloading_OnDestroy(HWND hwnd)
     printf("Downloading_OnDestroy\n");
     KillTimer(hwnd, 999);
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    MBindStatusCallback *pCallback = pDownloading->pCallback;
+
+    if (!pCallback->IsCompleted())
+    {
+        if (!pCallback->IsCancelled())
+            pCallback->SetCancelled();
+    }
 
     CloseHandle(pDownloading->hThread);
     pDownloading->hThread = NULL;
 
-    MBindStatusCallback *pCallback = pDownloading->pCallback;
-    pCallback->Release();
+    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)0);
 
+    while (!pDownloading->bDone)
+    {
+        Sleep(200);
+    }
+
+    if (!pCallback->IsCompleted() || pCallback->IsCancelled())
+    {
+        DeleteFileW(pDownloading->strFilename.c_str());
+    }
+
+    pCallback->Release();
     delete pDownloading;
+
     s_downloadings.erase(hwnd);
+    printf("Downloading_OnDestroy: end\n");
 }
 
 INT_PTR CALLBACK
@@ -2020,6 +2041,7 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
         pDownloading->strFilename = file;
         pDownloading->pCallback = MBindStatusCallback::Create();
         assert(pDownloading->pCallback);
+        pDownloading->bDone = FALSE;
 
         HWND hDlg = CreateDialogParam(s_hInst, MAKEINTRESOURCE(IDD_DOWNLOADING),
                                       hwnd, DownloadingDlgProc, (LPARAM)pDownloading);
@@ -3070,17 +3092,12 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 void OnClose(HWND hwnd)
 {
     BOOL bFound = FALSE;
-    HWND hDlg = NULL;
     for (auto& pair : s_downloadings)
     {
-        if (GetWindow(pair.first, GW_OWNER) == hwnd)
+        if (pair.first && pair.second)
         {
-            if (pair.second)
-            {
-                hDlg = pair.first;
-                bFound = TRUE;
-                break;
-            }
+            bFound = TRUE;
+            break;
         }
     }
     if (bFound)
@@ -3095,7 +3112,16 @@ void OnClose(HWND hwnd)
             return;
         }
     }
-    PostMessage(hDlg, WM_COMMAND, IDCANCEL, 0);
+    auto downloadings = s_downloadings;
+    s_downloadings.clear();
+    for (auto& pair : downloadings)
+    {
+        if (pair.first && pair.second)
+        {
+            PostMessage(pair.first, WM_COMMAND, IDCANCEL, 0);
+            pair.second = FALSE;
+        }
+    }
     Sleep(300);
     DestroyWindow(hwnd);
 }

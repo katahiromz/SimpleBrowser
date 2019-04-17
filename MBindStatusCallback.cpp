@@ -64,10 +64,10 @@ STDMETHODIMP_(ULONG) MBindStatusCallback::AddRef()
 
 STDMETHODIMP_(ULONG) MBindStatusCallback::Release()
 {
+    printf("MBindStatusCallback::Release\n");
     --m_nRefCount;
     if (m_nRefCount == 0)
     {
-        printf("MBindStatusCallback::Release\n");
         delete this;
         return 0;
     }

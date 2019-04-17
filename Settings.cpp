@@ -30,7 +30,7 @@ void SETTINGS::reset()
     m_dont_r_click = FALSE;
     m_local_file_access = TRUE;
     m_dont_popup = FALSE;
-    m_ignore_errors = FALSE;
+    m_ignore_errors = TRUE;
     m_kiosk_mode = FALSE;
     m_emulation = 11001;
     m_refresh_interval = (30 * 1000);  // 30 seconds
