@@ -524,15 +524,15 @@ struct MEventHandler : MEventSinkListener
         LONG StatusCode,
         VARIANT_BOOL *Cancel)
     {
-        if (s_strOriginalURL.size())
+        if (s_strOriginalURL.size() &&
+            !IsURL(s_strOriginalURL.c_str()))
         {
             std::wstring query = LoadStringDx(IDS_QUERY_URL);
             std::wstring encoded = URL_encode(s_strOriginalURL);
             query += encoded;
 
-            //*Cancel = VARIANT_TRUE;
             s_strOriginalURL.clear();
-            DoNavigate(s_hMainWnd, query.c_str());
+            DoNavigate(s_hMainWnd, query.c_str(), navNoHistory);
         }
     }
 };
