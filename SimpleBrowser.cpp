@@ -533,6 +533,7 @@ struct MEventHandler : MEventSinkListener
         LONG StatusCode,
         VARIANT_BOOL *Cancel)
     {
+        printf("StatusCode: %08lX\n", StatusCode);
         if (s_strOriginalURL.size() &&
             !IsURL(s_strOriginalURL.c_str()))
         {
