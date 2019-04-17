@@ -274,14 +274,49 @@ void MWebBrowser::Refresh()
         m_web_browser2->Refresh();
 }
 
-void MWebBrowser::Navigate(const WCHAR *url)
+HRESULT MWebBrowser::Navigate(const WCHAR *url)
 {
+    HRESULT hr = E_FAIL;
     if (m_web_browser2)
     {
         bstr_t bstrURL(url);
-        variant_t flags(0);
-        m_web_browser2->Navigate(bstrURL, &flags, 0, 0, 0);
+        variant_t flags(0x8000);
+        hr = m_web_browser2->Navigate(bstrURL, &flags, 0, 0, 0);
     }
+    return hr;
+}
+
+HRESULT MWebBrowser::Navigate2(const WCHAR *url, DWORD dwFlags)
+{
+    HRESULT hr = E_FAIL;
+    if (!m_web_browser2)
+    {
+        return hr;
+    }
+
+    VARIANT var1, var2, var3, var4, var5;
+
+    VariantInit(&var1);
+    VariantInit(&var2);
+    VariantInit(&var3);
+    VariantInit(&var4);
+    VariantInit(&var5);
+
+    V_VT(&var1) = VT_BSTR;
+    V_BSTR(&var1) = SysAllocString(url);
+
+    V_VT(&var2) = VT_I4;
+    V_I4(&var2) = dwFlags | 0x8000;
+
+    hr = m_web_browser2->Navigate2(&var1, &var2, &var3, &var4, &var5);
+
+    VariantClear(&var1);
+    VariantClear(&var2);
+    VariantClear(&var3);
+    VariantClear(&var4);
+    VariantClear(&var5);
+
+    return hr;
 }
 
 void MWebBrowser::Print(BOOL bBang)
@@ -476,7 +511,7 @@ HRESULT MWebBrowser::Zoom100()
 HRESULT MWebBrowser::ZoomPercents(LONG percents)
 {
     VARIANT zoom;
-    VariantInit (&zoom);
+    VariantInit(&zoom);
     V_VT(&zoom) = VT_I4;
     V_I4(&zoom) = percents;
 

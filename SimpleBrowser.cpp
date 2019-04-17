@@ -60,6 +60,7 @@ static BOOL s_bLoadingPage = FALSE;
 static HBITMAP s_hbmSecure = NULL;
 static HBITMAP s_hbmInsecure = NULL;
 static std::wstring s_strURL;
+static std::wstring s_strOriginalURL;
 static std::wstring s_strTitle;
 static BOOL s_bKiosk = FALSE;
 static const TCHAR s_szButton[] = TEXT("BUTTON");
@@ -289,7 +290,88 @@ inline LPTSTR MakeFilterDx(LPTSTR psz)
     return psz;
 }
 
-void DoNavigate(HWND hwnd, const WCHAR *url);
+std::wstring URL_encode(const std::wstring& url)
+{
+    std::string str;
+
+    size_t len = url.size() * 4;
+    str.resize(len);
+    WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, &str[0], (INT)len, NULL, NULL);
+
+    len = strlen(str.c_str());
+    str.resize(len);
+
+    std::wstring ret;
+    WCHAR buf[4];
+    static const WCHAR s_hex[] = L"0123456789ABCDEF";
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (str[i] == ' ')
+        {
+            ret += L'+';
+        }
+        else if (std::isalnum(str[i]))
+        {
+            ret += (char)str[i];
+        }
+        else
+        {
+            switch (str[i])
+            {
+            case L'.':
+            case L'-':
+            case L'_':
+            case L'*':
+                ret += (char)str[i];
+                break;
+            default:
+                buf[0] = L'%';
+                buf[1] = s_hex[(str[i] >> 4) & 0xF];
+                buf[2] = s_hex[str[i] & 0xF];
+                buf[3] = 0;
+                ret += buf;
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
+std::string URL_decode(const std::string& str)
+{
+    std::string ret;
+    char buf[3];
+    buf[2] = 0;
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (str[i] == '+')
+        {
+            ret += ' ';
+        }
+        else if (str[i] == '%' && i + 2 < str.size())
+        {
+            buf[0] = str[i + 1];
+            buf[1] = str[i + 2];
+            if (std::isxdigit(buf[0]) && std::isxdigit(buf[1]))
+            {
+                i += 2;
+                ret += (char)std::strtoul(buf, NULL, 16);
+            }
+            else
+            {
+                ret += '%';
+            }
+        }
+        else
+        {
+            ret += str[i];
+        }
+    }
+    return ret;
+}
+
+void DoNavigate(HWND hwnd, const WCHAR *url, DWORD dwFlags = 0);
 void OnNew(HWND hwnd, LPCWSTR url);
 BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL);
 
@@ -434,6 +516,25 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrURL)
     {
     }
+
+    virtual void OnNavigateError(
+        IDispatch *pDisp,
+        BSTR URL,
+        BSTR TargetFrameName,
+        LONG StatusCode,
+        VARIANT_BOOL *Cancel)
+    {
+        if (s_strOriginalURL.size())
+        {
+            std::wstring query = LoadStringDx(IDS_QUERY_URL);
+            std::wstring encoded = URL_encode(s_strOriginalURL);
+            query += encoded;
+
+            //*Cancel = VARIANT_TRUE;
+            s_strOriginalURL.clear();
+            DoNavigate(s_hMainWnd, query.c_str());
+        }
+    }
 };
 MEventHandler s_listener;
 
@@ -451,7 +552,7 @@ LPTSTR DoGetTemporaryFile(void)
     return NULL;
 }
 
-void DoNavigate(HWND hwnd, const WCHAR *url)
+void DoNavigate(HWND hwnd, const WCHAR *url, DWORD dwFlags)
 {
     std::wstring strURL;
     WCHAR *pszURL = _wcsdup(url);
@@ -570,7 +671,12 @@ void DoNavigate(HWND hwnd, const WCHAR *url)
     }
     else
     {
-        s_pWebBrowser->Navigate(url);
+        HRESULT hr = s_pWebBrowser->Navigate2(url, dwFlags);
+
+        if (FAILED(hr))
+        {
+            MessageBoxW(NULL, L"OK", NULL, 0);
+        }
     }
 }
 
@@ -1569,6 +1675,8 @@ void OnGo(HWND hwnd)
     StrTrimW(&str[0], L" \t\n\r\f\v");
     str.resize(wcslen(str.c_str()));
 
+    s_strOriginalURL = str.c_str();
+
     if (str.empty())
         DoNavigate(hwnd, L"about:blank");
     else
@@ -1854,39 +1962,6 @@ DownloadingDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         HANDLE_MSG(hwnd, WM_DESTROY, Downloading_OnDestroy);
     }
     return 0;
-}
-
-std::string URL_decode(const std::string& str)
-{
-    std::string ret;
-    char buf[3];
-    buf[2] = 0;
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        if (str[i] == '+')
-        {
-            ret += ' ';
-        }
-        else if (str[i] == '%' && i + 2 < str.size())
-        {
-            buf[0] = str[i + 1];
-            buf[1] = str[i + 2];
-            if (std::isxdigit(buf[0]) && std::isxdigit(buf[1]))
-            {
-                i += 2;
-                ret += (char)std::strtoul(buf, NULL, 16);
-            }
-            else
-            {
-                ret += '%';
-            }
-        }
-        else
-        {
-            ret += str[i];
-        }
-    }
-    return ret;
 }
 
 void TranslateFileName(LPWSTR file, size_t cchMax)
@@ -2944,7 +3019,7 @@ void OnDestroy(HWND hwnd)
 
 void OnResetKiosk(HWND hwnd)
 {
-    SendMessage(hwnd, WM_COMMAND, ID_HOME, 0);
+    DoNavigate(hwnd, g_settings.m_homepage.c_str(), navNoHistory);
     SendMessage(hwnd, WM_COMMAND, ID_ZOOM_100, 0);
 
     s_bEnableForward = s_bEnableBack = FALSE;

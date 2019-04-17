@@ -62,6 +62,7 @@
 #define IDS_DOWNLOAD_PROGRESS               142
 #define IDS_WAIT_SCAN_PLEASE                143
 #define IDS_DL_QUIT_QUESTION                144
+#define IDS_QUERY_URL                       145
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002

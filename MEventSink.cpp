@@ -184,6 +184,14 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[1].pdispVal,
             pDispParams->rgvarg[0].bstrVal);
         break;
+    case DISPID_NAVIGATEERROR:
+        m_pListener->OnNavigateError(
+            pDispParams->rgvarg[4].pdispVal,
+            pDispParams->rgvarg[3].bstrVal,
+            pDispParams->rgvarg[2].bstrVal,
+            pDispParams->rgvarg[1].lVal,
+            pDispParams->rgvarg[0].pboolVal);
+        break;
     default:
         return DISP_E_MEMBERNOTFOUND;
     }

@@ -183,6 +183,7 @@ STRINGTABLE
     IDS_DOWNLOAD_PROGRESS, "%lu of %lu bytes (%lu seconds remaining)"
     IDS_WAIT_SCAN_PLEASE, "Please wait for virus scan..."
     IDS_DL_QUIT_QUESTION, "Now downloading. Do you want to close and exit?"
+    IDS_QUERY_URL, "https://www.google.com/search?hl=en&gl=en&q="
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -33,7 +33,8 @@ public:
     void Stop();
     void StopDownload();
     void Refresh();
-    void Navigate(const WCHAR *url = L"about:blank");
+    HRESULT Navigate(const WCHAR *url = L"about:blank");
+    HRESULT Navigate2(const WCHAR *url, DWORD dwFlags = 0);
     void Print(BOOL bBang = FALSE);
     void PrintPreview();
     void PageSetup();

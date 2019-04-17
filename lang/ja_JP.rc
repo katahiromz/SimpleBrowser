@@ -183,6 +183,7 @@ STRINGTABLE
     IDS_DOWNLOAD_PROGRESS, "%lu / %lu バイト (残り %lu 秒)"
     IDS_WAIT_SCAN_PLEASE, "ウイルススキャンをお待ち下さい..."
     IDS_DL_QUIT_QUESTION, "ダウンロード中です。閉じて終了しますか？"
+    IDS_QUERY_URL, "https://www.google.co.jp/search?hl=jp&gl=jp&q="
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -46,6 +46,12 @@ struct MEventSinkListener
     virtual void OnDocumentComplete(
         IDispatch *pDisp,
         BSTR bstrURL) = 0;
+    virtual void OnNavigateError(
+        IDispatch *pDisp,
+        BSTR URL,
+        BSTR TargetFrameName,
+        LONG StatusCode,
+        VARIANT_BOOL *Cancel) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////
