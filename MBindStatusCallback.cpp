@@ -14,6 +14,7 @@ MBindStatusCallback::MBindStatusCallback() :
     m_bCompleted(FALSE),
     m_bCancelled(FALSE)
 {
+    m_dwTick = ::GetTickCount();
 }
 
 MBindStatusCallback::~MBindStatusCallback()
@@ -128,7 +129,8 @@ STDMETHODIMP MBindStatusCallback::OnStopBinding(HRESULT hresult, LPCWSTR szError
 
 STDMETHODIMP MBindStatusCallback::GetBindInfo(DWORD *grfBINDF, BINDINFO *pbindinfo)
 {
-    return E_NOTIMPL;
+    *grfBINDF |= BINDF_GETNEWESTVERSION;
+    return S_OK;
 }
 
 STDMETHODIMP MBindStatusCallback::OnDataAvailable(

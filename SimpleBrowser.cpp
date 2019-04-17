@@ -49,7 +49,7 @@ static HWND s_hMainWnd = NULL;
 static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
-static std::unordered_set<HWND> s_downloadings;
+static std::unordered_map<HWND, BOOL> s_downloadings;
 static MWebBrowserEx *s_pWebBrowser = NULL;
 static HFONT s_hButtonFont = NULL;
 static HFONT s_hAddressFont = NULL;
@@ -1649,12 +1649,14 @@ unsigned __stdcall downloading_proc(void *arg)
         Sleep(500);
     }
 
+    s_downloadings[hwnd] = FALSE;
     KillTimer(hwnd, 999);
     if (pCallback->IsCompleted())
     {
         // update dialog info
         SetDlgItemTextW(hwnd, IDCANCEL, LoadStringDx(IDS_CLOSE));
         SetDlgItemTextW(hwnd, stc3, LoadStringDx(IDS_DL_COMPLETE));
+        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_WAIT_SCAN_PLEASE));
         SetWindowTextW(hwnd, LoadStringDx(IDS_DL_COMPLETE));
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
@@ -1754,13 +1756,33 @@ void Downloading_OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 
 void Downloading_OnTimer(HWND hwnd, UINT id)
 {
-    printf("Downloading_OnTimer\n");
     DOWNLOADING *pDownloading = (DOWNLOADING *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     MBindStatusCallback *pCallback = pDownloading->pCallback;
     if (id == 999)
     {
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, pCallback->m_ulProgressMax);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, pCallback->m_ulProgress, 0);
+
+        DWORD dwTick1 = pCallback->m_dwTick;
+        DWORD dwTick2 = GetTickCount();
+        DWORD amount = dwTick2 - dwTick1;
+        if ((LONG)amount >= 0)
+        {
+            float progress = pCallback->m_ulProgress;
+            float progressMax = pCallback->m_ulProgressMax;
+            float total = float(amount) * progressMax / (progress ? progress : 1);
+            float remainder = total - amount;
+            float secs = remainder / 1000 + 1;
+
+            WCHAR szText[128];
+            StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_DOWNLOAD_PROGRESS),
+                (ULONG)progress, (ULONG)progressMax, (ULONG)secs);
+            SetDlgItemTextW(hwnd, stc4, szText);
+        }
+        else
+        {
+            SetDlgItemTextW(hwnd, stc4, NULL);
+        }
     }
 }
 
@@ -1983,7 +2005,7 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
                                       hwnd, DownloadingDlgProc, (LPARAM)pDownloading);
         ShowWindow(hDlg, SW_SHOWNORMAL);
         UpdateWindow(hDlg);
-        s_downloadings.insert(hDlg);
+        s_downloadings.insert(std::make_pair(hDlg, TRUE));
     }
 
     std::free(url);
@@ -3024,6 +3046,35 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
     //printf("%p: %08X, %08X\n", hwndItem, color, bgColor);
 }
 
+void OnClose(HWND hwnd)
+{
+    BOOL bFound = FALSE;
+    for (auto& pair : s_downloadings)
+    {
+        if (GetWindow(pair.first, GW_OWNER) == hwnd)
+        {
+            if (pair.second)
+            {
+                bFound = TRUE;
+                break;
+            }
+        }
+    }
+    if (bFound)
+    {
+        INT id = MessageBoxW(hwnd, LoadStringDx(IDS_DL_QUIT_QUESTION),
+                             s_szName, MB_ICONINFORMATION | MB_YESNOCANCEL);
+        switch (id)
+        {
+        case IDYES:
+            break;
+        default:
+            return;
+        }
+    }
+    DestroyWindow(hwnd);
+}
+
 LRESULT CALLBACK
 WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -3037,6 +3088,7 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     HANDLE_MSG(hwnd, WM_DESTROY, OnDestroy);
     HANDLE_MSG(hwnd, WM_INITMENUPOPUP, OnInitMenuPopup);
     HANDLE_MSG(hwnd, WM_DRAWITEM, OnDrawItem);
+    HANDLE_MSG(hwnd, WM_CLOSE, OnClose);
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
@@ -3308,9 +3360,9 @@ WinMain(HINSTANCE   hInstance,
     while (GetMessage(&msg, NULL, 0, 0))
     {
         BOOL bFound = FALSE;
-        for (auto& item : s_downloadings)
+        for (auto& pair : s_downloadings)
         {
-            if (IsWindow(item) && IsDialogMessage(item, &msg))
+            if (IsWindow(pair.first) && IsDialogMessage(pair.first, &msg))
             {
                 bFound = TRUE;
                 break;

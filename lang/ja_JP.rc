@@ -180,6 +180,9 @@ STRINGTABLE
     IDS_CANT_SCAN_VIRUS, "ウイルスを検索できませんでした。"
     IDS_VIRUS_FOUND_DELETED, "ウイルスが検出されましたので、削除しました。"
     IDS_FAILED_TO_DL, "ダウンロードに失敗しました。"
+    IDS_DOWNLOAD_PROGRESS, "%lu / %lu バイト (残り %lu 秒)"
+    IDS_WAIT_SCAN_PLEASE, "ウイルススキャンをお待ち下さい..."
+    IDS_DL_QUIT_QUESTION, "ダウンロード中です。閉じて終了しますか？"
 }
 
 //////////////////////////////////////////////////////////////////////////////

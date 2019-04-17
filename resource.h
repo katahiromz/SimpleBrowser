@@ -59,6 +59,9 @@
 #define IDS_CANT_SCAN_VIRUS                 139
 #define IDS_VIRUS_FOUND_DELETED             140
 #define IDS_FAILED_TO_DL                    141
+#define IDS_DOWNLOAD_PROGRESS               142
+#define IDS_WAIT_SCAN_PLEASE                143
+#define IDS_DL_QUIT_QUESTION                144
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002
