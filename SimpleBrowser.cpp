@@ -375,6 +375,15 @@ void DoNavigate(HWND hwnd, const WCHAR *url, DWORD dwFlags = 0);
 void OnNew(HWND hwnd, LPCWSTR url);
 BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL);
 
+void DoSearch(HWND hwnd, LPCWSTR str)
+{
+    std::wstring query = LoadStringDx(IDS_QUERY_URL);
+    std::wstring encoded = URL_encode(str);
+    query += encoded;
+
+    DoNavigate(hwnd, query.c_str(), navNoHistory);
+}
+
 struct MEventHandler : MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
@@ -527,12 +536,8 @@ struct MEventHandler : MEventSinkListener
         if (s_strOriginalURL.size() &&
             !IsURL(s_strOriginalURL.c_str()))
         {
-            std::wstring query = LoadStringDx(IDS_QUERY_URL);
-            std::wstring encoded = URL_encode(s_strOriginalURL);
-            query += encoded;
-
+            DoSearch(s_hMainWnd, s_strOriginalURL.c_str());
             s_strOriginalURL.clear();
-            DoNavigate(s_hMainWnd, query.c_str(), navNoHistory);
         }
     }
 };
@@ -1675,12 +1680,19 @@ void OnGo(HWND hwnd)
     StrTrimW(&str[0], L" \t\n\r\f\v");
     str.resize(wcslen(str.c_str()));
 
-    s_strOriginalURL = str.c_str();
-
-    if (str.empty())
-        DoNavigate(hwnd, L"about:blank");
+    if (str.find(L' ') != std::wstring::npos)
+    {
+        DoSearch(hwnd, str.c_str());
+    }
     else
-        DoNavigate(hwnd, str.c_str());
+    {
+        s_strOriginalURL = str.c_str();
+
+        if (str.empty())
+            DoNavigate(hwnd, L"about:blank");
+        else
+            DoNavigate(hwnd, str.c_str());
+    }
 }
 
 void OnHome(HWND hwnd)

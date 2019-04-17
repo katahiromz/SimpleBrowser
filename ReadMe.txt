@@ -51,3 +51,4 @@ License: MIT
     - Zone.Identifier support.
     - Fix and improve downloading.
     - Enable dropdown of ComboBox.
+    - AutoSearch on address bar.
