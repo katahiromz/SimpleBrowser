@@ -390,33 +390,34 @@ struct MEventHandler : MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
         IDispatch *pDispatch,
-        VARIANT *url,
-        VARIANT *Flags,
-        VARIANT *TargetFrameName,
+        BSTR url,
+        DWORD dwFlags,
+        BSTR target,
         VARIANT *PostData,
-        VARIANT *Headers,
+        BSTR headers,
         VARIANT_BOOL *Cancel)
     {
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
-        printf("%p: %ls\n", pApp, url->bstrVal);
+        printf("OnBeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
+               pDispatch, pApp, url, target, headers, dwFlags);
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
             {
-                if (UrlInBlackList(url->bstrVal))
+                if (UrlInBlackList(url))
                 {
-                    printf("in black list: %ls\n", url->bstrVal);
-                    s_strURL = url->bstrVal;
+                    printf("in black list: %ls\n", url);
+                    s_strURL = url;
                     SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
                     *Cancel = VARIANT_TRUE;
                     PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
                     return;
                 }
-                if (!IsAccessible(url->bstrVal))
+                if (!IsAccessible(url))
                 {
-                    printf("inaccessible: %ls\n", url->bstrVal);
-                    s_strURL = url->bstrVal;
+                    printf("inaccessible: %ls\n", url);
+                    s_strURL = url;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                     *Cancel = VARIANT_TRUE;
                     PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
@@ -425,7 +426,7 @@ struct MEventHandler : MEventSinkListener
 
                 s_bLoadingPage = TRUE;
 
-                DoUpdateURL(url->bstrVal);
+                DoUpdateURL(url);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
             }
             pApp->Release();

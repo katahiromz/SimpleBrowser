@@ -143,11 +143,11 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_BEFORENAVIGATE2:
         m_pListener->OnBeforeNavigate2(
             pDispParams->rgvarg[6].pdispVal,
-            pDispParams->rgvarg[5].pvarVal,
-            pDispParams->rgvarg[4].pvarVal,
-            pDispParams->rgvarg[3].pvarVal,
+            pDispParams->rgvarg[5].pvarVal->bstrVal,
+            pDispParams->rgvarg[4].pvarVal->lVal,
+            pDispParams->rgvarg[3].pvarVal->bstrVal,
             pDispParams->rgvarg[2].pvarVal,
-            pDispParams->rgvarg[1].pvarVal,
+            pDispParams->rgvarg[1].pvarVal->bstrVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_NAVIGATECOMPLETE2:

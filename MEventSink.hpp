@@ -20,11 +20,11 @@ struct MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
         IDispatch *pDisp,
-        VARIANT *url,
-        VARIANT *Flags,
-        VARIANT *TargetFrameName,
+        BSTR url,
+        DWORD dwFlags,
+        BSTR target,
         VARIANT *PostData,
-        VARIANT *Headers,
+        BSTR headers,
         VARIANT_BOOL *Cancel) = 0;
     virtual void OnNavigateComplete2(
         IDispatch *pDispatch,
