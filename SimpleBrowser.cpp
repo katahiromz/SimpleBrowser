@@ -549,11 +549,16 @@ struct MEventHandler : MEventSinkListener
 
     virtual void OnNavigateError(
         IDispatch *pDisp,
-        BSTR bstrURL,
-        BSTR bstrTarget,
+        VARIANT *url,
+        VARIANT *target,
         LONG StatusCode,
         VARIANT_BOOL *Cancel)
     {
+        assert(url->vt == VT_BSTR);
+        assert(target->vt == VT_BSTR);
+        BSTR bstrURL = url->pvarVal->bstrVal;
+        BSTR bstrTarget = target->pvarVal->bstrVal;
+
         printf("OnNavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
         if (!IsURL(bstrURL))
         {

@@ -187,8 +187,8 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_NAVIGATEERROR:
         m_pListener->OnNavigateError(
             pDispParams->rgvarg[4].pdispVal,
-            pDispParams->rgvarg[3].pvarVal->bstrVal,
-            pDispParams->rgvarg[2].pvarVal->bstrVal,
+            pDispParams->rgvarg[3].pvarVal,
+            pDispParams->rgvarg[2].pvarVal,
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
