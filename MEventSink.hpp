@@ -18,7 +18,7 @@ class MEventSink;
 
 struct MEventSinkListener
 {
-    virtual void OnBeforeNavigate2(
+    virtual void BeforeNavigate2(
         IDispatch *pDisp,
         VARIANT *url,
         VARIANT *flags,
@@ -26,35 +26,35 @@ struct MEventSinkListener
         VARIANT *PostData,
         VARIANT *headers,
         VARIANT_BOOL *Cancel) = 0;
-    virtual void OnNavigateComplete2(
+    virtual void NavigateComplete2(
         IDispatch *pDispatch,
         BSTR url) = 0;
-    virtual void OnNewWindow3(
+    virtual void NewWindow3(
         IDispatch **ppDisp,
         VARIANT_BOOL *Cancel,
         DWORD dwFlags,
         BSTR bstrUrlContext,
         BSTR bstrUrl) = 0;
-    virtual void OnCommandStateChange(
+    virtual void CommandStateChange(
         long Command,
         VARIANT_BOOL Enable) = 0;
-    virtual void OnStatusTextChange(BSTR Text) = 0;
-    virtual void OnTitleTextChange(BSTR Text) = 0;
-    virtual void OnFileDownload(
+    virtual void StatusTextChange(BSTR Text) = 0;
+    virtual void TitleTextChange(BSTR Text) = 0;
+    virtual void FileDownload(
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel) = 0;
-    virtual void OnDocumentComplete(
+    virtual void DocumentComplete(
         IDispatch *pDisp,
         BSTR bstrURL) = 0;
-    virtual void OnNavigateError(
+    virtual void NavigateError(
         IDispatch *pDisp,
         VARIANT *url,
         VARIANT *target,
         LONG StatusCode,
         VARIANT_BOOL *Cancel) = 0;
-    virtual void OnDownloadBegin() = 0;
-    virtual void OnDownloadComplete() = 0;
-    virtual void OnSetSecureLockIcon(DWORD SecureLockIcon) = 0;
+    virtual void DownloadBegin() = 0;
+    virtual void DownloadComplete() = 0;
+    virtual void SetSecureLockIcon(DWORD SecureLockIcon) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////

@@ -387,7 +387,7 @@ void DoSearch(HWND hwnd, LPCWSTR str)
 
 struct MEventHandler : MEventSinkListener
 {
-    virtual void OnBeforeNavigate2(
+    virtual void BeforeNavigate2(
         IDispatch *pDispatch,
         VARIANT *url,
         VARIANT *flags,
@@ -409,7 +409,7 @@ struct MEventHandler : MEventSinkListener
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
 
-        printf("OnBeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
+        printf("BeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
                pDispatch, pApp, bstrURL, bstrTarget, bstrHeaders, dwFlags);
 
         if (SUCCEEDED(hr))
@@ -446,14 +446,14 @@ struct MEventHandler : MEventSinkListener
         }
     }
 
-    virtual void OnNavigateComplete2(
+    virtual void NavigateComplete2(
         IDispatch *pDispatch,
         BSTR url)
     {
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
 
-        printf("OnNavigateComplete2: (%p, %p): '%ls'\n",
+        printf("NavigateComplete2: (%p, %p): '%ls'\n",
                pDispatch, pApp, url);
 
         if (SUCCEEDED(hr))
@@ -469,14 +469,14 @@ struct MEventHandler : MEventSinkListener
         }
     }
 
-    virtual void OnNewWindow3(
+    virtual void NewWindow3(
         IDispatch **ppDisp,
         VARIANT_BOOL *Cancel,
         DWORD dwFlags,
         BSTR bstrUrlContext,
         BSTR bstrUrl)
     {
-        printf("OnNewWindow3: '%ls', '%ls', 0x%08lX\n", bstrUrl, bstrUrlContext, dwFlags);
+        printf("NewWindow3: '%ls', '%ls', 0x%08lX\n", bstrUrl, bstrUrlContext, dwFlags);
         //*Cancel = VARIANT_TRUE;
 
         IDispatch *pApp = NULL;
@@ -494,11 +494,11 @@ struct MEventHandler : MEventSinkListener
         }
     }
 
-    virtual void OnCommandStateChange(
+    virtual void CommandStateChange(
         long Command,
         VARIANT_BOOL Enable)
     {
-        printf("OnCommandStateChange: 0x%08lX, %d\n", Command, Enable);
+        printf("CommandStateChange: 0x%08lX, %d\n", Command, Enable);
         //*Cancel = VARIANT_TRUE;
 
         if (Command == CSC_NAVIGATEFORWARD)
@@ -514,40 +514,40 @@ struct MEventHandler : MEventSinkListener
         ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_NEXT), s_bEnableForward);
     }
 
-    virtual void OnStatusTextChange(BSTR Text)
+    virtual void StatusTextChange(BSTR Text)
     {
-        printf("OnStatusTextChange: '%ls'\n", Text);
+        printf("StatusTextChange: '%ls'\n", Text);
         SetWindowTextW(s_hStatusBar, Text);
     }
 
-    virtual void OnTitleTextChange(BSTR Text)
+    virtual void TitleTextChange(BSTR Text)
     {
         WCHAR szText[256];
-        printf("OnTitleTextChange: '%ls'\n", Text);
+        printf("TitleTextChange: '%ls'\n", Text);
         StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_TITLE_TEXT), Text);
         SetWindowTextW(s_hMainWnd, szText);
         s_strTitle = Text;
     }
 
-    virtual void OnFileDownload(
+    virtual void FileDownload(
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel)
     {
-        printf("OnFileDownload: %d\n", ActiveDocument);
+        printf("FileDownload: %d\n", ActiveDocument);
         if (g_settings.m_kiosk_mode)
         {
             *Cancel = VARIANT_TRUE;
         }
     }
 
-    virtual void OnDocumentComplete(
+    virtual void DocumentComplete(
         IDispatch *pDisp,
         BSTR bstrURL)
     {
-        printf("OnDocumentComplete: %p, '%ls'\n", pDisp, bstrURL);
+        printf("DocumentComplete: %p, '%ls'\n", pDisp, bstrURL);
     }
 
-    virtual void OnNavigateError(
+    virtual void NavigateError(
         IDispatch *pDisp,
         VARIANT *url,
         VARIANT *target,
@@ -559,25 +559,25 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrURL = url->pvarVal->bstrVal;
         BSTR bstrTarget = target->pvarVal->bstrVal;
 
-        printf("OnNavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
+        printf("NavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
         if (!IsURL(bstrURL))
         {
             DoSearch(s_hMainWnd, bstrURL);
         }
     }
 
-    virtual void OnDownloadBegin()
+    virtual void DownloadBegin()
     {
-        printf("OnDownloadBegin\n");
+        printf("DownloadBegin\n");
     }
-    virtual void OnDownloadComplete()
+    virtual void DownloadComplete()
     {
-        printf("OnDownloadComplete\n");
+        printf("DownloadComplete\n");
     }
-    virtual void OnSetSecureLockIcon(DWORD SecureLockIcon)
+    virtual void SetSecureLockIcon(DWORD SecureLockIcon)
     {
         // SecureLockIconConstants
-        printf("OnSetSecureLockIcon: 0x%08X\n", SecureLockIcon);
+        printf("SetSecureLockIcon: 0x%08X\n", SecureLockIcon);
     }
 };
 MEventHandler s_listener;
@@ -2187,7 +2187,7 @@ void OnSave(HWND hwnd)
 
 void OnViewSourceDone(HWND hwnd)
 {
-    s_listener.OnTitleTextChange(LoadStringDx(IDS_SOURCE));
+    s_listener.TitleTextChange(LoadStringDx(IDS_SOURCE));
 }
 
 void OnDots(HWND hwnd)

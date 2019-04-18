@@ -141,7 +141,7 @@ STDMETHODIMP MEventSink::Invoke(
     switch (dispIdMember)
     {
     case DISPID_BEFORENAVIGATE2:
-        m_pListener->OnBeforeNavigate2(
+        m_pListener->BeforeNavigate2(
             pDispParams->rgvarg[6].pdispVal,
             pDispParams->rgvarg[5].pvarVal,
             pDispParams->rgvarg[4].pvarVal,
@@ -151,12 +151,12 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_NAVIGATECOMPLETE2:
-        m_pListener->OnNavigateComplete2(
+        m_pListener->NavigateComplete2(
             pDispParams->rgvarg[1].pdispVal,
             pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NEWWINDOW3:
-        m_pListener->OnNewWindow3(
+        m_pListener->NewWindow3(
             pDispParams->rgvarg[4].ppdispVal,
             pDispParams->rgvarg[3].pboolVal,
             pDispParams->rgvarg[2].lVal,
@@ -164,28 +164,28 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_COMMANDSTATECHANGE:
-        m_pListener->OnCommandStateChange(
+        m_pListener->CommandStateChange(
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].boolVal);
         break;
     case DISPID_TITLECHANGE:
-        m_pListener->OnTitleTextChange(pDispParams->rgvarg[0].bstrVal);
+        m_pListener->TitleTextChange(pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_STATUSTEXTCHANGE:
-        m_pListener->OnStatusTextChange(pDispParams->rgvarg[0].bstrVal);
+        m_pListener->StatusTextChange(pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_FILEDOWNLOAD:
-        m_pListener->OnFileDownload(
+        m_pListener->FileDownload(
             pDispParams->rgvarg[1].boolVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_DOCUMENTCOMPLETE:
-        m_pListener->OnDocumentComplete(
+        m_pListener->DocumentComplete(
             pDispParams->rgvarg[1].pdispVal,
             pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NAVIGATEERROR:
-        m_pListener->OnNavigateError(
+        m_pListener->NavigateError(
             pDispParams->rgvarg[4].pdispVal,
             pDispParams->rgvarg[3].pvarVal,
             pDispParams->rgvarg[2].pvarVal,
@@ -193,14 +193,14 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_DOWNLOADBEGIN:
-        m_pListener->OnDownloadBegin();
+        m_pListener->DownloadBegin();
         break;
     case DISPID_DOWNLOADCOMPLETE:
-        m_pListener->OnDownloadComplete();
+        m_pListener->DownloadComplete();
         break;
     case DISPID_SETSECURELOCKICON:
         assert(pDispParams->rgvarg[0].vt == VT_I6);
-        m_pListener->OnSetSecureLockIcon(pDispParams->rgvarg[0].lVal);
+        m_pListener->SetSecureLockIcon(pDispParams->rgvarg[0].lVal);
         break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
