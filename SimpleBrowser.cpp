@@ -419,6 +419,7 @@ struct MEventHandler : MEventSinkListener
                 if (UrlInBlackList(bstrURL))
                 {
                     printf("in black list: %ls\n", bstrURL);
+                    s_pWebBrowser->Stop();
                     s_strURL = bstrURL;
                     SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
                     *Cancel = VARIANT_TRUE;
@@ -428,6 +429,7 @@ struct MEventHandler : MEventSinkListener
                 if (!IsAccessible(bstrURL))
                 {
                     printf("inaccessible: %ls\n", bstrURL);
+                    s_pWebBrowser->Stop();
                     s_strURL = bstrURL;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                     *Cancel = VARIANT_TRUE;
