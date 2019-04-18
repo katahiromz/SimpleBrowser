@@ -192,6 +192,12 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
+    case DISPID_DOWNLOADBEGIN:
+        m_pListener->OnDownloadBegin();
+        break;
+    case DISPID_DOWNLOADCOMPLETE:
+        m_pListener->OnDownloadComplete();
+        break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;

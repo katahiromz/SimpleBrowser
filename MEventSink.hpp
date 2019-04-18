@@ -52,6 +52,8 @@ struct MEventSinkListener
         VARIANT *target,
         LONG StatusCode,
         VARIANT_BOOL *Cancel) = 0;
+    virtual void OnDownloadBegin() = 0;
+    virtual void OnDownloadComplete() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////

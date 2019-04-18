@@ -565,6 +565,15 @@ struct MEventHandler : MEventSinkListener
             DoSearch(s_hMainWnd, bstrURL);
         }
     }
+
+    virtual void OnDownloadBegin()
+    {
+        printf("OnDownloadBegin\n");
+    }
+    virtual void OnDownloadComplete()
+    {
+        printf("OnDownloadComplete\n");
+    }
 };
 MEventHandler s_listener;
 
