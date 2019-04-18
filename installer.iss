@@ -67,8 +67,25 @@ Source: "RightSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "mshtmcid.h"; DestDir: "{app}"; Flags: ignoreversion
-
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[Registry]
+Root: HKCR; Subkey: "SimpleBrowser"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "SimpleBrowser"; ValueName: ""; ValueType: string; ValueData: "SimpleBrowser"
+Root: HKCR; Subkey: "SimpleBrowser\DefaultIcon"
+Root: HKCR; Subkey: "SimpleBrowser\DefaultIcon"; ValueName: ""; ValueData: "{app}\SimpleBrowser.exe,0"
+Root: HKCR; Subkey: "SimpleBrowser\shell"
+Root: HKCR; Subkey: "SimpleBrowser\shell\open"
+Root: HKCR; Subkey: "SimpleBrowser\shell\open\command"
+Root: HKCR; Subkey: "SimpleBrowser\shell\open\command"; ValueName: ""; ValueType: string; ValueData: "{app}\SimpleBrowser.exe %1"
+Root: HKCR; Subkey: ".xhtml\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.xhtml"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.html"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.htm"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\SimpleBrowser.exe"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\SimpleBrowser.exe"; ValueName: ""; ValueType: string; ValueData: "{app}\SimpleBrowser.exe"
 
 [Icons]
 Name: "{group}\SimpleBrowser"; Filename: "{app}\SimpleBrowser.exe"
