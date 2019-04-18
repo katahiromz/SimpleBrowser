@@ -52,3 +52,4 @@ License: MIT
     - Fix and improve downloading.
     - Enable dropdown of ComboBox.
     - AutoSearch on address bar.
+- 2019.XX.YY ver.0.9.3
