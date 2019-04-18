@@ -198,6 +198,10 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_DOWNLOADCOMPLETE:
         m_pListener->OnDownloadComplete();
         break;
+    case DISPID_SETSECURELOCKICON:
+        assert(pDispParams->rgvarg[0].vt == VT_I6);
+        m_pListener->OnSetSecureLockIcon(pDispParams->rgvarg[0].lVal);
+        break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;

@@ -574,6 +574,11 @@ struct MEventHandler : MEventSinkListener
     {
         printf("OnDownloadComplete\n");
     }
+    virtual void OnSetSecureLockIcon(DWORD SecureLockIcon)
+    {
+        // SecureLockIconConstants
+        printf("OnSetSecureLockIcon: 0x%08X\n", SecureLockIcon);
+    }
 };
 MEventHandler s_listener;
 

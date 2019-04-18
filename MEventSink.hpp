@@ -54,6 +54,7 @@ struct MEventSinkListener
         VARIANT_BOOL *Cancel) = 0;
     virtual void OnDownloadBegin() = 0;
     virtual void OnDownloadComplete() = 0;
+    virtual void OnSetSecureLockIcon(DWORD SecureLockIcon) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////
