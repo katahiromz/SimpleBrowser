@@ -28,7 +28,7 @@ struct MEventSinkListener
         VARIANT_BOOL *Cancel) = 0;
     virtual void OnNavigateComplete2(
         IDispatch *pDispatch,
-        VARIANT *URL) = 0;
+        BSTR url) = 0;
     virtual void OnNewWindow3(
         IDispatch **ppDisp,
         VARIANT_BOOL *Cancel,
@@ -48,8 +48,8 @@ struct MEventSinkListener
         BSTR bstrURL) = 0;
     virtual void OnNavigateError(
         IDispatch *pDisp,
-        BSTR URL,
-        BSTR TargetFrameName,
+        BSTR bstrURL,
+        BSTR bstrTarget,
         LONG StatusCode,
         VARIANT_BOOL *Cancel) = 0;
 };

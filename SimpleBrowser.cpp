@@ -399,8 +399,10 @@ struct MEventHandler : MEventSinkListener
     {
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+
         printf("OnBeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
                pDispatch, pApp, url, target, headers, dwFlags);
+
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
@@ -435,15 +437,19 @@ struct MEventHandler : MEventSinkListener
 
     virtual void OnNavigateComplete2(
         IDispatch *pDispatch,
-        VARIANT *URL)
+        BSTR url)
     {
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
+
+        printf("OnNavigateComplete2: (%p, %p): '%ls'\n",
+               pDispatch, pApp, url);
+
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
             {
-                s_strURL = URL->bstrVal;
+                s_strURL = url;
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strRefresh.c_str());
                 s_bLoadingPage = FALSE;
                 PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
@@ -467,12 +473,6 @@ struct MEventHandler : MEventSinkListener
         *ppDisp = pApp;
 
         std::wstring url = bstrUrl;
-        if (dwFlags & 2)
-        {
-            DoSaveURL(s_hMainWnd, url.c_str());
-            return;
-        }
-
         if (g_settings.m_dont_popup || g_settings.m_kiosk_mode)
         {
             DoNavigate(s_hMainWnd, url.c_str());
@@ -487,6 +487,9 @@ struct MEventHandler : MEventSinkListener
         long Command,
         VARIANT_BOOL Enable)
     {
+        printf("OnCommandStateChange: 0x%08lX, %d\n", Command, Enable);
+        //*Cancel = VARIANT_TRUE;
+
         if (Command == CSC_NAVIGATEFORWARD)
         {
             s_bEnableForward = (Enable == VARIANT_TRUE);
@@ -502,12 +505,14 @@ struct MEventHandler : MEventSinkListener
 
     virtual void OnStatusTextChange(BSTR Text)
     {
+        printf("OnStatusTextChange: '%ls'\n", Text);
         SetWindowTextW(s_hStatusBar, Text);
     }
 
     virtual void OnTitleTextChange(BSTR Text)
     {
         WCHAR szText[256];
+        printf("OnTitleTextChange: '%ls'\n", Text);
         StringCbPrintfW(szText, sizeof(szText), LoadStringDx(IDS_TITLE_TEXT), Text);
         SetWindowTextW(s_hMainWnd, szText);
         s_strTitle = Text;
@@ -517,6 +522,7 @@ struct MEventHandler : MEventSinkListener
         VARIANT_BOOL ActiveDocument,
         VARIANT_BOOL *Cancel)
     {
+        printf("OnFileDownload: %d\n", ActiveDocument);
         if (g_settings.m_kiosk_mode)
         {
             *Cancel = VARIANT_TRUE;
@@ -527,16 +533,22 @@ struct MEventHandler : MEventSinkListener
         IDispatch *pDisp,
         BSTR bstrURL)
     {
+        printf("OnDocumentComplete: %p, '%ls'\n", pDisp, bstrURL);
+        //if (dwFlags & NWMF_FIRST)
+        //{
+        //    DoSaveURL(s_hMainWnd, url.c_str());
+        //    return;
+        //}
     }
 
     virtual void OnNavigateError(
         IDispatch *pDisp,
-        BSTR URL,
-        BSTR TargetFrameName,
+        BSTR bstrURL,
+        BSTR bstrTarget,
         LONG StatusCode,
         VARIANT_BOOL *Cancel)
     {
-        printf("StatusCode: %08lX\n", StatusCode);
+        printf("OnNavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
         if (s_strOriginalURL.size() &&
             !IsURL(s_strOriginalURL.c_str()))
         {

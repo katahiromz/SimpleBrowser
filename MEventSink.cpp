@@ -153,7 +153,7 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_NAVIGATECOMPLETE2:
         m_pListener->OnNavigateComplete2(
             pDispParams->rgvarg[1].pdispVal,
-            pDispParams->rgvarg[0].pvarVal);
+            pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NEWWINDOW3:
         m_pListener->OnNewWindow3(
@@ -182,7 +182,7 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_DOCUMENTCOMPLETE:
         m_pListener->OnDocumentComplete(
             pDispParams->rgvarg[1].pdispVal,
-            pDispParams->rgvarg[0].bstrVal);
+            pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NAVIGATEERROR:
         m_pListener->OnNavigateError(
