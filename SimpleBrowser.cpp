@@ -62,7 +62,6 @@ static BOOL s_bLoadingPage = FALSE;
 static HBITMAP s_hbmSecure = NULL;
 static HBITMAP s_hbmInsecure = NULL;
 static std::wstring s_strURL;
-static std::wstring s_strOriginalURL;
 static std::wstring s_strTitle;
 static BOOL s_bKiosk = FALSE;
 static const TCHAR s_szButton[] = TEXT("BUTTON");
@@ -390,36 +389,46 @@ struct MEventHandler : MEventSinkListener
 {
     virtual void OnBeforeNavigate2(
         IDispatch *pDispatch,
-        BSTR url,
-        DWORD dwFlags,
-        BSTR target,
+        VARIANT *url,
+        VARIANT *flags,
+        VARIANT *target,
         VARIANT *PostData,
-        BSTR headers,
+        VARIANT *headers,
         VARIANT_BOOL *Cancel)
     {
+        assert(url->vt == VT_BSTR);
+        assert(flags->vt == VT_I4);
+        assert(target->vt == VT_BSTR);
+        assert(PostData->vt == VT_BYREF | VT_VARIANT);
+        assert(headers->vt == VT_BSTR);
+        BSTR bstrURL = url->bstrVal;
+        DWORD dwFlags = flags->lVal;
+        BSTR bstrTarget = target->bstrVal;
+        BSTR bstrHeaders = headers->bstrVal;
+
         IDispatch *pApp = NULL;
         HRESULT hr = s_pWebBrowser->get_Application(&pApp);
 
         printf("OnBeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
-               pDispatch, pApp, url, target, headers, dwFlags);
+               pDispatch, pApp, bstrURL, bstrTarget, bstrHeaders, dwFlags);
 
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
             {
-                if (UrlInBlackList(url))
+                if (UrlInBlackList(bstrURL))
                 {
-                    printf("in black list: %ls\n", url);
-                    s_strURL = url;
+                    printf("in black list: %ls\n", bstrURL);
+                    s_strURL = bstrURL;
                     SetInternalPageContents(LoadStringDx(IDS_HITBLACKLIST));
                     *Cancel = VARIANT_TRUE;
                     PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
                     return;
                 }
-                if (!IsAccessible(url))
+                if (!IsAccessible(bstrURL))
                 {
-                    printf("inaccessible: %ls\n", url);
-                    s_strURL = url;
+                    printf("inaccessible: %ls\n", bstrURL);
+                    s_strURL = bstrURL;
                     SetInternalPageContents(LoadStringDx(IDS_ACCESS_FAIL));
                     *Cancel = VARIANT_TRUE;
                     PostMessage(s_hMainWnd, WM_COMMAND, ID_DOCUMENT_COMPLETE, 0);
@@ -428,7 +437,7 @@ struct MEventHandler : MEventSinkListener
 
                 s_bLoadingPage = TRUE;
 
-                DoUpdateURL(url);
+                DoUpdateURL(bstrURL);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
             }
             pApp->Release();
@@ -534,11 +543,6 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrURL)
     {
         printf("OnDocumentComplete: %p, '%ls'\n", pDisp, bstrURL);
-        //if (dwFlags & NWMF_FIRST)
-        //{
-        //    DoSaveURL(s_hMainWnd, url.c_str());
-        //    return;
-        //}
     }
 
     virtual void OnNavigateError(
@@ -549,11 +553,9 @@ struct MEventHandler : MEventSinkListener
         VARIANT_BOOL *Cancel)
     {
         printf("OnNavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
-        if (s_strOriginalURL.size() &&
-            !IsURL(s_strOriginalURL.c_str()))
+        if (!IsURL(bstrURL))
         {
-            DoSearch(s_hMainWnd, s_strOriginalURL.c_str());
-            s_strOriginalURL.clear();
+            DoSearch(s_hMainWnd, bstrURL);
         }
     }
 };
@@ -1679,8 +1681,6 @@ void OnGo(HWND hwnd)
     }
     else
     {
-        s_strOriginalURL = str.c_str();
-
         if (str.empty())
             DoNavigate(hwnd, L"about:blank");
         else

@@ -143,11 +143,11 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_BEFORENAVIGATE2:
         m_pListener->OnBeforeNavigate2(
             pDispParams->rgvarg[6].pdispVal,
-            pDispParams->rgvarg[5].pvarVal->bstrVal,
-            pDispParams->rgvarg[4].pvarVal->lVal,
-            pDispParams->rgvarg[3].pvarVal->bstrVal,
+            pDispParams->rgvarg[5].pvarVal,
+            pDispParams->rgvarg[4].pvarVal,
+            pDispParams->rgvarg[3].pvarVal,
             pDispParams->rgvarg[2].pvarVal,
-            pDispParams->rgvarg[1].pvarVal->bstrVal,
+            pDispParams->rgvarg[1].pvarVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_NAVIGATECOMPLETE2:
@@ -187,12 +187,13 @@ STDMETHODIMP MEventSink::Invoke(
     case DISPID_NAVIGATEERROR:
         m_pListener->OnNavigateError(
             pDispParams->rgvarg[4].pdispVal,
-            pDispParams->rgvarg[3].bstrVal,
-            pDispParams->rgvarg[2].bstrVal,
+            pDispParams->rgvarg[3].pvarVal->bstrVal,
+            pDispParams->rgvarg[2].pvarVal->bstrVal,
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     default:
+        printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;
     }
 
