@@ -25,37 +25,63 @@ struct MEventSinkListener
         VARIANT *target,
         VARIANT *PostData,
         VARIANT *headers,
-        VARIANT_BOOL *Cancel) = 0;
+        VARIANT_BOOL *Cancel)
+    {
+    }
     virtual void NavigateComplete2(
         IDispatch *pDispatch,
-        BSTR url) = 0;
+        BSTR url)
+    {
+    }
     virtual void NewWindow3(
         IDispatch **ppDisp,
         VARIANT_BOOL *Cancel,
         DWORD dwFlags,
         BSTR bstrUrlContext,
-        BSTR bstrUrl) = 0;
+        BSTR bstrUrl)
+    {
+    }
     virtual void CommandStateChange(
         long Command,
-        VARIANT_BOOL Enable) = 0;
-    virtual void StatusTextChange(BSTR Text) = 0;
-    virtual void TitleTextChange(BSTR Text) = 0;
+        VARIANT_BOOL Enable)
+    {
+    }
+    virtual void StatusTextChange(BSTR Text)
+    {
+    }
+    virtual void TitleTextChange(BSTR Text)
+    {
+    }
     virtual void FileDownload(
         VARIANT_BOOL ActiveDocument,
-        VARIANT_BOOL *Cancel) = 0;
+        VARIANT_BOOL *Cancel)
+    {
+    }
     virtual void DocumentComplete(
         IDispatch *pDisp,
-        BSTR bstrURL) = 0;
+        BSTR bstrURL)
+    {
+    }
     virtual void NavigateError(
         IDispatch *pDisp,
         VARIANT *url,
         VARIANT *target,
         LONG StatusCode,
-        VARIANT_BOOL *Cancel) = 0;
-    virtual void DownloadBegin() = 0;
-    virtual void DownloadComplete() = 0;
-    virtual void SetSecureLockIcon(DWORD SecureLockIcon) = 0;
-    virtual void ProgressChange(LONG Progress, LONG ProgressMax) = 0;
+        VARIANT_BOOL *Cancel)
+    {
+    }
+    virtual void DownloadBegin()
+    {
+    }
+    virtual void DownloadComplete()
+    {
+    }
+    virtual void SetSecureLockIcon(DWORD SecureLockIcon)
+    {
+    }
+    virtual void ProgressChange(LONG Progress, LONG ProgressMax)
+    {
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////
