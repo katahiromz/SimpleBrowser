@@ -567,9 +567,10 @@ struct MEventHandler : MEventSinkListener
         {
             DoSearch(s_hMainWnd, bstrURL);
         }
-        else
+        else if (StatusCode == 0x800C001B)
         {
             s_pWebBrowser->Stop();
+            SetInternalPageContents(L"");
             DoSaveURL(s_hMainWnd, bstrURL);
         }
     }
