@@ -3215,6 +3215,15 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
         if (it != s_hwnd2bgcolor.end())
             bgColor = it->second;
     }
+
+    COLORREF color = RGB(0, 0, 0);
+    {
+        auto it = s_hwnd2color.find(hwndItem);
+        if (it != s_hwnd2color.end())
+            color = it->second;
+    }
+    SetTextColor(hDC, color);
+
     HBRUSH hbr = CreateSolidBrush(bgColor);
     FillRect(hDC, &rcItem, hbr);
     DeleteObject(hbr);
@@ -3224,17 +3233,16 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
         RECT rc = rcItem;
         InflateRect(&rc, -2, -2);
         SelectObject(hDC, GetStockObject(NULL_BRUSH));
-        SelectObject(hDC, GetStockObject(BLACK_PEN));
-        Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+        if (HPEN hPen = CreatePen(PS_SOLID, 1, color))
+        {
+            HGDIOBJ hPenOld = SelectObject(hDC, hPen);
+            {
+                Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+            }
+            SelectObject(hDC, hPenOld);
+            DeleteObject(hPen);
+        }
     }
-
-    COLORREF color = RGB(0, 0, 0);
-    {
-        auto it = s_hwnd2color.find(hwndItem);
-        if (it != s_hwnd2color.end())
-            color = it->second;
-    }
-    SetTextColor(hDC, color);
 
     HFONT hFont = GetWindowFont(hwndItem);
 
