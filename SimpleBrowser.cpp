@@ -591,10 +591,18 @@ struct MEventHandler : MEventSinkListener
 
     virtual void SetSecureLockIcon(DWORD SecureLockIcon)
     {
-        if (SecureLockIcon == 0)
-            s_nInSecure = -1;
-        else
-            s_nInSecure = 1;
+        if (s_nInSecure == 0)
+        {
+            if (SecureLockIcon == 0)
+                s_nInSecure = -1;
+            else
+                s_nInSecure = 1;
+        }
+        else if (s_nInSecure == 1)
+        {
+            if (SecureLockIcon == 0)
+                s_nInSecure = -1;
+        }
         InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
 
         // SecureLockIconConstants
