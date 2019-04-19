@@ -590,6 +590,11 @@ struct MEventHandler : MEventSinkListener
         // SecureLockIconConstants
         printf("SetSecureLockIcon: 0x%08X\n", SecureLockIcon);
     }
+
+    virtual void ProgressChange(LONG Progress, LONG ProgressMax)
+    {
+        printf("ProgressChange: %ld, %ld\n", Progress, ProgressMax);
+    }
 };
 MEventHandler s_listener;
 

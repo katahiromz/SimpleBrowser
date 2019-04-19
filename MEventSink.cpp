@@ -238,6 +238,13 @@ STDMETHODIMP MEventSink::Invoke(
         assert(pDispParams->rgvarg[0].vt == VT_I4);
         m_pListener->SetSecureLockIcon(pDispParams->rgvarg[0].lVal);
         break;
+    case DISPID_PROGRESSCHANGE:
+        assert(pDispParams->rgvarg[1].vt == VT_I4);
+        assert(pDispParams->rgvarg[0].vt == VT_I4);
+        m_pListener->ProgressChange(
+            pDispParams->rgvarg[1].lVal,
+            pDispParams->rgvarg[0].lVal);
+        break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;

@@ -55,6 +55,7 @@ struct MEventSinkListener
     virtual void DownloadBegin() = 0;
     virtual void DownloadComplete() = 0;
     virtual void SetSecureLockIcon(DWORD SecureLockIcon) = 0;
+    virtual void ProgressChange(LONG Progress, LONG ProgressMax) = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////
