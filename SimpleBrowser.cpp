@@ -3346,8 +3346,8 @@ void OnClose(HWND hwnd)
 
 HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
 {
-    static HBRUSH s_hbrRed = CreateSolidBrush(RGB(255, 204, 204));
-    static HBRUSH s_hbrGreen = CreateSolidBrush(RGB(204, 255, 204));
+    static HBRUSH s_hbrRed = CreateSolidBrush(RGB(255, 221, 221));
+    static HBRUSH s_hbrGreen = CreateSolidBrush(RGB(221, 255, 221));
     switch (s_nInSecure)
     {
     case -1:
