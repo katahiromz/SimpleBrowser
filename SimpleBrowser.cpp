@@ -1416,8 +1416,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
     WNDPROC fn = SubclassWindow(s_hAddrBarEdit, AddressBarEditWndProc);
     SetWindowLongPtr(s_hAddrBarEdit, GWLP_USERDATA, (LONG_PTR)fn);
 
-    PostMessage(hwnd, WM_MOVE, 0, 0);
-    PostMessage(hwnd, WM_SIZE, 0, 0);
     PostMessage(hwnd, WM_COMMAND, ID_PARSE_CMDLINE, 0);
 
     return TRUE;
@@ -2847,10 +2845,9 @@ void OnCustomLink(HWND hwnd, UINT nIndex)
 void OnParseCmdLine(HWND hwnd)
 {
     int argc = 0;
+    std::wstring url;
     if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
     {
-        std::wstring url;
-
         for (int i = 1; i < argc; ++i)
         {
             std::wstring arg = wargv[i];
@@ -2876,16 +2873,16 @@ void OnParseCmdLine(HWND hwnd)
             }
         }
 
-        if (url.size())
-        {
-            DoNavigate(hwnd, url.c_str());
-        }
-        else
-        {
-            DoNavigate(hwnd, g_settings.m_homepage.c_str());
-        }
-
         LocalFree(wargv);
+    }
+
+    if (url.size())
+    {
+        DoNavigate(hwnd, url.c_str());
+    }
+    else
+    {
+        DoNavigate(hwnd, g_settings.m_homepage.c_str());
     }
 
     if (g_settings.m_bMaximized && s_nCmdShow != SW_HIDE)
@@ -2895,6 +2892,9 @@ void OnParseCmdLine(HWND hwnd)
 
     ShowWindow(hwnd, s_nCmdShow);
     UpdateWindow(hwnd);
+
+    PostMessage(hwnd, WM_MOVE, 0, 0);
+    PostMessage(hwnd, WM_SIZE, 0, 0);
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
