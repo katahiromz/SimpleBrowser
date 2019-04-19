@@ -141,6 +141,18 @@ STDMETHODIMP MEventSink::Invoke(
     switch (dispIdMember)
     {
     case DISPID_BEFORENAVIGATE2:
+        assert(pDispParams->rgvarg[6].vt == VT_DISPATCH);
+        assert(pDispParams->rgvarg[5].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[5].pvarVal->vt == VT_BSTR);
+        assert(pDispParams->rgvarg[4].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[4].pvarVal->vt == VT_I4);
+        assert(pDispParams->rgvarg[3].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[3].pvarVal->vt == VT_BSTR);
+        assert(pDispParams->rgvarg[2].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[2].pvarVal->vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[1].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[1].pvarVal->vt == VT_BSTR);
+        assert(pDispParams->rgvarg[0].vt == VARTYPE(VT_BYREF | VT_BOOL));
         m_pListener->BeforeNavigate2(
             pDispParams->rgvarg[6].pdispVal,
             pDispParams->rgvarg[5].pvarVal,
@@ -151,11 +163,18 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_NAVIGATECOMPLETE2:
+        assert(pDispParams->rgvarg[1].vt == VT_DISPATCH);
+        assert(pDispParams->rgvarg[0].vt == VARTYPE(VT_BYREF | VT_VARIANT));
         m_pListener->NavigateComplete2(
             pDispParams->rgvarg[1].pdispVal,
             pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NEWWINDOW3:
+        assert(pDispParams->rgvarg[4].vt == VARTYPE(VT_BYREF | VT_DISPATCH));
+        assert(pDispParams->rgvarg[3].vt == VARTYPE(VT_BYREF | VT_BOOL));
+        assert(pDispParams->rgvarg[2].vt == VT_I4);
+        assert(pDispParams->rgvarg[1].vt == VT_BSTR);
+        assert(pDispParams->rgvarg[0].vt == VT_BSTR);
         m_pListener->NewWindow3(
             pDispParams->rgvarg[4].ppdispVal,
             pDispParams->rgvarg[3].pboolVal,
@@ -164,32 +183,49 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_COMMANDSTATECHANGE:
+        assert(pDispParams->rgvarg[1].vt == VT_I4);
+        assert(pDispParams->rgvarg[0].vt == VT_BOOL);
         m_pListener->CommandStateChange(
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].boolVal);
         break;
     case DISPID_TITLECHANGE:
+        assert(pDispParams->rgvarg[0].vt == VT_BSTR);
         m_pListener->TitleTextChange(pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_STATUSTEXTCHANGE:
+        assert(pDispParams->rgvarg[0].vt == VT_BSTR);
         m_pListener->StatusTextChange(pDispParams->rgvarg[0].bstrVal);
         break;
     case DISPID_FILEDOWNLOAD:
+        assert(pDispParams->rgvarg[1].vt == VT_BOOL);
+        assert(pDispParams->rgvarg[0].vt == VARTYPE(VT_BYREF | VT_BOOL));
         m_pListener->FileDownload(
             pDispParams->rgvarg[1].boolVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_DOCUMENTCOMPLETE:
+        assert(pDispParams->rgvarg[1].vt == VT_DISPATCH);
+        assert(pDispParams->rgvarg[0].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[0].pvarVal->vt == VT_BSTR);
         m_pListener->DocumentComplete(
             pDispParams->rgvarg[1].pdispVal,
             pDispParams->rgvarg[0].pvarVal->bstrVal);
         break;
     case DISPID_NAVIGATEERROR:
+        assert(pDispParams->rgvarg[4].vt == VT_DISPATCH);
+        assert(pDispParams->rgvarg[3].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[3].pvarVal->vt == VT_BSTR);
+        assert(pDispParams->rgvarg[2].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[2].pvarVal->vt == VT_BSTR);
+        assert(pDispParams->rgvarg[1].vt == VARTYPE(VT_BYREF | VT_VARIANT));
+        assert(pDispParams->rgvarg[1].pvarVal->vt == VT_I4);
+        assert(pDispParams->rgvarg[0].vt == VARTYPE(VT_BYREF | VT_BOOL));
         m_pListener->NavigateError(
             pDispParams->rgvarg[4].pdispVal,
             pDispParams->rgvarg[3].pvarVal,
             pDispParams->rgvarg[2].pvarVal,
-            pDispParams->rgvarg[1].lVal,
+            pDispParams->rgvarg[1].pvarVal->lVal,
             pDispParams->rgvarg[0].pboolVal);
         break;
     case DISPID_DOWNLOADBEGIN:

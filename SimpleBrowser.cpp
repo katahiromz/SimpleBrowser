@@ -562,9 +562,15 @@ struct MEventHandler : MEventSinkListener
         BSTR bstrTarget = target->bstrVal;
 
         printf("NavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
+
         if (!IsURL(bstrURL))
         {
             DoSearch(s_hMainWnd, bstrURL);
+        }
+        else
+        {
+            s_pWebBrowser->Stop();
+            DoSaveURL(s_hMainWnd, bstrURL);
         }
     }
 
