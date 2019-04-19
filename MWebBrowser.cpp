@@ -280,7 +280,7 @@ HRESULT MWebBrowser::Navigate(const WCHAR *url)
     if (m_web_browser2)
     {
         bstr_t bstrURL(url);
-        variant_t flags(0x8000);
+        variant_t flags(0);
         hr = m_web_browser2->Navigate(bstrURL, &flags, 0, 0, 0);
     }
     return hr;
@@ -294,27 +294,25 @@ HRESULT MWebBrowser::Navigate2(const WCHAR *url, DWORD dwFlags)
         return hr;
     }
 
-    VARIANT var1, var2, var3, var4, var5;
+    VARIANT var1, var2, varEmpty;
 
     VariantInit(&var1);
     VariantInit(&var2);
-    VariantInit(&var3);
-    VariantInit(&var4);
-    VariantInit(&var5);
+    VariantInit(&varEmpty);
 
     V_VT(&var1) = VT_BSTR;
     V_BSTR(&var1) = SysAllocString(url);
 
     V_VT(&var2) = VT_I4;
-    V_I4(&var2) = dwFlags | 0x8000;
+    V_I4(&var2) = dwFlags;
 
-    hr = m_web_browser2->Navigate2(&var1, &var2, &var3, &var4, &var5);
+    V_VT(&varEmpty) = VT_EMPTY;
+
+    hr = m_web_browser2->Navigate2(&var1, &var2, &varEmpty, &varEmpty, &varEmpty);
 
     VariantClear(&var1);
     VariantClear(&var2);
-    VariantClear(&var3);
-    VariantClear(&var4);
-    VariantClear(&var5);
+    VariantClear(&varEmpty);
 
     return hr;
 }

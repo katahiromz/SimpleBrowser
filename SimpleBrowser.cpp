@@ -567,11 +567,13 @@ struct MEventHandler : MEventSinkListener
         {
             DoSearch(s_hMainWnd, bstrURL);
         }
-        else if (StatusCode == 0x800C001B)
+#ifndef INET_E_BLOCKED_REDIRECT_XSECURITYID
+    #define INET_E_BLOCKED_REDIRECT_XSECURITYID 0x800C001B
+#endif
+        else if (StatusCode == INET_E_BLOCKED_REDIRECT_XSECURITYID)
         {
             s_pWebBrowser->Stop();
             SetInternalPageContents(L"");
-            DoSaveURL(s_hMainWnd, bstrURL);
         }
     }
 
