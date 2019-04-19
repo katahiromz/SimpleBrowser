@@ -34,6 +34,15 @@ MWebBrowserEx::~MWebBrowserEx()
 
 STDMETHODIMP MWebBrowserEx::QueryInterface(REFIID riid, void **ppvObj)
 {
+#ifndef NDEBUG
+    LPOLESTR psz = NULL;
+    StringFromIID(riid, &psz);
+    if (psz)
+    {
+        printf("MWebBrowserEx::QueryInterface: %ls\n", psz);
+        CoTaskMemFree(psz);
+    }
+#endif
     return MWebBrowser::QueryInterface(riid, ppvObj);
 }
 
@@ -54,6 +63,16 @@ STDMETHODIMP MWebBrowserEx::QueryService(
     REFIID riid,
     void **ppvObject)
 {
+#ifndef NDEBUG
+    LPOLESTR psz = NULL;
+    StringFromIID(riid, &psz);
+    if (psz)
+    {
+        printf("MWebBrowserEx::QueryService: %ls\n", psz);
+        CoTaskMemFree(psz);
+    }
+#endif
+
     if (riid == __uuidof(IDownloadManager))
     {
         *ppvObject = static_cast<IDownloadManager *>(this);
