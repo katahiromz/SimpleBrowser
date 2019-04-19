@@ -50,6 +50,7 @@ static const TCHAR s_szName[] = TEXT("SimpleBrowser");
 static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
 static HWND s_hMainWnd = NULL;
+static INT s_nCmdShow = SW_SHOWNORMAL;
 static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
@@ -1405,10 +1406,6 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
             UINT uFlags;
             uFlags = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE;
             SetWindowPos(hwnd, NULL, 0, 0, g_settings.m_cx, g_settings.m_cy, uFlags);
-        }
-        if (g_settings.m_bMaximized)
-        {
-            ShowWindowAsync(hwnd, SW_MAXIMIZE);
         }
     }
     else
@@ -2847,7 +2844,7 @@ void OnCustomLink(HWND hwnd, UINT nIndex)
     }
 }
 
-void OnParseCmdLien(HWND hwnd)
+void OnParseCmdLine(HWND hwnd)
 {
     int argc = 0;
     if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
@@ -2856,11 +2853,22 @@ void OnParseCmdLien(HWND hwnd)
 
         for (int i = 1; i < argc; ++i)
         {
-            if (lstrcmpiW(wargv[i], L"-kiosk") == 0 ||
-                lstrcmpiW(wargv[i], L"--kiosk") == 0 ||
-                lstrcmpiW(wargv[i], L"/kiosk") == 0)
+            std::wstring arg = wargv[i];
+            if (arg == L"-kiosk" || arg == L"--kiosk" || arg == L"/kiosk")
             {
                 OnKioskOn(hwnd);
+            }
+            else if (arg == L"-hidden" || arg == L"--hidden" || arg == L"/hidden")
+            {
+                s_nCmdShow = SW_HIDE;
+            }
+            else if (arg == L"-maximized" || arg == L"--maximized" || arg == L"/maximized")
+            {
+                s_nCmdShow = SW_SHOWMAXIMIZED;
+            }
+            else if (arg == L"-minimized" || arg == L"--minimized" || arg == L"/minimized")
+            {
+                s_nCmdShow = SW_SHOWMINIMIZED;
             }
             else
             {
@@ -2879,6 +2887,14 @@ void OnParseCmdLien(HWND hwnd)
 
         LocalFree(wargv);
     }
+
+    if (g_settings.m_bMaximized && s_nCmdShow != SW_HIDE)
+    {
+        s_nCmdShow = SW_SHOWMAXIMIZED;
+    }
+
+    ShowWindow(hwnd, s_nCmdShow);
+    UpdateWindow(hwnd);
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -3032,7 +3048,7 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             OnCustomLink(hwnd, id - ID_CUSTOM_LINK_01);
             break;
         case ID_PARSE_CMDLINE:
-            OnParseCmdLien(hwnd);
+            OnParseCmdLine(hwnd);
             break;
         }
     }
@@ -3515,6 +3531,8 @@ WinMain(HINSTANCE   hInstance,
         LPSTR       lpCmdLine,
         INT         nCmdShow)
 {
+    s_nCmdShow = nCmdShow;
+
     if (strstr(lpCmdLine, "kiosk") != NULL)
     {
         INT i = 0;
@@ -3561,9 +3579,6 @@ WinMain(HINSTANCE   hInstance,
         MessageBox(NULL, LoadStringDx(IDS_CREATE_WND_FAIL), NULL, MB_ICONERROR);
         return 2;
     }
-
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
