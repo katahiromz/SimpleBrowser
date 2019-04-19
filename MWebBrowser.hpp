@@ -174,13 +174,13 @@ public:
         IOleInPlaceUIWindow *pDoc);
     STDMETHODIMP HideUI();
     STDMETHODIMP UpdateUI();
-    STDMETHODIMP EnableModeless(WINBOOL fEnable);
-    STDMETHODIMP OnDocWindowActivate(WINBOOL fActivate);
-    STDMETHODIMP OnFrameWindowActivate(WINBOOL fActivate);
+    STDMETHODIMP EnableModeless(BOOL fEnable);
+    STDMETHODIMP OnDocWindowActivate(BOOL fActivate);
+    STDMETHODIMP OnFrameWindowActivate(BOOL fActivate);
     STDMETHODIMP ResizeBorder(
         LPCRECT prcBorder,
         IOleInPlaceUIWindow *pUIWindow,
-        WINBOOL fRameWindow);
+        BOOL fRameWindow);
     STDMETHODIMP TranslateAccelerator(
         LPMSG lpMsg,
         const GUID *pguidCmdGroup,

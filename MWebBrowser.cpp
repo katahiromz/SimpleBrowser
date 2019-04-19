@@ -897,21 +897,21 @@ STDMETHODIMP MWebBrowser::UpdateUI()
     return E_NOTIMPL;
 }
 
-STDMETHODIMP MWebBrowser::EnableModeless(WINBOOL fEnable)
+STDMETHODIMP MWebBrowser::EnableModeless(BOOL fEnable)
 {
     if (m_pDocHostUIHandler)
         return m_pDocHostUIHandler->EnableModeless(fEnable);
     return E_NOTIMPL;
 }
 
-STDMETHODIMP MWebBrowser::OnDocWindowActivate(WINBOOL fActivate)
+STDMETHODIMP MWebBrowser::OnDocWindowActivate(BOOL fActivate)
 {
     if (m_pDocHostUIHandler)
         return m_pDocHostUIHandler->OnDocWindowActivate(fActivate);
     return E_NOTIMPL;
 }
 
-STDMETHODIMP MWebBrowser::OnFrameWindowActivate(WINBOOL fActivate)
+STDMETHODIMP MWebBrowser::OnFrameWindowActivate(BOOL fActivate)
 {
     if (m_pDocHostUIHandler)
         return m_pDocHostUIHandler->OnFrameWindowActivate(fActivate);
@@ -921,7 +921,7 @@ STDMETHODIMP MWebBrowser::OnFrameWindowActivate(WINBOOL fActivate)
 STDMETHODIMP MWebBrowser::ResizeBorder(
     LPCRECT prcBorder,
     IOleInPlaceUIWindow *pUIWindow,
-    WINBOOL fRameWindow)
+    BOOL fRameWindow)
 {
     if (m_pDocHostUIHandler)
         return m_pDocHostUIHandler->ResizeBorder(prcBorder, pUIWindow, fRameWindow);

@@ -34,12 +34,12 @@ if (WIN32)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         # using Clang
-        set(CMAKE_C_FLAGS "-static")
-        set(CMAKE_CXX_FLAGS "-static")
+        set(CMAKE_C_FLAGS "-static -municode")
+        set(CMAKE_CXX_FLAGS "-static -municode")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # using GCC
-        set(CMAKE_C_FLAGS "-static -static-libgcc -static-libstdc++ -s")
-        set(CMAKE_CXX_FLAGS "-static -static-libgcc -static-libstdc++ -s")
+        set(CMAKE_C_FLAGS "-static -static-libgcc -static-libstdc++ -s -municode")
+        set(CMAKE_CXX_FLAGS "-static -static-libgcc -static-libstdc++ -s -municode")
     elseif (MSVC)
         # replace "/MD" with "/MT" (building without runtime DLLs)
         set(CompilerFlags
@@ -58,8 +58,6 @@ if (WIN32)
 endif()
 
 ##############################################################################
-
-find_package(Threads REQUIRED)
 
 include_directories(mime_info mstr color_value AmsiScanner)
 
@@ -82,6 +80,6 @@ target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)
 
 # link
 target_link_libraries(SimpleBrowser
-    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon Threads::Threads)
+    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon)
 
 ##############################################################################

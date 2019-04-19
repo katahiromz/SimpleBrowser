@@ -199,7 +199,7 @@ STDMETHODIMP MEventSink::Invoke(
         m_pListener->DownloadComplete();
         break;
     case DISPID_SETSECURELOCKICON:
-        assert(pDispParams->rgvarg[0].vt == VT_I6);
+        assert(pDispParams->rgvarg[0].vt == VT_I4);
         m_pListener->SetSecureLockIcon(pDispParams->rgvarg[0].lVal);
         break;
     default:

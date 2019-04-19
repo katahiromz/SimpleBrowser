@@ -15,6 +15,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <cctype>
 #include <cassert>
 #include <strsafe.h>
 #include <comdef.h>
@@ -400,7 +401,7 @@ struct MEventHandler : MEventSinkListener
         assert(url->vt == VT_BSTR);
         assert(flags->vt == VT_I4);
         assert(target->vt == VT_BSTR);
-        assert(PostData->vt == VT_BYREF | VT_VARIANT);
+        assert(PostData->vt == VARTYPE(VT_BYREF | VT_VARIANT));
         assert(headers->vt == VT_BSTR);
         BSTR bstrURL = url->bstrVal;
         DWORD dwFlags = flags->lVal;
@@ -557,8 +558,8 @@ struct MEventHandler : MEventSinkListener
     {
         assert(url->vt == VT_BSTR);
         assert(target->vt == VT_BSTR);
-        BSTR bstrURL = url->pvarVal->bstrVal;
-        BSTR bstrTarget = target->pvarVal->bstrVal;
+        BSTR bstrURL = url->bstrVal;
+        BSTR bstrTarget = target->bstrVal;
 
         printf("NavigateError: %p, '%ls', '%ls', %08lX\n", pDisp, bstrURL, bstrTarget, StatusCode);
         if (!IsURL(bstrURL))
@@ -1344,6 +1345,8 @@ BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
     ComboBox_LimitText(s_hAddrBarComboBox, 255);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
+
+    return TRUE;
 }
 
 BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
@@ -2025,7 +2028,7 @@ void TranslateFileName(LPWSTR file, size_t cchMax)
 BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
 {
     printf("DoSaveURL: %ls\n", pszURL);
-    LPWSTR url = wcsdup(pszURL);
+    LPWSTR url = _wcsdup(pszURL);
 
     LPWSTR pch = wcsrchr(url, L'?');
     if (pch)
@@ -2146,6 +2149,7 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
 
     TranslateFileName(file, ARRAYSIZE(file));
 
+    BOOL bOK = FALSE;
     if (::GetSaveFileName(&ofn))
     {
         DOWNLOADING *pDownloading = new DOWNLOADING;
@@ -2164,9 +2168,11 @@ BOOL DoSaveURL(HWND hwnd, LPCWSTR pszURL)
         ShowWindow(hDlg, SW_SHOWNORMAL);
         UpdateWindow(hDlg);
         s_downloadings.insert(std::make_pair(hDlg, TRUE));
+        bOK = TRUE;
     }
 
     std::free(url);
+    return bOK;
 }
 
 void OnSave(HWND hwnd)
@@ -2530,7 +2536,6 @@ BOOL DoExecute(HWND hwnd, LPCWSTR pszCmd, INT nCmdShow)
     PROCESS_INFORMATION pi;
     ZeroMemory(&pi, sizeof(pi));
 
-    HANDLE hProcess;
     BOOL ret = CreateProcessW(NULL, szText, NULL, NULL, TRUE, 0, NULL, szPath, &si, &pi);
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
@@ -2846,7 +2851,9 @@ void OnParseCmdLine(HWND hwnd)
 {
     int argc = 0;
     std::wstring url;
-    if (LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc))
+
+    LPWSTR pszCmdLine = GetCommandLineW();
+    if (LPWSTR *wargv = CommandLineToArgvW(pszCmdLine, &argc))
     {
         for (int i = 1; i < argc; ++i)
         {
@@ -3525,15 +3532,16 @@ STDMETHODIMP MWebBrowserEx::ShowContextMenu(
     return S_FALSE;
 }
 
+extern "C"
 INT WINAPI
-WinMain(HINSTANCE   hInstance,
+wWinMain(HINSTANCE  hInstance,
         HINSTANCE   hPrevInstance,
-        LPSTR       lpCmdLine,
+        LPWSTR      lpCmdLine,
         INT         nCmdShow)
 {
     s_nCmdShow = nCmdShow;
 
-    if (strstr(lpCmdLine, "kiosk") != NULL)
+    if (wcsstr(lpCmdLine, L"kiosk") != NULL)
     {
         INT i = 0;
         while (HWND hwnd = FindWindow(s_szName, NULL))
