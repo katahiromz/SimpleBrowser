@@ -245,6 +245,14 @@ STDMETHODIMP MEventSink::Invoke(
             pDispParams->rgvarg[1].lVal,
             pDispParams->rgvarg[0].lVal);
         break;
+#ifndef DISPID_BEFORESCRIPTEXECUTE
+    #define DISPID_BEFORESCRIPTEXECUTE 290
+#endif
+    case DISPID_BEFORESCRIPTEXECUTE:
+        assert(pDispParams->cArgs == 1);
+        assert(pDispParams->rgvarg[0].vt == VT_DISPATCH);
+        m_pListener->BeforeScriptExecute(pDispParams->rgvarg[0].pdispVal);
+        break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;

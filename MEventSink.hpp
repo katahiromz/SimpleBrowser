@@ -82,6 +82,9 @@ struct MEventSinkListener
     virtual void ProgressChange(LONG Progress, LONG ProgressMax)
     {
     }
+    virtual void BeforeScriptExecute(IDispatch *pDisp)
+    {
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////

@@ -613,6 +613,11 @@ struct MEventHandler : MEventSinkListener
     {
         printf("ProgressChange: %ld, %ld\n", Progress, ProgressMax);
     }
+
+    virtual void BeforeScriptExecute(IDispatch *pDisp)
+    {
+        printf("BeforeScriptExecute: %p\n", pDisp);
+    }
 };
 MEventHandler s_listener;
 
