@@ -97,6 +97,7 @@ static std::wstring s_popup_anchor_data;
 static BOOL s_bEnableForward = FALSE;
 static BOOL s_bEnableBack = FALSE;
 static std::vector<std::wstring> s_menu_links;
+static INT s_nInSecure = 0;
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -440,6 +441,7 @@ struct MEventHandler : MEventSinkListener
                 }
 
                 s_bLoadingPage = TRUE;
+                s_nInSecure = 0;
 
                 DoUpdateURL(bstrURL);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
@@ -581,12 +583,20 @@ struct MEventHandler : MEventSinkListener
     {
         printf("DownloadBegin\n");
     }
+
     virtual void DownloadComplete()
     {
         printf("DownloadComplete\n");
     }
+
     virtual void SetSecureLockIcon(DWORD SecureLockIcon)
     {
+        if (SecureLockIcon == 0)
+            s_nInSecure = -1;
+        else
+            s_nInSecure = 1;
+        InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+
         // SecureLockIconConstants
         printf("SetSecureLockIcon: 0x%08X\n", SecureLockIcon);
     }
@@ -2482,6 +2492,10 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
             }
         }
         break;
+    case CBN_EDITCHANGE:
+        s_nInSecure = 0;
+        InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+        break;
     }
 }
 
@@ -3330,6 +3344,27 @@ void OnClose(HWND hwnd)
     DestroyWindow(hwnd);
 }
 
+HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
+{
+    static HBRUSH s_hbrRed = CreateSolidBrush(RGB(255, 204, 204));
+    static HBRUSH s_hbrGreen = CreateSolidBrush(RGB(204, 255, 204));
+    switch (s_nInSecure)
+    {
+    case -1:
+        SetTextColor(hdc, RGB(64, 0, 0));
+        SetBkMode(hdc, TRANSPARENT);
+        return s_hbrRed;
+    case 0:
+        SetTextColor(hdc, RGB(0, 0, 0));
+        SetBkMode(hdc, TRANSPARENT);
+        return GetStockBrush(WHITE_BRUSH);
+    case 1:
+        SetTextColor(hdc, RGB(0, 64, 0));
+        SetBkMode(hdc, TRANSPARENT);
+        return s_hbrGreen;
+    }
+}
+
 LRESULT CALLBACK
 WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -3344,6 +3379,10 @@ WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     HANDLE_MSG(hwnd, WM_INITMENUPOPUP, OnInitMenuPopup);
     HANDLE_MSG(hwnd, WM_DRAWITEM, OnDrawItem);
     HANDLE_MSG(hwnd, WM_CLOSE, OnClose);
+    HANDLE_MSG(hwnd, WM_CTLCOLORBTN, OnCtlColor);
+    HANDLE_MSG(hwnd, WM_CTLCOLORSTATIC, OnCtlColor);
+    HANDLE_MSG(hwnd, WM_CTLCOLOREDIT, OnCtlColor);
+    HANDLE_MSG(hwnd, WM_CTLCOLORLISTBOX, OnCtlColor);
     default:
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
@@ -3411,6 +3450,8 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
         case WM_KEYDOWN:
             if (pMsg->wParam == VK_RETURN)
             {
+                s_nInSecure = 0;
+                InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
                 // [Enter] key
                 SendMessage(s_hMainWnd, WM_COMMAND, ID_GO, 0);
                 return TRUE;
