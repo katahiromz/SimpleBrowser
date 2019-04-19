@@ -3141,6 +3141,7 @@ void OnResetKiosk(HWND hwnd)
 {
     DoNavigate(hwnd, g_settings.m_homepage.c_str(), navNoHistory);
     SendMessage(hwnd, WM_COMMAND, ID_ZOOM_100, 0);
+    SendMessage(hwnd, WM_COMMAND, IDM_CLEARAUTHENTICATIONCACHE, 0);
 
     s_bEnableForward = s_bEnableBack = FALSE;
     ::EnableWindow(::GetDlgItem(s_hMainWnd, ID_BACK), s_bEnableBack);
