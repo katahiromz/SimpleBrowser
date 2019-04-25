@@ -33,6 +33,7 @@ void SETTINGS::reset()
     m_ignore_errors = TRUE;
     m_kiosk_mode = FALSE;
     m_no_virus_scan = FALSE;
+    m_zone_ident = TRUE;
     m_emulation = 11001;
     m_refresh_interval = (30 * 1000);  // 30 seconds
 }
@@ -115,6 +116,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"NoVirusScan", NULL, NULL, (LPBYTE)&value, &cb);
         m_no_virus_scan = !!value;
+
+        value = m_zone_ident;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"ZoneIdent", NULL, NULL, (LPBYTE)&value, &cb);
+        m_zone_ident = !!value;
 
         value = m_emulation;
         cb = sizeof(value);
@@ -245,6 +251,10 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"NoVirusScan", 0, REG_DWORD, (LPBYTE)&value, cb);
 
+                value = DWORD(m_zone_ident);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"ZoneIdent", 0, REG_DWORD, (LPBYTE)&value, cb);
+
                 value = DWORD(m_emulation);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"Emulation", 0, REG_DWORD, (LPBYTE)&value, cb);
@@ -308,6 +318,8 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         CheckDlgButton(hwnd, chx6, BST_CHECKED);
     if (g_settings.m_no_virus_scan)
         CheckDlgButton(hwnd, chx7, BST_CHECKED);
+    if (g_settings.m_zone_ident)
+        CheckDlgButton(hwnd, chx8, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
     SetDlgItemInt(hwnd, edt2, g_settings.m_emulation, TRUE);
@@ -341,6 +353,7 @@ static void OnOK(HWND hwnd)
     g_settings.m_ignore_errors = (IsDlgButtonChecked(hwnd, chx5) == BST_CHECKED);
     g_settings.m_kiosk_mode = (IsDlgButtonChecked(hwnd, chx6) == BST_CHECKED);
     g_settings.m_no_virus_scan = (IsDlgButtonChecked(hwnd, chx7) == BST_CHECKED);
+    g_settings.m_zone_ident = (IsDlgButtonChecked(hwnd, chx8) == BST_CHECKED);
 
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));

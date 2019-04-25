@@ -1838,11 +1838,14 @@ unsigned __stdcall downloading_proc(void *arg)
         SendDlgItemMessage(hwnd, ctl1, PBM_SETRANGE32, 0, 100);
         SendDlgItemMessage(hwnd, ctl1, PBM_SETPOS, 100, 0);
 
-        // alternate data stream (ADS)
-        ADS_ENTRY entry;
-        entry.name = L":Zone.Identifier";
-        std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
-        ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
+        if (g_settings.m_zone_ident)
+        {
+            // alternate data stream (ADS)
+            ADS_ENTRY entry;
+            entry.name = L":Zone.Identifier";
+            std::string data = "[ZoneTransfer]\r\nZoneId=3\r\n";
+            ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
+        }
 
         // virus scan
         if (g_settings.m_no_virus_scan)

@@ -25,6 +25,7 @@ struct SETTINGS
     BOOL m_ignore_errors;
     BOOL m_kiosk_mode;
     BOOL m_no_virus_scan;
+    BOOL m_zone_ident;
     DWORD m_emulation;
     DWORD m_refresh_interval;
 
