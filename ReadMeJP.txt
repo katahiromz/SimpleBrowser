@@ -62,3 +62,5 @@ SimpleBrowserは、Windows用の超速いウェブブラウザです。
     - *.urlファイルを開けるように。
 - 2019.XX.YY ver.0.9.4
     - JavaScript サポート。
+    - Zone.Identifier 設定項目を追加。
+    - 「ウイルススキャンをしない」設定項目を追加。

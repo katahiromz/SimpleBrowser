@@ -62,3 +62,5 @@ License: MIT
     - Able to open *.url files.
 - 2019.XX.YY ver.0.9.4
     - JavaScript support.
+    - Added Zone.Identifier setting item.
+    - Added no-virus-scan setting item.
