@@ -7,6 +7,7 @@ SimpleBrowser is a super-quick Web browser for Windows.
 - Very quick and super small.
 - Fully able to customize menus and buttons.
 - Downloaded files are automatically scanned (for Windows 10 only).
+- You can use without installation.
 - Kiosk mode supported.
 
 Supported Platforms: Windows XP/Vista/7/10
@@ -52,4 +53,6 @@ License: MIT
     - Fix and improve downloading.
     - Enable dropdown of ComboBox.
     - AutoSearch on address bar.
-- 2019.XX.YY ver.0.9.3
+- 2019.04.25 ver.0.9.3
+    - Improved security.
+    - Displays the encryption status as the color of the combo box.

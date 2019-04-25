@@ -17,7 +17,7 @@ AppPublisher=Katayama Hirofumi MZ
 AppPublisherURL=http://katahiromz.web.fc2.com/
 AppSupportURL=http://katahiromz.web.fc2.com/
 AppUpdatesURL=http://katahiromz.web.fc2.com/
-DefaultDirName=C:\SimpleBrowser
+DefaultDirName=={pf}\SimpleBrowser
 DefaultGroupName=SimpleBrowser
 DisableDirPage=no
 AllowNoIcons=yes
