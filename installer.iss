@@ -97,7 +97,7 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url"
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"; ValueName: "a"; ValueType: string; ValueData: "SimpleBrowser.exe"
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"; ValueName: "MRUList"; ValueType: string; ValueData: "a"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"; ValueName: "MRUList"; ValueType: string; ValueData: "abcd"
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithProgids"
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueType: none; ValueData: ""
 
