@@ -443,6 +443,8 @@ struct MEventHandler : MEventSinkListener
 
                 s_bLoadingPage = TRUE;
                 s_nInSecure = 0;
+                SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+                InvalidateRect(s_hStatusBar, NULL, TRUE);
 
                 DoUpdateURL(bstrURL);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
@@ -522,7 +524,7 @@ struct MEventHandler : MEventSinkListener
     virtual void StatusTextChange(BSTR Text)
     {
         printf("StatusTextChange: '%ls'\n", Text);
-        SetWindowTextW(s_hStatusBar, Text);
+        SendMessage(s_hStatusBar, SB_SETTEXT, 0 | 0, (LPARAM)Text);
     }
 
     virtual void TitleTextChange(BSTR Text)
@@ -605,6 +607,8 @@ struct MEventHandler : MEventSinkListener
                 s_nInSecure = -1;
         }
         InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+        SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+        InvalidateRect(s_hStatusBar, NULL, TRUE);
 
         // SecureLockIconConstants
         printf("SetSecureLockIcon: 0x%08X\n", SecureLockIcon);
@@ -1421,10 +1425,23 @@ BOOL OnCreate(HWND hwnd, LPCREATESTRUCT lpCreateStruct)
 
     DoReloadLayout(hwnd, s_hButtonFont);
 
-    DWORD style = WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP;
-    s_hStatusBar = CreateStatusWindow(style, LoadStringDx(IDS_LOADING), hwnd, stc1);
+    DWORD style = WS_CHILD | WS_VISIBLE | SBARS_SIZEGRIP | SBARS_TOOLTIPS;
+    s_hStatusBar = CreateWindow(STATUSCLASSNAME, NULL,
+                                style, 0, 0, 0, 0,
+                                hwnd, (HMENU)stc1, s_hInst, NULL);
     if (!s_hStatusBar)
         return FALSE;
+
+    SendMessage(s_hStatusBar, SB_SETMINHEIGHT, 24, 0);
+
+    RECT rcStatus;
+    GetClientRect(s_hStatusBar, &rcStatus);
+
+    INT parts[] = { rcStatus.right - rcStatus.left - 100, rcStatus.right - rcStatus.left - 50, -1 };
+    SendMessage(s_hStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
+    SendMessage(s_hStatusBar, SB_SETTEXT, 0, (LPARAM)LoadStringDx(IDS_LOADING));
+    SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+    SendMessage(s_hStatusBar, SB_SETTEXT, 2, 0);
 
     s_hAddrBarEdit = GetTopWindow(s_hAddrBarComboBox);
     SHAutoComplete(s_hAddrBarEdit, SHACF_URLALL | SHACF_AUTOSUGGEST_FORCE_ON);
@@ -1663,6 +1680,10 @@ void OnSize(HWND hwnd, UINT state, int cx, int cy)
     SendMessage(s_hStatusBar, WM_SIZE, 0, 0);
     GetWindowRect(s_hStatusBar, &rcStatus);
     rc.bottom -= rcStatus.bottom - rcStatus.top;
+
+    GetClientRect(s_hStatusBar, &rcStatus);
+    INT parts[] = { rcStatus.right - rcStatus.left - 100, rcStatus.right - rcStatus.left - 50, -1 };
+    SendMessage(s_hStatusBar, SB_SETPARTS, 3, (LPARAM)parts);
 
     INT cyUpSide = DoResizeUpDownSide(hwnd, &rc, s_upside_hwnds, s_upside_data, FALSE);
     rc.top += cyUpSide;
@@ -2519,6 +2540,8 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
     case CBN_EDITCHANGE:
         s_nInSecure = 0;
         InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+        SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+        InvalidateRect(s_hStatusBar, NULL, TRUE);
         break;
     }
 }
@@ -3234,117 +3257,158 @@ void OnInitMenuPopup(HWND hwnd, HMENU hMenu, UINT item, BOOL fSystemMenu)
 
 void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 {
-    if (lpDrawItem->CtlType != ODT_BUTTON)
-        return;
-
     HWND hwndItem = lpDrawItem->hwndItem;
     HDC hDC = lpDrawItem->hDC;
     RECT rcItem = lpDrawItem->rcItem;
 
-    WCHAR szText[64];
-    GetWindowTextW(hwndItem, szText, ARRAYSIZE(szText));
+    if (lpDrawItem->hwndItem != s_hStatusBar)
+    {
+        WCHAR szText[64];
+        GetWindowTextW(hwndItem, szText, ARRAYSIZE(szText));
 
-    DWORD style = GetWindowStyle(hwndItem);
+        DWORD style = GetWindowStyle(hwndItem);
 
-    if (!IsWindowEnabled(hwndItem))
-    {
-        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO | DFCS_ADJUSTRECT);
-    }
-    else if (GetCheck(hwndItem))
-    {
-        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
-    }
-    else if (lpDrawItem->itemState & ODS_SELECTED)
-    {
-        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
+        if (!IsWindowEnabled(hwndItem))
+        {
+            DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_MONO | DFCS_ADJUSTRECT);
+        }
+        else if (GetCheck(hwndItem))
+        {
+            DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
+        }
+        else if (lpDrawItem->itemState & ODS_SELECTED)
+        {
+            DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_ADJUSTRECT);
+        }
+        else
+        {
+            DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_ADJUSTRECT);
+        }
+
+        COLORREF bgColor = RGB(255, 255, 255);
+        {
+            auto it = s_hwnd2bgcolor.find(hwndItem);
+            if (it != s_hwnd2bgcolor.end())
+                bgColor = it->second;
+        }
+
+        COLORREF color = RGB(0, 0, 0);
+        {
+            auto it = s_hwnd2color.find(hwndItem);
+            if (it != s_hwnd2color.end())
+                color = it->second;
+        }
+        SetTextColor(hDC, color);
+
+        HBRUSH hbr = CreateSolidBrush(bgColor);
+        FillRect(hDC, &rcItem, hbr);
+        DeleteObject(hbr);
+
+        if (IsWindowEnabled(hwndItem))
+        {
+            RECT rc = rcItem;
+            InflateRect(&rc, -2, -2);
+            SelectObject(hDC, GetStockObject(NULL_BRUSH));
+            if (HPEN hPen = CreatePen(PS_SOLID, 1, color))
+            {
+                HGDIOBJ hPenOld = SelectObject(hDC, hPen);
+                {
+                    Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+                }
+                SelectObject(hDC, hPenOld);
+                DeleteObject(hPen);
+            }
+        }
+
+        HFONT hFont = GetWindowFont(hwndItem);
+
+        LOGFONTW lf;
+        GetObject(hFont, sizeof(lf), &lf);
+        lf.lfHeight = -(rcItem.bottom - rcItem.top) * 9 / 10;
+        hFont = CreateFontIndirectW(&lf);
+
+        UINT uFormat = DT_SINGLELINE | DT_CENTER | DT_VCENTER;
+        for (INT k = 0; k < 16; ++k)
+        {
+            RECT rc = rcItem;
+            HGDIOBJ hFontOld = SelectObject(hDC, hFont);
+            {
+                DrawText(hDC, szText, -1, &rc, uFormat | DT_CALCRECT);
+            }
+            SelectObject(hDC, hFontOld);
+
+            SIZE siz;
+            siz.cx = rc.right - rc.left;
+            siz.cy = rc.bottom - rc.top;
+            if (siz.cx < (rcItem.right - rcItem.left) * 9 / 10 &&
+                siz.cy < rcItem.bottom - rcItem.top)
+            {
+                break;
+            }
+
+            DeleteObject(hFont);
+            lf.lfHeight = -lf.lfHeight * 9 / 10;
+            hFont = CreateFontIndirectW(&lf);
+        }
+
+        if (GetCheck(hwndItem) || (lpDrawItem->itemState & ODS_SELECTED))
+        {
+            OffsetRect(&rcItem, 1, 1);
+        }
+
+        SetBkMode(hDC, TRANSPARENT);
+        HGDIOBJ hFontOld = SelectObject(hDC, hFont);
+        if (!IsWindowEnabled(hwndItem))
+        {
+            SetTextColor(hDC, bgColor);
+        }
+        DrawTextW(hDC, szText, -1, &rcItem, uFormat);
+        SelectObject(hDC, hFontOld);
+        DeleteObject(hFont);
+
+        //printf("%p: %08X, %08X\n", hwndItem, color, bgColor);
     }
     else
     {
-        DrawFrameControl(hDC, &rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_ADJUSTRECT);
-    }
+        WCHAR szText[256];
 
-    COLORREF bgColor = RGB(255, 255, 255);
-    {
-        auto it = s_hwnd2bgcolor.find(hwndItem);
-        if (it != s_hwnd2bgcolor.end())
-            bgColor = it->second;
-    }
-
-    COLORREF color = RGB(0, 0, 0);
-    {
-        auto it = s_hwnd2color.find(hwndItem);
-        if (it != s_hwnd2color.end())
-            color = it->second;
-    }
-    SetTextColor(hDC, color);
-
-    HBRUSH hbr = CreateSolidBrush(bgColor);
-    FillRect(hDC, &rcItem, hbr);
-    DeleteObject(hbr);
-
-    if (IsWindowEnabled(hwndItem))
-    {
-        RECT rc = rcItem;
-        InflateRect(&rc, -2, -2);
-        SelectObject(hDC, GetStockObject(NULL_BRUSH));
-        if (HPEN hPen = CreatePen(PS_SOLID, 1, color))
+        if (lpDrawItem->itemID == 0)
         {
-            HGDIOBJ hPenOld = SelectObject(hDC, hPen);
+        }
+        else if (lpDrawItem->itemID == 2)
+        {
+        }
+        else
+        {
+            HBITMAP hbm = NULL;
+            switch (s_nInSecure)
             {
-                Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+            case -1:
+                hbm = LoadBitmap(s_hInst, MAKEINTRESOURCE(IDB_INSECURE));
+                break;
+            case 0:
+                break;
+            case 1:
+                hbm = LoadBitmap(s_hInst, MAKEINTRESOURCE(IDB_SECURE));
+                break;
             }
-            SelectObject(hDC, hPenOld);
-            DeleteObject(hPen);
+            DrawFrameControl(hDC, &rcItem, DFC_BUTTON,
+                             DFCS_BUTTONPUSH | DFCS_ADJUSTRECT | DFCS_FLAT);
+            if (hbm)
+            {
+                if (HDC hdcMem = CreateCompatibleDC(NULL))
+                {
+                    HGDIOBJ hbmOld = SelectObject(hdcMem, hbm);
+                    {
+                        BitBlt(hDC, rcItem.left, rcItem.top, 16, 16, hdcMem, 0, 0, SRCCOPY);
+                    }
+                    SelectObject(hdcMem, hbmOld);
+                    DeleteDC(hdcMem);
+                }
+                DeleteObject(hbm);
+            }
         }
     }
-
-    HFONT hFont = GetWindowFont(hwndItem);
-
-    LOGFONTW lf;
-    GetObject(hFont, sizeof(lf), &lf);
-    lf.lfHeight = -(rcItem.bottom - rcItem.top) * 9 / 10;
-    hFont = CreateFontIndirectW(&lf);
-
-    UINT uFormat = DT_SINGLELINE | DT_CENTER | DT_VCENTER;
-    for (INT k = 0; k < 16; ++k)
-    {
-        RECT rc = rcItem;
-        HGDIOBJ hFontOld = SelectObject(hDC, hFont);
-        {
-            DrawText(hDC, szText, -1, &rc, uFormat | DT_CALCRECT);
-        }
-        SelectObject(hDC, hFontOld);
-
-        SIZE siz;
-        siz.cx = rc.right - rc.left;
-        siz.cy = rc.bottom - rc.top;
-        if (siz.cx < (rcItem.right - rcItem.left) * 9 / 10 &&
-            siz.cy < rcItem.bottom - rcItem.top)
-        {
-            break;
-        }
-
-        DeleteObject(hFont);
-        lf.lfHeight = -lf.lfHeight * 9 / 10;
-        hFont = CreateFontIndirectW(&lf);
-    }
-
-    if (GetCheck(hwndItem) || (lpDrawItem->itemState & ODS_SELECTED))
-    {
-        OffsetRect(&rcItem, 1, 1);
-    }
-
-    SetBkMode(hDC, TRANSPARENT);
-    HGDIOBJ hFontOld = SelectObject(hDC, hFont);
-    if (!IsWindowEnabled(hwndItem))
-    {
-        SetTextColor(hDC, bgColor);
-    }
-    DrawTextW(hDC, szText, -1, &rcItem, uFormat);
-    SelectObject(hDC, hFontOld);
-    DeleteObject(hFont);
-
-    //printf("%p: %08X, %08X\n", hwndItem, color, bgColor);
 }
 
 void OnClose(HWND hwnd)
@@ -3659,7 +3723,10 @@ wWinMain(HINSTANCE  hInstance,
 
     OleInitialize(NULL);
 
-    InitCommonControls();
+    INITCOMMONCONTROLSEX iccx;
+    iccx.dwSize = sizeof(iccx);
+    iccx.dwICC  = ICC_WIN95_CLASSES | ICC_BAR_CLASSES;
+    InitCommonControlsEx(&iccx);
 
     s_hInst = hInstance;
 
