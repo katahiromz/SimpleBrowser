@@ -2924,6 +2924,22 @@ void OnParseCmdLine(HWND hwnd)
         LocalFree(wargv);
     }
 
+    LPCWSTR pchDotExt = PathFindExtension(url.c_str());
+    if (lstrcmpiW(pchDotExt, L".url") == 0)
+    {
+        WCHAR szURL[512];
+        GetPrivateProfileStringW(L"InternetShortcut",
+                                 L"URL",
+                                 L" ",
+                                 szURL,
+                                 ARRAYSIZE(szURL),
+                                 url.c_str());
+        if (PathIsURL(szURL))
+        {
+            url = szURL;
+        }
+    }
+
     if (url.size())
     {
         DoNavigate(hwnd, url.c_str());

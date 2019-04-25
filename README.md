@@ -56,3 +56,4 @@ License: MIT
 - 2019.04.25 ver.0.9.3
     - Improved security.
     - Displays the encryption status as the color of the combo box.
+    - Able to open *.url files.
