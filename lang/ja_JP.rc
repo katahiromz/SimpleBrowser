@@ -50,7 +50,7 @@ FONT 9, "MS UI Gothic"
     DEFPUSHBUTTON "OK", IDOK, 56, 61, 60, 14
 }
 
-IDD_SETTINGS DIALOG 0, 0, 210, 185
+IDD_SETTINGS DIALOG 0, 0, 210, 205
 CAPTION "SimpleBrowser 設定"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "MS UI Gothic"
@@ -70,9 +70,10 @@ FONT 9, "MS UI Gothic"
     PUSHBUTTON "リセット(&E)", psh5, 140, 125, 50, 14
     AUTOCHECKBOX "スクリプト エラーを無視する(&I)", chx5, 5, 145, 95, 14
     AUTOCHECKBOX "キオスク モード(&K)", chx6, 105, 145, 95, 14
-    PUSHBUTTON "すべてリセット(&A)", psh6, 5, 165, 60, 14
-    DEFPUSHBUTTON "OK", IDOK, 80, 165, 60, 14
-    PUSHBUTTON "キャンセル", IDCANCEL, 145, 165, 60, 14
+    AUTOCHECKBOX "ウイルススキャンしない(&V)", chx7, 5, 165, 95, 14
+    PUSHBUTTON "すべてリセット(&A)", psh6, 5, 185, 60, 14
+    DEFPUSHBUTTON "OK", IDOK, 80, 185, 60, 14
+    PUSHBUTTON "キャンセル", IDCANCEL, 145, 185, 60, 14
 }
 
 IDD_ADDLINK DIALOG 0, 0, 205, 75
@@ -187,6 +188,7 @@ STRINGTABLE
     IDS_DOWNLOAD_PROGRESS_1, "%lu / %lu バイト (推定残り %lu 分 %lu 秒)"
     IDS_DOWNLOAD_PROGRESS_2, "%lu / %lu バイト (推定残り %lu 分)"
     IDS_DOWNLOAD_PROGRESS_3, "%lu / %lu バイト (推定残り %lu 時間 %lu 分)"
+    IDS_SCAN_SKIPPED, "ウイルススキャンはスキップされました。"
 }
 
 //////////////////////////////////////////////////////////////////////////////

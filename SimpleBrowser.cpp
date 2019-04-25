@@ -1845,29 +1845,36 @@ unsigned __stdcall downloading_proc(void *arg)
         ADS_put_data(pDownloading->strFilename.c_str(), entry, data);
 
         // virus scan
-        AmsiResult result;
-        LPCWSTR file = pDownloading->strFilename.c_str();
-        if (DoThreatScan(hwnd, file, result))
+        if (g_settings.m_no_virus_scan)
         {
-            if (result.is_malware)
+            SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_SCAN_SKIPPED));
+        }
+        else
+        {
+            AmsiResult result;
+            LPCWSTR file = pDownloading->strFilename.c_str();
+            if (DoThreatScan(hwnd, file, result))
             {
-                if (DeleteFileW(file))
+                if (result.is_malware)
                 {
-                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
+                    if (DeleteFileW(file))
+                    {
+                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND_DELETED));
+                    }
+                    else
+                    {
+                        SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND));
+                    }
                 }
                 else
                 {
-                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_VIRUS_FOUND));
+                    SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_NO_VIRUS));
                 }
             }
             else
             {
-                SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_NO_VIRUS));
+                SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
             }
-        }
-        else
-        {
-            SetDlgItemTextW(hwnd, stc4, LoadStringDx(IDS_CANT_SCAN_VIRUS));
         }
     }
 

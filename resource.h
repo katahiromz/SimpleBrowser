@@ -66,6 +66,7 @@
 #define IDS_DOWNLOAD_PROGRESS_1             146
 #define IDS_DOWNLOAD_PROGRESS_2             147
 #define IDS_DOWNLOAD_PROGRESS_3             148
+#define IDS_SCAN_SKIPPED                    149
 
 #define ID_BACK                             20001
 #define ID_NEXT                             20002
