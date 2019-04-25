@@ -226,6 +226,7 @@ BOOL IsAccessibleProtocol(const std::wstring& protocol)
         protocol == L"https" ||
         protocol == L"view-source" ||
         protocol == L"about" ||
+        protocol == L"javascript" ||
         protocol == L"res")
     {
         return TRUE;
