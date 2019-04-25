@@ -78,14 +78,28 @@ Root: HKCR; Subkey: "SimpleBrowser\shell"
 Root: HKCR; Subkey: "SimpleBrowser\shell\open"
 Root: HKCR; Subkey: "SimpleBrowser\shell\open\command"
 Root: HKCR; Subkey: "SimpleBrowser\shell\open\command"; ValueName: ""; ValueType: string; ValueData: "{app}\SimpleBrowser.exe %1"
+Root: HKCR; Subkey: "Applications"
+Root: HKCR; Subkey: "Applications\SimpleBrowser.exe"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Applications\SimpleBrowser.exe\shell"
+Root: HKCR; Subkey: "Applications\SimpleBrowser.exe\shell\open"
+Root: HKCR; Subkey: "Applications\SimpleBrowser.exe\shell\open\command"
+Root: HKCR; Subkey: "Applications\SimpleBrowser.exe\shell\open\command"; ValueName: ""; ValueType: string; ValueData: "{app}\SimpleBrowser.exe %1"
 Root: HKCR; Subkey: ".xhtml\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".html\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".htm\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.xhtml"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.html"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.htm"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts"; ValueName: "SimpleBrowser_.url"; ValueType: dword; ValueData: "0"; Flags: uninsdeletevalue
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\SimpleBrowser.exe"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\App Paths\SimpleBrowser.exe"; ValueName: ""; ValueType: string; ValueData: "{app}\SimpleBrowser.exe"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"; ValueName: "a"; ValueType: string; ValueData: "SimpleBrowser.exe"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithList"; ValueName: "MRUList"; ValueType: string; ValueData: "a"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithProgids"
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.url\OpenWithProgids"; ValueName: "SimpleBrowser"; ValueType: none; ValueData: ""
 
 [Icons]
 Name: "{group}\SimpleBrowser"; Filename: "{app}\SimpleBrowser.exe"
