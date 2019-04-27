@@ -2,6 +2,7 @@
 // Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
 // This file is public domain software.
 
+#include "targetver.h"
 #include "URLListDlg.hpp"
 #include "Settings.hpp"
 #include <windowsx.h>
