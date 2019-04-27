@@ -13,7 +13,7 @@ SimpleBrowser is a super-quick Web browser for Windows.
 - You can use without installation.
 - Kiosk mode supported.
 
-Supported Platforms: Windows XP/Vista/7/10
+Supported Platforms: Windows Vista/7/10
 
 ## Shortcut Keys
 

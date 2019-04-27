@@ -2,7 +2,6 @@
 // Copyright (C) 2019 Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
 // This file is public domain software.
 
-#include "targetver.h"
 #include "MWebBrowser.hpp"
 #include "MBindStatusCallback.hpp"
 #include <cwchar>

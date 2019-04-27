@@ -3,7 +3,6 @@
 // This file is public domain software.
 
 #define _CRT_SECURE_NO_WARNINGS
-#include "targetver.h"
 #include <windows.h>
 #include <windowsx.h>
 #include <commctrl.h>

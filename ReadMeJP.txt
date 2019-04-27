@@ -13,7 +13,7 @@ SimpleBrowserは、Windows用の超速いウェブブラウザです。
 - インストールなしで使えるぞ。
 - キオスクモードのサポート。
 
-対応環境: Windows XP/Vista/7/10
+対応環境: Windows Vista/7/10
 
 ## ショートカット キー
 

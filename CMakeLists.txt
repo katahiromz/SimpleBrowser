@@ -59,7 +59,9 @@ endif()
 
 ##############################################################################
 
-include_directories(mime_info mstr color_value AmsiScanner)
+add_definitions(-DWINVER=0x0501 -D_WIN32_WINNT=0x0501)
+
+include_directories(. mime_info mstr color_value AmsiScanner)
 
 # executable
 add_executable(SimpleBrowser WIN32
@@ -80,6 +82,6 @@ target_compile_definitions(SimpleBrowser PRIVATE -DUNICODE -D_UNICODE)
 
 # link
 target_link_libraries(SimpleBrowser
-    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon)
+    comctl32 ole32 uuid oleaut32 shlwapi comdlg32 urlmon advapi32)
 
 ##############################################################################
