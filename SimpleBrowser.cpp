@@ -55,7 +55,8 @@ static INT s_nCmdShow = SW_SHOWNORMAL;
 static HWND s_hStatusBar = NULL;
 static HWND s_hAddrBarComboBox = NULL;
 static HWND s_hAddrBarEdit = NULL;
-static std::unordered_map<HWND, BOOL> s_downloadings;
+typedef std::unordered_map<HWND, BOOL> download_map_type;
+static download_map_type s_downloadings;
 static MWebBrowserEx *s_pWebBrowser = NULL;
 static HFONT s_hButtonFont = NULL;
 static HFONT s_hAddressFont = NULL;
@@ -210,9 +211,10 @@ void SetInternalPageContents(const WCHAR *html, bool is_html = true)
 BOOL UrlInBlackList(const WCHAR *url)
 {
     std::wstring strURL = url;
-    for (auto& item : g_settings.m_black_list)
+	SETTINGS::list_type::const_iterator it, end = g_settings.m_black_list.end();
+    for (it = g_settings.m_black_list.begin(); it != end; ++it)
     {
-        if (strURL.find(item) != std::wstring::npos)
+        if (strURL.find(*it) != std::wstring::npos)
         {
             return TRUE;
         }
@@ -853,9 +855,10 @@ void InitAddrBarComboBox(void)
     GetWindowText(s_hAddrBarComboBox, &str[0], cch + 1);
 
     ComboBox_ResetContent(s_hAddrBarComboBox);
-    for (auto& url : g_settings.m_url_list)
+	SETTINGS::list_type::const_iterator it, end = g_settings.m_url_list.end();
+    for (it = g_settings.m_url_list.begin(); it != end; ++it)
     {
-        ComboBox_AddString(s_hAddrBarComboBox, url.c_str());
+        ComboBox_AddString(s_hAddrBarComboBox, it->c_str());
     }
 
     SetWindowText(s_hAddrBarComboBox, str.c_str());
@@ -2388,8 +2391,9 @@ BOOL CreateInternetShortcut(
 std::wstring ConvertStringToFilename(const std::wstring& str)
 {
     std::wstring ret;
-    for (wchar_t wch : str)
+    for (size_t i = 0; i < str.size(); ++i)
     {
+		wchar_t wch = str[i];
         if (wcschr(L"\\/:*?\"<>|", wch) != NULL)
         {
             ret += L'_';
@@ -3370,8 +3374,6 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
     }
     else
     {
-        WCHAR szText[256];
-
         if (lpDrawItem->itemID == 0)
         {
         }
@@ -3414,14 +3416,17 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
 void OnClose(HWND hwnd)
 {
     BOOL bFound = FALSE;
-    for (auto& pair : s_downloadings)
-    {
-        if (pair.first && pair.second)
-        {
-            bFound = TRUE;
-            break;
-        }
-    }
+	{
+		download_map_type::const_iterator it, end = s_downloadings.end();
+		for (it = s_downloadings.begin(); it != end; ++it)
+		{
+			if (it->first && it->second)
+			{
+				bFound = TRUE;
+				break;
+			}
+		}
+	}
     if (bFound)
     {
         INT id = MessageBoxW(hwnd, LoadStringDx(IDS_DL_QUIT_QUESTION),
@@ -3433,17 +3438,22 @@ void OnClose(HWND hwnd)
         default:
             return;
         }
-    }
-    auto downloadings = s_downloadings;
+	}
+
+    download_map_type downloadings = s_downloadings;
     s_downloadings.clear();
-    for (auto& pair : downloadings)
-    {
-        if (pair.first && pair.second)
-        {
-            PostMessage(pair.first, WM_COMMAND, IDCANCEL, 0);
-            pair.second = FALSE;
-        }
-    }
+
+	{
+		download_map_type::iterator it, end = downloadings.end();
+		for (it = downloadings.begin(); it != end; ++it)
+		{
+			if (it->first && it->second)
+			{
+				PostMessage(it->first, WM_COMMAND, IDCANCEL, 0);
+				it->second = FALSE;
+			}
+		}
+	}
     Sleep(250);
     DestroyWindow(hwnd);
 }
@@ -3467,6 +3477,7 @@ HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
         SetBkMode(hdc, TRANSPARENT);
         return s_hbrGreen;
     }
+	return NULL;
 }
 
 LRESULT CALLBACK
@@ -3763,9 +3774,10 @@ wWinMain(HINSTANCE  hInstance,
     while (GetMessage(&msg, NULL, 0, 0))
     {
         BOOL bFound = FALSE;
-        for (auto& pair : s_downloadings)
+		download_map_type::const_iterator it, end = s_downloadings.end();
+        for (it = s_downloadings.begin(); it != end; ++it)
         {
-            if (IsWindow(pair.first) && IsDialogMessage(pair.first, &msg))
+            if (IsWindow(it->first) && IsDialogMessage(it->first, &msg))
             {
                 bFound = TRUE;
                 break;
