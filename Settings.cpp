@@ -269,7 +269,7 @@ BOOL SETTINGS::save()
 
                 for (DWORD i = 0; i < count; ++i)
                 {
-                    auto& url = m_url_list[i];
+                    std::wstring& url = m_url_list[i];
 
                     StringCbPrintfW(szName, sizeof(szName), L"URL%lu", i);
 
@@ -283,7 +283,7 @@ BOOL SETTINGS::save()
 
                 for (DWORD i = 0; i < count; ++i)
                 {
-                    auto& url = m_black_list[i];
+                    std::wstring& url = m_black_list[i];
 
                     StringCbPrintfW(szName, sizeof(szName), L"Forbidden%lu", i);
 

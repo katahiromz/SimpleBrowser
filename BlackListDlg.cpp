@@ -11,9 +11,10 @@
 static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
 {
     HWND hLst1 = GetDlgItem(hwnd, lst1);
-    for (auto& url : g_settings.m_black_list)
+    SETTINGS::list_type::const_iterator it, end = g_settings.m_black_list.end();
+    for (it = g_settings.m_black_list.begin(); it != end; ++it)
     {
-        ListBox_AddString(hLst1, url.c_str());
+        ListBox_AddString(hLst1, it->c_str());
     }
     return TRUE;
 }
