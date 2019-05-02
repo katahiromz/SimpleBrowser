@@ -50,8 +50,8 @@ IDB_INSECURE BITMAP "res/Bitmap_101.bmp"
 // RT_VERSION
 
 1 VERSIONINFO
-FILEVERSION     0, 9, 5, 0
-PRODUCTVERSION  0, 9, 5, 0
+FILEVERSION     0, 9, 6, 0
+PRODUCTVERSION  0, 9, 6, 0
 FILEOS          0x40004
 FILETYPE        0x1
 {
@@ -61,10 +61,10 @@ FILETYPE        0x1
         {
             VALUE "CompanyName", "Katayama Hirofumi MZ\0"
             VALUE "FileDescription", "SimpleBrowser\0"
-            VALUE "FileVersion", "0.9.5\0"
+            VALUE "FileVersion", "0.9.6\0"
             VALUE "LegalCopyright", "Copyright (C) 2019 Katayama Hirofumi MZ\0"
             VALUE "ProductName", "SimpleBrowser\0"
-            VALUE "ProductVersion", "0.9.5\0"
+            VALUE "ProductVersion", "0.9.6\0"
         }
     }
     BLOCK "VarFileInfo"
