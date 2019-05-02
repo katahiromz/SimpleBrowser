@@ -68,3 +68,4 @@ License: MIT
     - Renamed as "SB Simple Browser".
     - Supported random search on address bar.
     - Fix Go button.
+    - Warn upon security problem.

@@ -68,3 +68,4 @@ SB Simple Browserは、Windows用の超速いウェブブラウザです。
     - "SB Simple Browser"に改名。
     - アドレスバーでのランダム検索を可能に。
     - Goボタンを修正。
+    - セキュリティ上の問題があれば警告する。
