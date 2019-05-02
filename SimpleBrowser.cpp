@@ -762,11 +762,6 @@ void DoNavigate(HWND hwnd, const WCHAR *url, DWORD dwFlags)
     else
     {
         HRESULT hr = s_pWebBrowser->Navigate2(url, dwFlags);
-
-        if (FAILED(hr))
-        {
-            MessageBoxW(NULL, L"OK", NULL, 0);
-        }
     }
 }
 
@@ -1744,17 +1739,10 @@ void OnGoToAddressBar(HWND hwnd)
     SetFocus(s_hAddrBarComboBox);
 }
 
-BOOL IsStringSearchWords(const std::wstring& str)
+BOOL IsStringSearchWords(const WCHAR *str)
 {
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        if (IsCharAlphaNumeric(str[i]))
-            continue;
-        if (wcschr(L" -_'\"!?;,", str[i]) != NULL)
-            continue;
-        return FALSE;
-    }
-    return TRUE;
+    return !IsURL(str) && !PathIsUNC(str) && !PathIsNetworkPath(str) &&
+           !PathFileExists(str);
 }
 
 void OnGo(HWND hwnd)
@@ -1769,16 +1757,18 @@ void OnGo(HWND hwnd)
     StrTrimW(&str[0], L" \t\n\r\f\v");
     str.resize(wcslen(str.c_str()));
 
-    if (str.find(L' ') != std::wstring::npos)
-    {
-        DoSearch(hwnd, str.c_str());
-    }
-    else if (IsStringSearchWords(str))
+    if (IsStringSearchWords(str.c_str()))
     {
         DoSearch(hwnd, str.c_str());
     }
     else
     {
+        if (L'A' <= str[0] && str[0] <= L'Z' && str[1] == L':' && str.size() == 2)
+        {
+            // C:
+            str += L'\\';
+        }
+
         if (str.empty())
             DoNavigate(hwnd, L"about:blank");
         else
