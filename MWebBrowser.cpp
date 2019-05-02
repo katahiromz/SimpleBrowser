@@ -847,11 +847,17 @@ STDMETHODIMP MWebBrowser::GetWindow(REFGUID rguidReason, HWND *phwnd)
 
 LPTSTR LoadStringDx(INT nID);
 void MarkSecurity(INT nSecurity, BOOL bOverwrite);
+void RememberInsecureURL(const WCHAR *url);
 
 STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
 {
     printf("MWebBrowser::OnSecurityProblem\n");
     MarkSecurity(-1, FALSE);
+
+    BSTR url = NULL;
+    get_LocationURL(&url);
+    RememberInsecureURL(url);
+    CoTaskMemFree(url);
 
     if (!g_settings.m_secure)
     {

@@ -69,3 +69,4 @@ License: MIT
     - Supported random search on address bar.
     - Fix Go button.
     - Warn upon security problem.
+    - Remember insecure URLs.

@@ -99,6 +99,12 @@ static BOOL s_bEnableForward = FALSE;
 static BOOL s_bEnableBack = FALSE;
 static std::vector<std::wstring> s_menu_links;
 static INT s_nSecurity = 0;
+static std::unordered_set<std::wstring> s_insecure_url;
+
+void RememberInsecureURL(const WCHAR *url)
+{
+    s_insecure_url.insert(url);
+}
 
 void MarkSecurity(INT nSecurity, BOOL bOverwrite = FALSE)
 {
@@ -618,9 +624,23 @@ struct MEventHandler : MEventSinkListener
         if (s_nSecurity == 0)
         {
             if (SecureLockIcon == 0)
+            {
                 MarkSecurity(-1);
+            }
             else
-                MarkSecurity(1, TRUE);
+            {
+                BSTR url = NULL;
+                s_pWebBrowser->get_LocationURL(&url);
+                if (s_insecure_url.count(url) != 0)
+                {
+                    MarkSecurity(-1);
+                }
+                else
+                {
+                    MarkSecurity(1, TRUE);
+                }
+                CoTaskMemFree(url);
+            }
         }
         else if (s_nSecurity == 1)
         {
