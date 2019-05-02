@@ -11,6 +11,7 @@ SB Simple Browserは、Windows用の超速いウェブブラウザです。
 - ちゃんと印刷できます。
 - メモリーを浪費しません。
 - インストールなしで使えるぞ。
+- JavaScriptを止められません。
 - キオスクモードのサポート。
 
 対応環境: Windows Vista/7/10
@@ -64,7 +65,7 @@ SB Simple Browserは、Windows用の超速いウェブブラウザです。
     - JavaScript サポート。
     - Zone.Identifier 設定項目を追加。
     - 「ウイルススキャンをしない」設定項目を追加。
-- 2019.XX.YY ver.0.9.5
+- 2019.05.03 ver.0.9.5
     - "SB Simple Browser"に改名。
     - アドレスバーでのランダム検索を可能に。
     - Goボタンを修正。

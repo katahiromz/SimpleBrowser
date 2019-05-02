@@ -11,6 +11,7 @@ SB Simple Browser is a super-quick Web browser for Windows.
 - I can print pages properly.
 - It doesn't waste memory.
 - You can use without installation.
+- Unable to stop JavaScript.
 - Kiosk mode supported.
 
 Supported Platforms: Windows Vista/7/10
@@ -64,7 +65,7 @@ License: MIT
     - JavaScript support.
     - Added Zone.Identifier setting item.
     - Added no-virus-scan setting item.
-- 2019.XX.YY ver.0.9.5
+- 2019.05.03 ver.0.9.5
     - Renamed as "SB Simple Browser".
     - Supported random search on address bar.
     - Fix Go button.
