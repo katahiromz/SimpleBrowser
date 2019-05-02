@@ -60,7 +60,7 @@ License: MIT
     - Improved security.
     - Displays the encryption status as the color of the combo box.
     - Able to open *.url files.
-- 2019.XX.YY ver.0.9.4
+- 2019.05.02 ver.0.9.4
     - JavaScript support.
     - Added Zone.Identifier setting item.
     - Added no-virus-scan setting item.
