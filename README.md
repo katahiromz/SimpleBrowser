@@ -1,6 +1,6 @@
-# <img src="icon.png" alt="" /> SimpleBrowser by katahiromz
+# <img src="icon.png" alt="" /> SB Simple Browser by katahiromz
 
-SimpleBrowser is a super-quick Web browser for Windows.
+SB Simple Browser is a super-quick Web browser for Windows.
 
 ## Features
 
@@ -64,3 +64,5 @@ License: MIT
     - JavaScript support.
     - Added Zone.Identifier setting item.
     - Added no-virus-scan setting item.
+- 2019.XX.YY ver.0.9.5
+    - Renamed as "SB Simple Browser".

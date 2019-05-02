@@ -47,7 +47,7 @@
 
 #define MIN_COMMAND_ID 20000
 
-static const TCHAR s_szName[] = TEXT("SimpleBrowser");
+static const TCHAR s_szName[] = TEXT("SB Simple Browser");
 static HINSTANCE s_hInst = NULL;
 static HACCEL s_hAccel = NULL;
 static HWND s_hMainWnd = NULL;

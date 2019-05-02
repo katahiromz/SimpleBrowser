@@ -1,6 +1,6 @@
-﻿# SimpleBrowser by 片山博文MZ
+﻿# SB Simple Browser by 片山博文MZ
 
-SimpleBrowserは、Windows用の超速いウェブブラウザです。
+SB Simple Browserは、Windows用の超速いウェブブラウザです。
 
 ## 特徴
 
@@ -60,7 +60,9 @@ SimpleBrowserは、Windows用の超速いウェブブラウザです。
     - セキュリティの向上。
     - コンボボックスの色で暗号化状態を表示。
     - *.urlファイルを開けるように。
-- 2019.XX.YY ver.0.9.4
+- 2019.05.02 ver.0.9.4
     - JavaScript サポート。
     - Zone.Identifier 設定項目を追加。
     - 「ウイルススキャンをしない」設定項目を追加。
+- 2019.XX.YY ver.0.9.5
+    - "SB Simple Browser"に改名。

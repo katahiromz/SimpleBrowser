@@ -29,7 +29,7 @@ IDR_DOTSMENU MENU
         MENUITEM "Add a &link to ComboBox", ID_ADD_TO_COMBOBOX
         MENUITEM "Create Shortcut to &Desktop...", ID_CREATE_SHORTCUT
         MENUITEM SEPARATOR
-        MENUITEM "SimpleBrowser Se&ttings...", ID_SETTINGS
+        MENUITEM "SB Simple Browser Se&ttings...", ID_SETTINGS
         MENUITEM "&Kiosk Mode\tCtrl+K", ID_KIOSK
         MENUITEM "A&bout This Application", ID_ABOUT
         MENUITEM SEPARATOR
@@ -41,17 +41,17 @@ IDR_DOTSMENU MENU
 // RT_DIALOG
 
 IDD_ABOUTBOX DIALOG 0, 0, 165, 80
-CAPTION "About SimpleBrowser"
+CAPTION "About SB Simple Browser"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "Tahoma"
 {
     ICON 1, IDC_STATIC, 5, 5, 0, 0
-    LTEXT "SimpleBrowser Version 0.9.4\n\nKatayama Hirofumi MZ\nkatayama.hirofumi.mz@gmail.com", IDC_STATIC, 35, 5, 126, 45
+    LTEXT "SB Simple Browser Version 0.9.5\n\nKatayama Hirofumi MZ\nkatayama.hirofumi.mz@gmail.com", IDC_STATIC, 35, 5, 126, 45
     DEFPUSHBUTTON "OK", IDOK, 56, 61, 60, 14
 }
 
 IDD_SETTINGS DIALOG 0, 0, 210, 205
-CAPTION "SimpleBrowser Settings"
+CAPTION "SB Simple Browser Settings"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "Tahoma"
 {
@@ -162,7 +162,7 @@ STRINGTABLE
     IDS_CREATE_WND_FAIL, "CreateWindow failed."
     IDS_ACCESS_FAIL, "Your access failed."
     IDS_DOTS, "..."
-    IDS_TITLE_TEXT, "%s - SimpleBrowser ver.0.9.4 by katahiromz"
+    IDS_TITLE_TEXT, "%s - SB Simple Browser ver.0.9.5 by katahiromz"
     IDS_NONAME, "(Untitled)"
     IDS_ENTER_TEXT, "Enter the text."
     IDS_UPSIDE, "Upside_en.txt"
