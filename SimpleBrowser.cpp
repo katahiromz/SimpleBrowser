@@ -418,6 +418,9 @@ struct MEventHandler : MEventSinkListener
         printf("BeforeNavigate2: (%p, %p): '%ls', '%ls', '%ls': %08lX\n",
                pDispatch, pApp, bstrURL, bstrTarget, bstrHeaders, dwFlags);
 
+        if (bstrHeaders)
+            printf("Has additional headers: '%ls'\n", bstrHeaders);
+
         if (SUCCEEDED(hr))
         {
             if (pApp == pDispatch)
@@ -1752,7 +1755,7 @@ void OnGo(HWND hwnd)
     std::wstring str;
     str.resize(cch);
 
-    GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
+    GetWindowTextW(s_hAddrBarComboBox, &str[0], cch + 1);
 
     StrTrimW(&str[0], L" \t\n\r\f\v");
     str.resize(wcslen(str.c_str()));

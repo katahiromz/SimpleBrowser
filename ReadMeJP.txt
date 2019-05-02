@@ -67,3 +67,4 @@ SB Simple Browserは、Windows用の超速いウェブブラウザです。
 - 2019.XX.YY ver.0.9.5
     - "SB Simple Browser"に改名。
     - アドレスバーでのランダム検索を可能に。
+    - Goボタンを修正。
