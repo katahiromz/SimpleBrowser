@@ -43,6 +43,7 @@ public:
     IWebBrowser2 *GetIWebBrowser2();
     IHTMLDocument2 *GetIHTMLDocument2();
     void AllowInsecure(BOOL bAllow);
+    HRESULT Quit();
 
     HRESULT get_Application(IDispatch **ppApplication) const;
     HRESULT get_LocationURL(BSTR *bstrURL) const;

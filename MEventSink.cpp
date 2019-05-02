@@ -253,6 +253,10 @@ STDMETHODIMP MEventSink::Invoke(
         assert(pDispParams->rgvarg[0].vt == VT_DISPATCH);
         m_pListener->BeforeScriptExecute(pDispParams->rgvarg[0].pdispVal);
         break;
+    case DISPID_QUIT:
+        assert(pDispParams->cArgs == 0);
+        m_pListener->OnQuit();
+        break;
     default:
         printf("dispIdMember: %ld\n", dispIdMember);
         return DISP_E_MEMBERNOTFOUND;

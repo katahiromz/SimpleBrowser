@@ -85,6 +85,9 @@ struct MEventSinkListener
     virtual void BeforeScriptExecute(IDispatch *pDisp)
     {
     }
+    virtual void OnQuit(void)
+    {
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////

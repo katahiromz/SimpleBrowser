@@ -628,6 +628,11 @@ struct MEventHandler : MEventSinkListener
     {
         printf("BeforeScriptExecute: %p\n", pDisp);
     }
+
+    virtual void OnQuit(void)
+    {
+        printf("OnQuit\n");
+    }
 };
 MEventHandler s_listener;
 
@@ -2069,6 +2074,8 @@ void Downloading_OnDestroy(HWND hwnd)
     }
 
     s_downloadings.erase(hwnd);
+
+    s_pWebBrowser->Quit();
 
     printf("Downloading_OnDestroy: end\n");
 }

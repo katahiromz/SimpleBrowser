@@ -967,3 +967,11 @@ STDMETHODIMP MWebBrowser::FilterDataObject(IDataObject *pDO, IDataObject **ppDOR
     *ppDORet = NULL;
     return S_FALSE;
 }
+
+HRESULT MWebBrowser::Quit()
+{
+    if (!m_web_browser2)
+        return E_NOINTERFACE;
+
+    return m_web_browser2->Quit();
+}
