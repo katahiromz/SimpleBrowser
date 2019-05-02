@@ -66,3 +66,4 @@ License: MIT
     - Added no-virus-scan setting item.
 - 2019.XX.YY ver.0.9.5
     - Renamed as "SB Simple Browser".
+    - Supported random search on address bar.

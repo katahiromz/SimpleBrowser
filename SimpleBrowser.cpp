@@ -1744,6 +1744,19 @@ void OnGoToAddressBar(HWND hwnd)
     SetFocus(s_hAddrBarComboBox);
 }
 
+BOOL IsStringSearchWords(const std::wstring& str)
+{
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (IsCharAlphaNumeric(str[i]))
+            continue;
+        if (wcschr(L" -_'\"!?;,", str[i]) != NULL)
+            continue;
+        return FALSE;
+    }
+    return TRUE;
+}
+
 void OnGo(HWND hwnd)
 {
     INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
@@ -1757,6 +1770,10 @@ void OnGo(HWND hwnd)
     str.resize(wcslen(str.c_str()));
 
     if (str.find(L' ') != std::wstring::npos)
+    {
+        DoSearch(hwnd, str.c_str());
+    }
+    else if (IsStringSearchWords(str))
     {
         DoSearch(hwnd, str.c_str());
     }
