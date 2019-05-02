@@ -31,6 +31,8 @@ configuration:
   - Release
 
 before_build:
+  - git submodule init
+  - git submodule update
   - set CTEST_OUTPUT_ON_FAILURE=1
   - cmake.exe -G "%GENERATOR%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% %APPVEYOR_BUILD_FOLDER%
 
