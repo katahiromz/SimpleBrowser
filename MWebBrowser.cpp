@@ -846,10 +846,12 @@ STDMETHODIMP MWebBrowser::GetWindow(REFGUID rguidReason, HWND *phwnd)
 // IHttpSecurity interface
 
 LPTSTR LoadStringDx(INT nID);
+void MarkSecurity(INT nSecurity, BOOL bOverwrite);
 
 STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
 {
     printf("MWebBrowser::OnSecurityProblem\n");
+    MarkSecurity(-1, FALSE);
 
     if (!g_settings.m_secure)
     {

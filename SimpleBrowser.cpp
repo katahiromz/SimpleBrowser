@@ -98,7 +98,24 @@ static std::wstring s_popup_anchor_data;
 static BOOL s_bEnableForward = FALSE;
 static BOOL s_bEnableBack = FALSE;
 static std::vector<std::wstring> s_menu_links;
-static INT s_nInSecure = 0;
+static INT s_nSecurity = 0;
+
+void MarkSecurity(INT nSecurity, BOOL bOverwrite = FALSE)
+{
+    if (bOverwrite)
+    {
+        s_nSecurity = nSecurity;
+    }
+    else
+    {
+        if (nSecurity < 0)
+            s_nSecurity = -1;
+    }
+    InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+    SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
+    InvalidateRect(s_hStatusBar, NULL, TRUE);
+
+}
 
 void DoUpdateURL(const WCHAR *url)
 {
@@ -447,9 +464,7 @@ struct MEventHandler : MEventSinkListener
                 }
 
                 s_bLoadingPage = TRUE;
-                s_nInSecure = 0;
-                SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
-                InvalidateRect(s_hStatusBar, NULL, TRUE);
+                MarkSecurity(0, TRUE);
 
                 DoUpdateURL(bstrURL);
                 ::SetDlgItemText(s_hMainWnd, ID_STOP_REFRESH, s_strStop.c_str());
@@ -599,21 +614,19 @@ struct MEventHandler : MEventSinkListener
 
     virtual void SetSecureLockIcon(DWORD SecureLockIcon)
     {
-        if (s_nInSecure == 0)
+
+        if (s_nSecurity == 0)
         {
             if (SecureLockIcon == 0)
-                s_nInSecure = -1;
+                MarkSecurity(-1);
             else
-                s_nInSecure = 1;
+                MarkSecurity(1, TRUE);
         }
-        else if (s_nInSecure == 1)
+        else if (s_nSecurity == 1)
         {
             if (SecureLockIcon == 0)
-                s_nInSecure = -1;
+                MarkSecurity(-1);
         }
-        InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
-        SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
-        InvalidateRect(s_hStatusBar, NULL, TRUE);
 
         // SecureLockIconConstants
         printf("SetSecureLockIcon: 0x%08X\n", SecureLockIcon);
@@ -1755,7 +1768,7 @@ BOOL IsStringSearchWords(const WCHAR *str)
 
 void OnGo(HWND hwnd)
 {
-    INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
+    INT cch = GetWindowTextLengthW(s_hAddrBarComboBox);
 
     std::wstring str;
     str.resize(cch);
@@ -2344,12 +2357,12 @@ void OnDots(HWND hwnd)
 
 void OnViewSource(HWND hwnd)
 {
-    INT cch = GetWindowTextLengthW(s_hAddrBarEdit);
+    INT cch = GetWindowTextLengthW(s_hAddrBarComboBox);
 
     std::wstring str;
     str.resize(cch);
 
-    GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
+    GetWindowTextW(s_hAddrBarComboBox, &str[0], cch + 1);
     StrTrimW(&str[0], L" \t\n\r\f\v");
 
     std::wstring url = str.c_str();
@@ -2559,10 +2572,7 @@ void OnAddressBar(HWND hwnd, HWND hwndCtl, UINT codeNotify)
         }
         break;
     case CBN_EDITCHANGE:
-        s_nInSecure = 0;
-        InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
-        SendMessage(s_hStatusBar, SB_SETTEXT, 1 | SBT_OWNERDRAW, 0);
-        InvalidateRect(s_hStatusBar, NULL, TRUE);
+        MarkSecurity(0, TRUE);
         break;
     }
 }
@@ -3400,7 +3410,7 @@ void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT * lpDrawItem)
         else
         {
             HBITMAP hbm = NULL;
-            switch (s_nInSecure)
+            switch (s_nSecurity)
             {
             case -1:
                 hbm = LoadBitmap(s_hInst, MAKEINTRESOURCE(IDB_INSECURE));
@@ -3479,7 +3489,7 @@ HBRUSH OnCtlColor(HWND hwnd, HDC hdc, HWND hwndChild, int type)
 {
     static HBRUSH s_hbrRed = CreateSolidBrush(RGB(255, 221, 221));
     static HBRUSH s_hbrGreen = CreateSolidBrush(RGB(221, 255, 221));
-    switch (s_nInSecure)
+    switch (s_nSecurity)
     {
     case -1:
         SetTextColor(hdc, RGB(64, 0, 0));
@@ -3582,8 +3592,7 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
         case WM_KEYDOWN:
             if (pMsg->wParam == VK_RETURN)
             {
-                s_nInSecure = 0;
-                InvalidateRect(s_hAddrBarComboBox, NULL, TRUE);
+                MarkSecurity(0, TRUE);
                 // [Enter] key
                 SendMessage(s_hMainWnd, WM_COMMAND, ID_GO, 0);
                 return TRUE;
