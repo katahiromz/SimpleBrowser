@@ -1806,7 +1806,7 @@ void OnGo(HWND hwnd)
     {
         if (L'A' <= str[0] && str[0] <= L'Z' && str[1] == L':' && str.size() == 2)
         {
-            // C: --> C:\
+            /* C: --> C:\ */
             str += L'\\';
         }
 
