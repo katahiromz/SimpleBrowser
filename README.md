@@ -1,5 +1,7 @@
 # <img src="icon.png" alt="" /> SB Simple Browser by katahiromz
 
+[![Build status](https://ci.appveyor.com/api/projects/status/7wuwib3nak4jn6ew?svg=true)](https://ci.appveyor.com/project/katahiromz/simplebrowser)
+
 SB Simple Browser is a super-quick Web browser for Windows.
 
 ## Features
