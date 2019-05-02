@@ -1132,7 +1132,7 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
         }
         else if (id == ID_STOP_REFRESH)
         {
-            INT k = text.find(L'/');
+            size_t k = text.find(L'/');
             if (k != std::wstring::npos)
             {
                 s_strStop = text.substr(0, k);
@@ -1145,21 +1145,21 @@ BOOL DoParseLines(HWND hwnd, const std::vector<std::wstring>& lines,
             }
             DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
             hCtrl = CreateWindowEx(0, s_szButton, s_strRefresh.c_str(), style, 0, 0, 0, 0,
-                                   hwnd, (HMENU)id, s_hInst, NULL);
+                                   hwnd, (HMENU)(INT_PTR)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
         else if (id == ID_DOTS)
         {
             DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW | BS_PUSHLIKE;
             hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
-                                   hwnd, (HMENU)id, s_hInst, NULL);
+                                   hwnd, (HMENU)(INT_PTR)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
         else if (text.size() && id != 0)
         {
             DWORD style = WS_CHILD | WS_VISIBLE | BS_OWNERDRAW;
             hCtrl = CreateWindowEx(0, s_szButton, text.c_str(), style, 0, 0, 0, 0,
-                                   hwnd, (HMENU)id, s_hInst, NULL);
+                                   hwnd, (HMENU)(INT_PTR)id, s_hInst, NULL);
             SendDlgItemMessage(hwnd, id, WM_SETFONT, (WPARAM)hButtonFont, TRUE);
         }
         else
