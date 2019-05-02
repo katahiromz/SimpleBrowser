@@ -190,7 +190,8 @@ STRINGTABLE
     IDS_DOWNLOAD_PROGRESS_2, "%lu / %lu bytes (estimated remaining %lu min)"
     IDS_DOWNLOAD_PROGRESS_3, "%lu / %lu bytes (estimated remaining %lu hrs %lu min)"
     IDS_SCAN_SKIPPED, "Virus scan skipped."
-    IDS_SECURITY_WARNING, "This web site has security problem. Do you want to continue?"
+    IDS_SECURITY_WARNING, "There is a security issue with this website. There are risks of information leakage and/or fraud.\n\nDo you want to continue?"
+    IDS_WARNING, "Warning from SB Simple Browser"
 }
 
 //////////////////////////////////////////////////////////////////////////////

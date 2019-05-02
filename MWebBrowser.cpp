@@ -857,7 +857,8 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
     }
 
     if (MessageBoxW(m_hwndParent, LoadStringDx(IDS_SECURITY_WARNING),
-                    NULL, MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+                    LoadStringDx(IDS_WARNING),
+                    MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
     {
         return S_OK;
     }
