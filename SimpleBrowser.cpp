@@ -631,15 +631,18 @@ struct MEventHandler : MEventSinkListener
             {
                 BSTR url = NULL;
                 s_pWebBrowser->get_LocationURL(&url);
-                if (s_insecure_url.count(url) != 0)
+                if (url)
                 {
-                    MarkSecurity(-1);
+                    if (s_insecure_url.count(url) != 0)
+                    {
+                        MarkSecurity(-1);
+                    }
+                    else
+                    {
+                        MarkSecurity(1, TRUE);
+                    }
+                    SysFreeString(url);
                 }
-                else
-                {
-                    MarkSecurity(1, TRUE);
-                }
-                CoTaskMemFree(url);
             }
         }
         else if (s_nSecurity == 1)
@@ -888,7 +891,8 @@ void InitAddrBarComboBox(void)
     std::wstring str;
     str.resize(cch);
 
-    GetWindowText(s_hAddrBarComboBox, &str[0], cch + 1);
+    if (cch > 0)
+        GetWindowText(s_hAddrBarComboBox, &str[0], cch + 1);
 
     ComboBox_ResetContent(s_hAddrBarComboBox);
 	SETTINGS::list_type::const_iterator it, end = g_settings.m_url_list.end();

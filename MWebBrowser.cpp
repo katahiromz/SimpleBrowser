@@ -857,7 +857,7 @@ STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
     BSTR url = NULL;
     get_LocationURL(&url);
     RememberInsecureURL(url);
-    CoTaskMemFree(url);
+    SysFreeString(url);
 
     if (!g_settings.m_secure)
     {
