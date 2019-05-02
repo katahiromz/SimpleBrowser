@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cassert>
 #include <mshtmhst.h>
+#include "Settings.hpp"
+#include "resource.h"
 
 /*static*/ MWebBrowser *
 MWebBrowser::Create(HWND hwndParent)
@@ -843,11 +845,23 @@ STDMETHODIMP MWebBrowser::GetWindow(REFGUID rguidReason, HWND *phwnd)
 
 // IHttpSecurity interface
 
+LPTSTR LoadStringDx(INT nID);
+
 STDMETHODIMP MWebBrowser::OnSecurityProblem(DWORD dwProblem)
 {
-    if (m_bAllowInsecure)
-        return S_OK;
     printf("MWebBrowser::OnSecurityProblem\n");
+
+    if (!g_settings.m_secure)
+    {
+        return S_OK;
+    }
+
+    if (MessageBoxW(m_hwndParent, LoadStringDx(IDS_SECURITY_WARNING),
+                    NULL, MB_ICONWARNING | MB_YESNOCANCEL) == IDYES)
+    {
+        return S_OK;
+    }
+
     return E_ABORT;
 }
 

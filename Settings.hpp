@@ -16,7 +16,7 @@ struct SETTINGS
     INT m_x, m_y, m_cx, m_cy;
     BOOL m_bMaximized;
     std::wstring m_homepage;
-	typedef std::vector<std::wstring> list_type;
+    typedef std::vector<std::wstring> list_type;
     list_type m_url_list;
     list_type m_black_list;
     BOOL m_secure;
