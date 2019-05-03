@@ -1429,6 +1429,7 @@ BOOL DoReloadLayout(HWND hwnd, HFONT hButtonFont)
     SendMessage(s_hAddrBarComboBox, WM_SETFONT, (WPARAM)s_hAddressFont, TRUE);
     InitAddrBarComboBox();
     ComboBox_LimitText(s_hAddrBarComboBox, 255);
+    SendMessage(s_hAddrBarComboBox, CB_SETDROPPEDWIDTH, GetSystemMetrics(SM_CXSCREEN), 0);
 
     PostMessage(hwnd, WM_SIZE, 0, 0);
 
