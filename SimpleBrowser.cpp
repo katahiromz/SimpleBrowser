@@ -2302,9 +2302,12 @@ void OnSave(HWND hwnd)
     BSTR bstrURL = NULL;
     if (SUCCEEDED(s_pWebBrowser->get_LocationURL(&bstrURL)))
     {
-        DoSaveURL(hwnd, bstrURL);
+        if (bstrURL)
+        {
+            DoSaveURL(hwnd, bstrURL);
 
-        ::SysFreeString(bstrURL);
+            SysFreeString(bstrURL);
+        }
     }
 }
 
