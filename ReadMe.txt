@@ -16,6 +16,10 @@ SB Simple Browser is a super-quick Web browser for Windows.
 
 Supported Platforms: Windows Vista/7/10
 
+Because it uses the engine of Internet Explorer, it is vulnerable to the
+browser crashers (JavaScript infinite alert etc.). If you were unable to
+close it, please restart the PC or kill the process on Task Manager. 
+
 ## Shortcut Keys
 
 | Key Combination | Command            |
