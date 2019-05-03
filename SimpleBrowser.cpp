@@ -621,7 +621,6 @@ struct MEventHandler : MEventSinkListener
 
     virtual void SetSecureLockIcon(DWORD SecureLockIcon)
     {
-
         if (s_nSecurity == 0)
         {
             if (SecureLockIcon == 0)
@@ -645,11 +644,6 @@ struct MEventHandler : MEventSinkListener
                     SysFreeString(url);
                 }
             }
-        }
-        else if (s_nSecurity == 1)
-        {
-            if (SecureLockIcon == 0)
-                MarkSecurity(-1);
         }
 
         // SecureLockIconConstants
