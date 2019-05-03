@@ -21,7 +21,7 @@ Supported Platforms: Windows Vista/7/10
 Because it uses the engine of Internet Explorer, it is vulnerable to the
 browser crashers (JavaScript infinite alert etc.). If you were unable to
 close it, please restart the PC or kill the process on Task Manager. 
-If you still couldn't finish, please press and hold the power button
+If you still couldn't close it, please press and hold the power button
 as a last resort.
 
 ## Shortcut Keys
