@@ -73,3 +73,5 @@ License: MIT
     - Fix Go button.
     - Warn upon security problem.
     - Remember insecure URLs.
+- 2019.XX.YY ver.0.9.6
+    - Various small improvements.
