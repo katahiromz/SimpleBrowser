@@ -326,7 +326,8 @@ std::wstring URL_encode(const std::wstring& url)
 
     size_t len = url.size() * 4;
     str.resize(len);
-    WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, &str[0], (INT)len, NULL, NULL);
+    if (len > 0)
+        WideCharToMultiByte(CP_UTF8, 0, url.c_str(), -1, &str[0], (INT)len, NULL, NULL);
 
     len = strlen(str.c_str());
     str.resize(len);
@@ -2386,8 +2387,11 @@ void OnViewSource(HWND hwnd)
     std::wstring str;
     str.resize(cch);
 
-    GetWindowTextW(s_hAddrBarComboBox, &str[0], cch + 1);
-    StrTrimW(&str[0], L" \t\n\r\f\v");
+    if (cch > 0)
+    {
+        GetWindowTextW(s_hAddrBarComboBox, &str[0], cch + 1);
+        StrTrimW(&str[0], L" \t\n\r\f\v");
+    }
 
     std::wstring url = str.c_str();
     if (url.find(L"view-source:") == 0)
@@ -3661,8 +3665,11 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
                 std::wstring str;
                 str.resize(cch);
 
-                GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
-                StrTrimW(&str[0], L" \t\n\r\f\v");
+                if (cch > 0)
+                {
+                    GetWindowTextW(s_hAddrBarEdit, &str[0], cch + 1);
+                    StrTrimW(&str[0], L" \t\n\r\f\v");
+                }
 
                 std::wstring url = str.c_str();
                 if (url.find(L"view-source:") == 0)
