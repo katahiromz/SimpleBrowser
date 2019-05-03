@@ -78,3 +78,4 @@ Internet Explorer のエンジンを採用しているため、JavaScriptの無�
     - 安全でないURLを記憶。
 - 2019.XX.YY ver.0.9.6
     - 様々な小さな改良。
+    - ダウンロード完了時に音を鳴らす。

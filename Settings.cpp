@@ -36,6 +36,7 @@ void SETTINGS::reset()
     m_zone_ident = TRUE;
     m_emulation = 11001;
     m_refresh_interval = (30 * 1000);  // 30 seconds
+    m_play_sound = TRUE;
 }
 
 BOOL SETTINGS::load()
@@ -121,6 +122,11 @@ BOOL SETTINGS::load()
         cb = sizeof(value);
         RegQueryValueEx(hApp, L"ZoneIdent", NULL, NULL, (LPBYTE)&value, &cb);
         m_zone_ident = !!value;
+
+        value = m_play_sound;
+        cb = sizeof(value);
+        RegQueryValueEx(hApp, L"PlaySound", NULL, NULL, (LPBYTE)&value, &cb);
+        m_play_sound = !!value;
 
         value = m_emulation;
         cb = sizeof(value);
@@ -255,6 +261,10 @@ BOOL SETTINGS::save()
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"ZoneIdent", 0, REG_DWORD, (LPBYTE)&value, cb);
 
+                value = DWORD(m_play_sound);
+                cb = DWORD(sizeof(value));
+                RegSetValueEx(hApp, L"PlaySound", 0, REG_DWORD, (LPBYTE)&value, cb);
+
                 value = DWORD(m_emulation);
                 cb = DWORD(sizeof(value));
                 RegSetValueEx(hApp, L"Emulation", 0, REG_DWORD, (LPBYTE)&value, cb);
@@ -320,6 +330,8 @@ static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
         CheckDlgButton(hwnd, chx7, BST_CHECKED);
     if (g_settings.m_zone_ident)
         CheckDlgButton(hwnd, chx8, BST_CHECKED);
+    if (g_settings.m_play_sound)
+        CheckDlgButton(hwnd, chx9, BST_CHECKED);
 
     SetDlgItemText(hwnd, edt1, g_settings.m_homepage.c_str());
     SetDlgItemInt(hwnd, edt2, g_settings.m_emulation, TRUE);
@@ -354,6 +366,7 @@ static void OnOK(HWND hwnd)
     g_settings.m_kiosk_mode = (IsDlgButtonChecked(hwnd, chx6) == BST_CHECKED);
     g_settings.m_no_virus_scan = (IsDlgButtonChecked(hwnd, chx7) == BST_CHECKED);
     g_settings.m_zone_ident = (IsDlgButtonChecked(hwnd, chx8) == BST_CHECKED);
+    g_settings.m_play_sound = (IsDlgButtonChecked(hwnd, chx9) == BST_CHECKED);
 
     TCHAR szText[256];
     GetDlgItemText(hwnd, edt1, szText, ARRAYSIZE(szText));

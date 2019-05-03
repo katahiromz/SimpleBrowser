@@ -7,6 +7,7 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <commdlg.h>
+#include <mmsystem.h>
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <mshtml.h>
@@ -1963,6 +1964,9 @@ unsigned __stdcall downloading_proc(void *arg)
 
     pCallback->Release();
     delete pDownloading;
+
+    PlaySound(MAKEINTRESOURCE(1), GetModuleHandle(NULL),
+              SND_ASYNC | SND_NODEFAULT | SND_RESOURCE);
 
     return 0;
 }

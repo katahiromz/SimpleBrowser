@@ -50,7 +50,7 @@ FONT 9, "Tahoma"
     DEFPUSHBUTTON "OK", IDOK, 56, 61, 60, 14
 }
 
-IDD_SETTINGS DIALOG 0, 0, 210, 205
+IDD_SETTINGS DIALOG 0, 0, 210, 225
 CAPTION "SB Simple Browser Settings"
 STYLE DS_CENTER | DS_MODALFRAME | WS_POPUPWINDOW | WS_DLGFRAME
 FONT 9, "Tahoma"
@@ -72,9 +72,10 @@ FONT 9, "Tahoma"
     AUTOCHECKBOX "&Kiosk Mode", chx6, 105, 145, 95, 14
     AUTOCHECKBOX "No &virus scan", chx7, 5, 165, 95, 14
     AUTOCHECKBOX "Use &Zone.Identifier", chx8, 105, 165, 95, 14
-    PUSHBUTTON "Reset &All", psh6, 5, 185, 60, 14
-    DEFPUSHBUTTON "OK", IDOK, 80, 185, 60, 14
-    PUSHBUTTON "Cancel", IDCANCEL, 145, 185, 60, 14
+    AUTOCHECKBOX "Pla&y sound upon download complete", chx9, 5, 185, 160, 14
+    PUSHBUTTON "Reset &All", psh6, 5, 205, 65, 14
+    DEFPUSHBUTTON "OK", IDOK, 80, 205, 60, 14
+    PUSHBUTTON "Cancel", IDCANCEL, 145, 205, 60, 14
 }
 
 IDD_ADDLINK DIALOG 0, 0, 205, 75

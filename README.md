@@ -81,3 +81,4 @@ License: MIT
     - Remember insecure URLs.
 - 2019.XX.YY ver.0.9.6
     - Various small improvements.
+    - Play sound upon download complete.

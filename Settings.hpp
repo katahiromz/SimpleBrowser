@@ -27,6 +27,7 @@ struct SETTINGS
     BOOL m_kiosk_mode;
     BOOL m_no_virus_scan;
     BOOL m_zone_ident;
+    BOOL m_play_sound;
     DWORD m_emulation;
     DWORD m_refresh_interval;
 
