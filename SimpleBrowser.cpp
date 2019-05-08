@@ -1788,6 +1788,11 @@ BOOL IsStringSearchWords(const WCHAR *str)
     {
         for (size_t i = 0; str[i]; ++i)
         {
+            if (str[i] == L' ' || str[i] == L'\t')
+                return TRUE;
+        }
+        for (size_t i = 0; str[i]; ++i)
+        {
             if (str[i] == L'/')
                 return FALSE;
         }
