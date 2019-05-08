@@ -1783,8 +1783,17 @@ void OnGoToAddressBar(HWND hwnd)
 
 BOOL IsStringSearchWords(const WCHAR *str)
 {
-    return !IsURL(str) && !PathIsUNC(str) && !PathIsNetworkPath(str) &&
-           !PathFileExists(str);
+    if (!IsURL(str) && !PathIsUNC(str) && !PathIsNetworkPath(str) &&
+        !PathFileExists(str))
+    {
+        for (size_t i = 0; str[i]; ++i)
+        {
+            if (str[i] == L'/')
+                return FALSE;
+        }
+        return TRUE;
+    }
+    return FALSE;
 }
 
 void OnGo(HWND hwnd)
