@@ -21,3 +21,5 @@ copy /Y RightSide_ja.txt SimpleBrowser-0.9.6
 copy /Y Upside_en.txt SimpleBrowser-0.9.6
 copy /Y Upside_ja.txt SimpleBrowser-0.9.6
 copy /Y mshtmcid.h SimpleBrowser-0.9.6
+copy /Y v2xker32.dll SimpleBrowser-0.9.6
+copy /Y v2xol.dll SimpleBrowser-0.9.6

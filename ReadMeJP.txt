@@ -14,7 +14,7 @@ SB Simple Browserは、Windows用の超速いウェブブラウザです。
 - JavaScriptを止められません。
 - キオスクモードのサポート。
 
-対応環境: Windows Vista/7/10
+対応環境: Windows XP/Vista/7/10
 
 Internet Explorer のエンジンを採用しているため、JavaScriptの無限alertなどの
 ブラウザクラッシャー攻撃には脆弱 (ぜいじゃく) です。閉じられなくなった場合は、落ち着いて
@@ -76,6 +76,8 @@ Internet Explorer のエンジンを採用しているため、JavaScriptの無�
     - Goボタンを修正。
     - セキュリティ上の問題があれば警告する。
     - 安全でないURLを記憶。
-- 2019.XX.YY ver.0.9.6
+- 2019.05.10 ver.0.9.6
     - 様々な小さな改良。
     - ダウンロード完了時に音を鳴らす。
+    - アドレスバーの改良。
+    - vista2xp テクノロジーにより XP をサポート。

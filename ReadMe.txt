@@ -14,7 +14,7 @@ SB Simple Browser is a super-quick Web browser for Windows.
 - Unable to stop JavaScript.
 - Kiosk mode supported.
 
-Supported Platforms: Windows Vista/7/10
+Supported Platforms: Windows XP/Vista/7/10
 
 Because it uses the engine of Internet Explorer, it is vulnerable to the
 browser crashers (JavaScript infinite alert etc.). If you were unable to
@@ -77,6 +77,8 @@ License: MIT
     - Fix Go button.
     - Warn upon security problem.
     - Remember insecure URLs.
-- 2019.XX.YY ver.0.9.6
+- 2019.05.10 ver.0.9.6
     - Various small improvements.
     - Play sound upon download complete.
+    - Improved Address Bar.
+    - Supported XP with vista2xp technology.

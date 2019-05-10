@@ -67,6 +67,8 @@ Source: "RightSide_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_en.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upside_ja.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "mshtmcid.h"; DestDir: "{app}"; Flags: ignoreversion
+Source: "v2xker32.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "v2xol.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
