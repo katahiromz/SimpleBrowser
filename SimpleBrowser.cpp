@@ -3786,14 +3786,14 @@ STDMETHODIMP MWebBrowserEx::ShowContextMenu(
 
 extern "C"
 INT WINAPI
-wWinMain(HINSTANCE  hInstance,
+WinMain(HINSTANCE  hInstance,
         HINSTANCE   hPrevInstance,
-        LPWSTR      lpCmdLine,
+        LPSTR       lpCmdLine,
         INT         nCmdShow)
 {
     s_nCmdShow = nCmdShow;
 
-    if (wcsstr(lpCmdLine, L"kiosk") != NULL)
+    if (wcsstr(GetCommandLineW(), L"kiosk") != NULL)
     {
         INT i = 0;
         while (HWND hwnd = FindWindow(s_szName, NULL))

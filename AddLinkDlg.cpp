@@ -7,6 +7,10 @@
 #include <shlwapi.h>
 #include "resource.h"
 
+#ifndef ARRAYSIZE
+    #define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
+#endif
+
 static std::wstring s_text;
 
 static BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam)
