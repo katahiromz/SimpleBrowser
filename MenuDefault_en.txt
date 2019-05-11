@@ -11,3 +11,7 @@ Create shortcut	#2266
 View source	#20018
 (Separator)	#0
 Refresh	#2300
+(Separator)	#0
+Copy page title	#20058
+Copy page address	#20059
+Copy page title and address	#20060

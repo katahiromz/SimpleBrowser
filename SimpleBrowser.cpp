@@ -3223,6 +3223,70 @@ void OnCopyLinkTextAndURL(HWND hwnd)
     }
 }
 
+void OnCopyPageTitle(HWND hwnd)
+{
+    IDispatch *pDisp = NULL;
+    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+    if (pDisp)
+    {
+        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        {
+            BSTR bstrTitle = NULL;
+            pDocument->get_title(&bstrTitle);
+            if (bstrTitle)
+            {
+                DoCopyText(hwnd, bstrTitle);
+                SysFreeString(bstrTitle);
+            }
+        }
+        pDisp->Release();
+    }
+}
+
+void OnCopyPageURL(HWND hwnd)
+{
+    BSTR bstrURL = NULL;
+    if (SUCCEEDED(s_pWebBrowser->get_LocationURL(&bstrURL)))
+    {
+        if (bstrURL)
+        {
+            DoCopyText(hwnd, bstrURL);
+
+            SysFreeString(bstrURL);
+        }
+    }
+}
+
+void OnCopyPageTitleAndURL(HWND hwnd)
+{
+    IDispatch *pDisp = NULL;
+    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+    if (pDisp)
+    {
+        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        {
+            BSTR bstrTitle = NULL;
+            pDocument->get_title(&bstrTitle);
+            if (bstrTitle)
+            {
+                BSTR bstrURL = NULL;
+                s_pWebBrowser->get_LocationURL(&bstrURL);
+                if (bstrURL)
+                {
+                    std::wstring str = bstrTitle;
+                    str += L"\r\n";
+                    str += bstrURL;
+                    DoCopyText(hwnd, str.c_str());
+
+                    SysFreeString(bstrURL);
+                }
+                SysFreeString(bstrTitle);
+            }
+        }
+        pDisp->Release();
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -3381,6 +3445,15 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             break;
         case ID_COPY_LINK_TEXT_AND_URL:
             OnCopyLinkTextAndURL(hwnd);
+            break;
+        case ID_COPY_PAGE_TITLE:
+            OnCopyPageTitle(hwnd);
+            break;
+        case ID_COPY_PAGE_URL:
+            OnCopyPageURL(hwnd);
+            break;
+        case ID_COPY_PAGE_TITLE_AND_URL:
+            OnCopyPageTitleAndURL(hwnd);
             break;
         }
     }
