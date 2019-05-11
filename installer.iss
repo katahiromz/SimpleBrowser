@@ -12,7 +12,7 @@
 
 AppId={{B3BB7047-A65E-484B-92CB-87A3D95BF179}
 AppName=SimpleBrowser
-AppVerName=SimpleBrowser 0.9.6
+AppVerName=SimpleBrowser 0.9.7
 AppPublisher=Katayama Hirofumi MZ
 AppPublisherURL=http://katahiromz.web.fc2.com/
 AppSupportURL=http://katahiromz.web.fc2.com/
@@ -23,7 +23,7 @@ DisableDirPage=no
 AllowNoIcons=yes
 LicenseFile=LICENSE.txt
 OutputDir=.
-OutputBaseFilename=SimpleBrowser-0.9.6-setup
+OutputBaseFilename=SimpleBrowser-0.9.7-setup
 SetupIconFile=res\Icon_1.ico
 Compression=lzma
 SolidCompression=yes
@@ -33,9 +33,9 @@ VersionInfoCompany=Katayama Hirofumi MZ
 VersionInfoCopyright=Copyright (C) 2019 Katayama Hirofumi MZ.
 VersionInfoDescription=SB Simple Browser
 VersionInfoProductName=SB Simple Browser
-VersionInfoProductTextVersion=0.9.6
-VersionInfoProductVersion=0.9.6
-VersionInfoVersion=0.9.6
+VersionInfoProductTextVersion=0.9.7
+VersionInfoProductVersion=0.9.7
+VersionInfoVersion=0.9.7
 
 [Languages]
 Name: "english"; MessagesFile:  "compiler:Default.isl"

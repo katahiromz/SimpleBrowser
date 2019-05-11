@@ -84,3 +84,6 @@ License: MIT
     - Play sound upon download complete.
     - Improved Address Bar.
     - Supported XP with vista2xp technology.
+- 2019.XX.YY ver.0.9.7
+    - Enabled copying page text and URL.
+    - Enabled copying link text and URL.
