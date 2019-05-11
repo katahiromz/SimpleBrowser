@@ -5,4 +5,6 @@
 Open link	#2137
 Save this image as...	#20037
 Save this target as...	#20038
-Copy this link	#2262
+Copy this link text	#20056
+Copy this link address	#2262
+Copy this link text and address	#20057

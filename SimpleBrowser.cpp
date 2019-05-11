@@ -1336,8 +1336,12 @@ HMENU DoCreateMenu(HWND hwnd, std::wstring& data)
                 }
                 if (!bstrHREF)
                 {
-                    if (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN || id == IDM_COPYSHORTCUT)
+                    if (id == IDM_FOLLOWLINKC || id == IDM_FOLLOWLINKN ||
+                        id == IDM_COPYSHORTCUT || id == ID_COPY_LINK_TEXT ||
+                        id == ID_COPY_LINK_TEXT_AND_URL)
+                    {
                         continue;
+                    }
                 }
             }
             else
@@ -2786,6 +2790,13 @@ BSTR DoGetHrefFromATag(IHTMLElement *pElement)
     return NULL;
 }
 
+BSTR DoGetTextFromATag(IHTMLElement *pElement)
+{
+    BSTR bstrText = NULL;
+    pElement->get_innerText(&bstrText);
+    return bstrText;
+}
+
 BSTR DoGetImageSrcFromElement(IHTMLElement *pElement)
 {
     BSTR bstrTag;
@@ -2916,6 +2927,71 @@ BSTR DoGetHyperlinkHrefFromElement(IHTMLElement *pElement)
     return bstrHREF;
 }
 
+BSTR DoGetHyperlinkTextFromElement(IHTMLElement *pElement)
+{
+    BSTR bstrTag;
+    pElement->get_tagName(&bstrTag);
+    if (!bstrTag)
+        return NULL;
+
+    BSTR bstrText = NULL;
+    if (lstrcmpiW(bstrTag, L"a") == 0)
+    {
+        bstrText = DoGetTextFromATag(pElement);
+        return bstrText;
+    }
+
+    IDispatch *pdisp = NULL;
+    pElement->get_children(&pdisp);
+    if (pdisp)
+    {
+        IHTMLElementCollection *pColl = NULL;
+        pdisp->QueryInterface(&pColl);
+        if (pColl)
+        {
+            long n = 0;
+            pColl->get_length(&n);
+            if (n)
+            {
+                // IHTMLElementCollection::item
+                VARIANT varName, varIndex;
+                for (long i = 0; i < n; ++i)
+                {
+                    VariantInit(&varName);
+                    varName.vt = VT_I4;
+                    varName.lVal = i;
+
+                    VariantInit(&varIndex);
+                    varIndex.vt = VT_I4;
+                    varIndex.lVal = 0;
+
+                    IDispatch *pDispatch = NULL;
+                    pColl->item(varName, varIndex, &pDispatch);
+                    if (pDispatch)
+                    {
+                        IHTMLElement *pElement = NULL;
+                        pDispatch->QueryInterface(&pElement);
+                        if (pElement)
+                        {
+                            bstrText = DoGetTextFromATag(pElement);
+                            pElement->Release();
+                        }
+
+                        pDispatch->Release();
+                    }
+
+                    if (bstrText)
+                        break;
+                }
+            }
+            pColl->Release();
+        }
+        pdisp->Release();
+    }
+
+    return bstrText;
+}
+
 BSTR GetActiveImgSrc(HWND hwnd)
 {
     BSTR ret = NULL;
@@ -2957,6 +3033,32 @@ BSTR GetActiveHREF(HWND hwnd)
                 if (BSTR bstrURL = DoGetHyperlinkHrefFromElement(pElement))
                 {
                     ret = bstrURL;
+                }
+                pElement->Release();
+            }
+        }
+        pDisp->Release();
+    }
+
+    return ret;
+}
+
+BSTR GetActiveLinkText(HWND hwnd)
+{
+    BSTR ret = NULL;
+    IDispatch *pDisp = NULL;
+    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
+    if (pDisp)
+    {
+        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        {
+            IHTMLElement *pElement = NULL;
+            pDocument->get_activeElement(&pElement);
+            if (pElement)
+            {
+                if (BSTR bstrText = DoGetHyperlinkTextFromElement(pElement))
+                {
+                    ret = bstrText;
                 }
                 pElement->Release();
             }
@@ -3068,6 +3170,57 @@ void OnParseCmdLine(HWND hwnd)
 
     PostMessage(hwnd, WM_MOVE, 0, 0);
     PostMessage(hwnd, WM_SIZE, 0, 0);
+}
+
+BOOL DoCopyText(HWND hwnd, LPCWSTR pszText)
+{
+    if (!OpenClipboard(hwnd))
+        return FALSE;
+
+    EmptyClipboard();
+
+    BOOL bOK = FALSE;
+    DWORD cb = (lstrlenW(pszText) + 1) * sizeof(WCHAR);
+    if (HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, cb))
+    {
+        if (LPWSTR psz = (LPWSTR)GlobalLock(hGlobal))
+        {
+            CopyMemory(psz, pszText, cb);
+            GlobalUnlock(hGlobal);
+
+            bOK = SetClipboardData(CF_UNICODETEXT, hGlobal) != NULL;
+        }
+
+        CloseClipboard();
+    }
+
+    return bOK;
+}
+
+void OnCopyLinkText(HWND hwnd)
+{
+    if (BSTR bstrText = GetActiveLinkText(hwnd))
+    {
+        DoCopyText(hwnd, bstrText);
+        SysFreeString(bstrText);
+    }
+}
+
+void OnCopyLinkTextAndURL(HWND hwnd)
+{
+    if (BSTR bstrText = GetActiveLinkText(hwnd))
+    {
+        if (BSTR bstrURL = GetActiveHREF(hwnd))
+        {
+            std::wstring str = bstrText;
+            str += L"\r\n";
+            str += bstrURL;
+
+            DoCopyText(hwnd, str.c_str());
+            SysFreeString(bstrURL);
+        }
+        SysFreeString(bstrText);
+    }
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -3222,6 +3375,12 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             break;
         case ID_PARSE_CMDLINE:
             OnParseCmdLine(hwnd);
+            break;
+        case ID_COPY_LINK_TEXT:
+            OnCopyLinkText(hwnd);
+            break;
+        case ID_COPY_LINK_TEXT_AND_URL:
+            OnCopyLinkTextAndURL(hwnd);
             break;
         }
     }

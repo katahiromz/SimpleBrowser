@@ -125,6 +125,8 @@
 #define ID_CUSTOM_LINK_15                   20053
 #define ID_CUSTOM_LINK_16                   20054
 #define ID_PARSE_CMDLINE                    20055
+#define ID_COPY_LINK_TEXT                   20056
+#define ID_COPY_LINK_TEXT_AND_URL           20057
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
