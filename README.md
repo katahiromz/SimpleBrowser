@@ -87,3 +87,4 @@ License: MIT
 - 2019.XX.YY ver.0.9.7
     - Enabled copying page text and URL.
     - Enabled copying link text and URL.
+    - Supported taking page screenshot.
