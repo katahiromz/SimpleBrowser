@@ -219,16 +219,11 @@ void SetDocumentContents(IHTMLDocument2 *pDocument, const WCHAR *text,
 
 void SetInternalPageContents(const WCHAR *html, bool is_html = true)
 {
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
-        {
-            pDocument->close();
-            SetDocumentContents(pDocument, html, is_html);
-        }
-        pDisp->Release();
+        pDocument->close();
+        SetDocumentContents(pDocument, html, is_html);
+        pDocument->Release();
     }
 }
 
@@ -2995,24 +2990,19 @@ BSTR DoGetHyperlinkTextFromElement(IHTMLElement *pElement)
 BSTR GetActiveImgSrc(HWND hwnd)
 {
     BSTR ret = NULL;
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        IHTMLElement *pElement = NULL;
+        pDocument->get_activeElement(&pElement);
+        if (pElement)
         {
-            IHTMLElement *pElement = NULL;
-            pDocument->get_activeElement(&pElement);
-            if (pElement)
+            if (BSTR bstrURL = DoGetImageSrcFromElement(pElement))
             {
-                if (BSTR bstrURL = DoGetImageSrcFromElement(pElement))
-                {
-                    ret = bstrURL;
-                }
-                pElement->Release();
+                ret = bstrURL;
             }
+            pElement->Release();
         }
-        pDisp->Release();
+        pDocument->Release();
     }
     return ret;
 }
@@ -3020,24 +3010,19 @@ BSTR GetActiveImgSrc(HWND hwnd)
 BSTR GetActiveHREF(HWND hwnd)
 {
     BSTR ret = NULL;
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        IHTMLElement *pElement = NULL;
+        pDocument->get_activeElement(&pElement);
+        if (pElement)
         {
-            IHTMLElement *pElement = NULL;
-            pDocument->get_activeElement(&pElement);
-            if (pElement)
+            if (BSTR bstrURL = DoGetHyperlinkHrefFromElement(pElement))
             {
-                if (BSTR bstrURL = DoGetHyperlinkHrefFromElement(pElement))
-                {
-                    ret = bstrURL;
-                }
-                pElement->Release();
+                ret = bstrURL;
             }
+            pElement->Release();
         }
-        pDisp->Release();
+        pDocument->Release();
     }
 
     return ret;
@@ -3046,24 +3031,19 @@ BSTR GetActiveHREF(HWND hwnd)
 BSTR GetActiveLinkText(HWND hwnd)
 {
     BSTR ret = NULL;
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        IHTMLElement *pElement = NULL;
+        pDocument->get_activeElement(&pElement);
+        if (pElement)
         {
-            IHTMLElement *pElement = NULL;
-            pDocument->get_activeElement(&pElement);
-            if (pElement)
+            if (BSTR bstrText = DoGetHyperlinkTextFromElement(pElement))
             {
-                if (BSTR bstrText = DoGetHyperlinkTextFromElement(pElement))
-                {
-                    ret = bstrText;
-                }
-                pElement->Release();
+                ret = bstrText;
             }
+            pElement->Release();
         }
-        pDisp->Release();
+        pDocument->Release();
     }
 
     return ret;
@@ -3225,21 +3205,16 @@ void OnCopyLinkTextAndURL(HWND hwnd)
 
 void OnCopyPageTitle(HWND hwnd)
 {
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        BSTR bstrTitle = NULL;
+        pDocument->get_title(&bstrTitle);
+        if (bstrTitle)
         {
-            BSTR bstrTitle = NULL;
-            pDocument->get_title(&bstrTitle);
-            if (bstrTitle)
-            {
-                DoCopyText(hwnd, bstrTitle);
-                SysFreeString(bstrTitle);
-            }
+            DoCopyText(hwnd, bstrTitle);
+            SysFreeString(bstrTitle);
         }
-        pDisp->Release();
+        pDocument->Release();
     }
 }
 
@@ -3259,31 +3234,26 @@ void OnCopyPageURL(HWND hwnd)
 
 void OnCopyPageTitleAndURL(HWND hwnd)
 {
-    IDispatch *pDisp = NULL;
-    s_pWebBrowser->GetIWebBrowser2()->get_Document(&pDisp);
-    if (pDisp)
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
-        if (IHTMLDocument2 *pDocument = static_cast<IHTMLDocument2 *>(pDisp))
+        BSTR bstrTitle = NULL;
+        pDocument->get_title(&bstrTitle);
+        if (bstrTitle)
         {
-            BSTR bstrTitle = NULL;
-            pDocument->get_title(&bstrTitle);
-            if (bstrTitle)
+            BSTR bstrURL = NULL;
+            s_pWebBrowser->get_LocationURL(&bstrURL);
+            if (bstrURL)
             {
-                BSTR bstrURL = NULL;
-                s_pWebBrowser->get_LocationURL(&bstrURL);
-                if (bstrURL)
-                {
-                    std::wstring str = bstrTitle;
-                    str += L"\r\n";
-                    str += bstrURL;
-                    DoCopyText(hwnd, str.c_str());
+                std::wstring str = bstrTitle;
+                str += L"\r\n";
+                str += bstrURL;
+                DoCopyText(hwnd, str.c_str());
 
-                    SysFreeString(bstrURL);
-                }
-                SysFreeString(bstrTitle);
+                SysFreeString(bstrURL);
             }
+            SysFreeString(bstrTitle);
         }
-        pDisp->Release();
+        pDocument->Release();
     }
 }
 
