@@ -3257,6 +3257,114 @@ void OnCopyPageTitleAndURL(HWND hwnd)
     }
 }
 
+HBITMAP Create24BppBitmap(HDC hDC, LONG cx, LONG cy)
+{
+    BITMAPINFO bmi;
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = cx;
+    bmi.bmiHeader.biHeight = cy;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 24;
+    LPVOID pvBits;
+    return CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
+}
+
+BOOL DoCopyBitmap(HWND hwnd, HBITMAP hbm)
+{
+    BITMAP bm;
+    GetObject(hbm, sizeof(bm), &bm);
+
+    if (!OpenClipboard(hwnd))
+        return FALSE;
+
+    EmptyClipboard();
+
+    BOOL ret = FALSE;
+    DWORD cb = sizeof(BITMAPINFOHEADER) + bm.bmWidthBytes * bm.bmHeight;
+    if (HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE, cb))
+    {
+        if (LPBYTE pb = (LPBYTE)GlobalLock(hGlobal))
+        {
+            BITMAPINFO bmi;
+            ZeroMemory(&bmi, sizeof(bmi));
+            LPVOID pvBits = bm.bmBits;
+            bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+            bmi.bmiHeader.biWidth = bm.bmWidth;
+            bmi.bmiHeader.biHeight = bm.bmHeight;
+            bmi.bmiHeader.biPlanes = 1;
+            bmi.bmiHeader.biBitCount = bm.bmBitsPixel;
+            CopyMemory(pb, &bmi, sizeof(BITMAPINFOHEADER));
+            CopyMemory(pb + sizeof(BITMAPINFOHEADER), bm.bmBits, bm.bmWidthBytes * bm.bmHeight);
+            GlobalUnlock(hGlobal);
+
+            ret = SetClipboardData(CF_DIB, hGlobal) != NULL;
+        }
+    }
+    CloseClipboard();
+    return ret;
+}
+
+void DPtoHIMETRIC(HDC hDC, LPSIZEL psizl)
+{
+    const int HIMETRIC_INCH = 2540;
+    psizl->cx = MulDiv(psizl->cx, HIMETRIC_INCH, GetDeviceCaps(hDC, LOGPIXELSX));
+    psizl->cy = MulDiv(psizl->cy, HIMETRIC_INCH, GetDeviceCaps(hDC, LOGPIXELSY));
+}
+
+void OnPageScreenShot(HWND hwnd)
+{
+    if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
+    {
+        IHTMLElement *pElement = NULL;
+        pDocument->get_body(&pElement);
+        if (pElement)
+        {
+            IHTMLElement2 *pElement2 = NULL;
+            pElement->QueryInterface(IID_IHTMLElement2, (void **)&pElement2);
+            if (pElement2)
+            {
+                LONG cx, cy;
+                pElement2->get_scrollWidth(&cx);
+                pElement2->get_scrollHeight(&cy);
+                if (HDC hDC = CreateCompatibleDC(NULL))
+                {
+                    if (HBITMAP hbm = Create24BppBitmap(hDC, cx, cy))
+                    {
+                        HGDIOBJ hbmOld = SelectObject(hDC, hbm);
+                        IOleObject *pObject = NULL;
+                        pDocument->QueryInterface(IID_IOleObject, (void **)&pObject);
+                        if (pObject)
+                        {
+                            SIZEL sizl, sizlOld;
+                            pObject->GetExtent(DVASPECT_CONTENT, &sizlOld);
+
+                            sizl.cx = cx;
+                            sizl.cy = cy;
+                            DPtoHIMETRIC(hDC, &sizl);
+                            pObject->SetExtent(DVASPECT_CONTENT, &sizl);
+
+                            RECT rc;
+                            SetRect(&rc, 0, 0, cx, cy);
+                            OleDraw(pObject, DVASPECT_CONTENT, hDC, &rc);
+
+                            pObject->SetExtent(DVASPECT_CONTENT, &sizlOld);
+                            pObject->Release();
+                        }
+                        SelectObject(hDC, hbmOld);
+                        DoCopyBitmap(hwnd, hbm);
+                        DeleteObject(hbm);
+                    }
+                    DeleteDC(hDC);
+                }
+                pElement2->Release();
+            }
+            pElement->Release();
+        }
+        pDocument->Release();
+    }
+}
+
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
 {
     static INT s_nLevel = 0;
@@ -3424,6 +3532,9 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
             break;
         case ID_COPY_PAGE_TITLE_AND_URL:
             OnCopyPageTitleAndURL(hwnd);
+            break;
+        case ID_PAGE_SCREENSHOT:
+            OnPageScreenShot(hwnd);
             break;
         }
     }

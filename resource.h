@@ -130,12 +130,13 @@
 #define ID_COPY_PAGE_TITLE                  20058
 #define ID_COPY_PAGE_URL                    20059
 #define ID_COPY_PAGE_TITLE_AND_URL          20060
+#define ID_PAGE_SCREENSHOT                  20061
 
 #ifdef APSTUDIO_INVOKED
     #ifndef APSTUDIO_READONLY_SYMBOLS
         #define _APS_NO_MFC                 1
         #define _APS_NEXT_RESOURCE_VALUE    101
-        #define _APS_NEXT_COMMAND_VALUE     20061
+        #define _APS_NEXT_COMMAND_VALUE     20062
         #define _APS_NEXT_CONTROL_VALUE     1000
         #define _APS_NEXT_SYMED_VALUE       300
     #endif

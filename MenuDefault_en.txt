@@ -15,3 +15,5 @@ Refresh	#2300
 Copy page title	#20058
 Copy page address	#20059
 Copy page title and address	#20060
+(Separator)	#0
+Copy page image	#20061
