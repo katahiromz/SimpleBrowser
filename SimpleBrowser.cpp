@@ -3312,8 +3312,14 @@ void DPtoHIMETRIC(HDC hDC, LPSIZEL psizl)
     psizl->cy = MulDiv(psizl->cy, HIMETRIC_INCH, GetDeviceCaps(hDC, LOGPIXELSY));
 }
 
+BOOL DoEvents(HWND hwnd, LPMSG lpMsg);
+
 void OnPageScreenShot(HWND hwnd)
 {
+    BOOL bWasZoomed = IsZoomed(hwnd);
+    if (!bWasZoomed)
+        ShowWindow(hwnd, SW_MAXIMIZE);
+
     if (IHTMLDocument2 *pDocument = s_pWebBrowser->GetIHTMLDocument2())
     {
         IHTMLElement *pElement = NULL;
@@ -3346,6 +3352,7 @@ void OnPageScreenShot(HWND hwnd)
 
                             RECT rc;
                             SetRect(&rc, 0, 0, cx, cy);
+
                             OleDraw(pObject, DVASPECT_CONTENT, hDC, &rc);
 
                             pObject->SetExtent(DVASPECT_CONTENT, &sizlOld);
@@ -3363,6 +3370,9 @@ void OnPageScreenShot(HWND hwnd)
         }
         pDocument->Release();
     }
+
+    if (!bWasZoomed)
+        ShowWindow(hwnd, SW_RESTORE);
 }
 
 void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify)
@@ -4015,6 +4025,42 @@ BOOL PreProcessBrowserKeys(LPMSG pMsg)
     return FALSE;
 }
 
+BOOL DoEvents(HWND hwnd, LPMSG lpMsg)
+{
+    BOOL bFound = FALSE;
+    download_map_type::const_iterator it, end = s_downloadings.end();
+    for (it = s_downloadings.begin(); it != end; ++it)
+    {
+        if (IsWindow(it->first) && IsDialogMessage(it->first, lpMsg))
+        {
+            bFound = TRUE;
+            break;
+        }
+    }
+    if (bFound)
+        return TRUE;
+
+    if ((WM_KEYFIRST <= lpMsg->message && lpMsg->message <= WM_KEYLAST) ||
+        (WM_MOUSEFIRST <= lpMsg->message && lpMsg->message <= WM_MOUSELAST))
+    {
+        KillTimer(s_hMainWnd, REFRESH_TIMER);
+        if (g_settings.m_refresh_interval)
+        {
+            SetTimer(s_hMainWnd, REFRESH_TIMER, g_settings.m_refresh_interval, NULL);
+        }
+    }
+
+    if (PreProcessBrowserKeys(lpMsg))
+        return TRUE;
+
+    if (s_hAccel && TranslateAccelerator(hwnd, s_hAccel, lpMsg))
+        return TRUE;
+
+    TranslateMessage(lpMsg);
+    DispatchMessage(lpMsg);
+    return TRUE;
+}
+
 // IDownloadManager::Download
 STDMETHODIMP MWebBrowserEx::Download(
     IMoniker *pmk,
@@ -4159,37 +4205,7 @@ WinMain(HINSTANCE  hInstance,
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
-        BOOL bFound = FALSE;
-		download_map_type::const_iterator it, end = s_downloadings.end();
-        for (it = s_downloadings.begin(); it != end; ++it)
-        {
-            if (IsWindow(it->first) && IsDialogMessage(it->first, &msg))
-            {
-                bFound = TRUE;
-                break;
-            }
-        }
-        if (bFound)
-            continue;
-
-        if ((WM_KEYFIRST <= msg.message && msg.message <= WM_KEYLAST) ||
-            (WM_MOUSEFIRST <= msg.message && msg.message <= WM_MOUSELAST))
-        {
-            KillTimer(s_hMainWnd, REFRESH_TIMER);
-            if (g_settings.m_refresh_interval)
-            {
-                SetTimer(s_hMainWnd, REFRESH_TIMER, g_settings.m_refresh_interval, NULL);
-            }
-        }
-
-        if (PreProcessBrowserKeys(&msg))
-            continue;
-
-        if (s_hAccel && TranslateAccelerator(hwnd, s_hAccel, &msg))
-            continue;
-
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DoEvents(hwnd, &msg);
     }
 
     if (s_pWebBrowser)
