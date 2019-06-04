@@ -88,3 +88,4 @@ License: MIT
     - Supported taking page screenshot.
     - Adjusted browser emulation values to IE version.
 - 2019.XX.YY ver.0.9.8
+    - Enabled to stop the download complete sound.
